@@ -134,7 +134,7 @@ export default function Register() {
 
   return (
     <div className="bg-[#111418] text-base-content min-h-screen flex flex-col" data-theme="dark">
-      <Navbar />
+      {/* <Navbar /> */}
 
       <main
         className="relative flex-1 flex items-center justify-end overflow-hidden px-6 md:px-16"
