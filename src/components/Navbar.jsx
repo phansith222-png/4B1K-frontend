@@ -107,7 +107,7 @@ export default function Navbar() {
       `}</style>
 
       {/* ================= HEADER ================= */}
-      <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-white relative z-50 border-b border-gray-100 shadow-sm">
+      <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-[#F9F8F3] relative z-50 border-b border-gray-100 shadow-sm">
         
         {/* 1. ฝั่งซ้าย: Logo */}
         <div 
