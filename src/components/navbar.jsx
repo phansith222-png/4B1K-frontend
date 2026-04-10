@@ -33,15 +33,23 @@ export default function Navbar() {
   return (
     <div className="relative">
       <style>{`
-        /* ================= เอฟเฟคปุ่ม Login / Register (ตามรูปเป๊ะๆ + รูปทรงสวยที่สุด) ================= */
+        /* ================= เอฟเฟคสีวิ่งสำหรับปุ่ม ================= */
+        @keyframes runGradient {
+          0% { background-position: 200% 0; }
+          100% { background-position: 0% 0; }
+        }
+
+        /* ================= เอฟเฟคปุ่ม Login / Register ================= */
         
-        /* ปุ่ม Log In (พื้นขาว ขอบไล่สี น้ำเงิน -> เขียวตอง) */
+        /* ปุ่ม Log In (พื้นขาว ขอบไล่สีวิ่ง) */
         .btn-custom-login {
           background: linear-gradient(#ffffff, #ffffff) padding-box,
-                      linear-gradient(90deg, #2b5cda, #b6eb60) border-box;
+                      linear-gradient(90deg, #2b5cda, #b6eb60, #2b5cda) border-box;
+          background-size: 200% auto;
+          animation: runGradient 3s linear infinite;
           border: 2px solid transparent;
-          color: #111827; /* สีดำเทาเข้ม */
-          border-radius: 12px; /* โค้งมนแบบ Modern Apple-style */
+          color: #111827;
+          border-radius: 12px;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           width: 105px;
           height: 38px;
@@ -54,10 +62,12 @@ export default function Navbar() {
           transform: translateY(-1px);
         }
 
-        /* ปุ่ม Register (พื้นไล่สี เขียวตอง -> ฟ้าอ่อน ขอบเทาบางๆ) */
+        /* ปุ่ม Register (ปรับสีวิ่ง น้ำเงิน-เขียวตอง + เพิ่มเงาให้สวยขึ้น) */
         .btn-custom-register {
-          background: linear-gradient(90deg, #bce86b 0%, #e2eaf4 100%);
-          border: 1px solid #cbd5e1;
+          background: linear-gradient(90deg, #2B5AE8, #CEFF67, #2B5AE8);
+          background-size: 200% auto;
+          animation: runGradient 3s linear infinite;
+          border: none;
           color: #111827;
           border-radius: 12px;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -66,9 +76,11 @@ export default function Navbar() {
           display: flex;
           align-items: center;
           justify-content: center;
+          font-weight: 800;
+          box-shadow: 0 4px 15px rgba(43, 90, 232, 0.25);
         }
         .btn-custom-register:hover {
-          box-shadow: 0 4px 15px rgba(188, 232, 107, 0.25);
+          box-shadow: 0 6px 20px rgba(206, 255, 103, 0.4);
           transform: translateY(-1px);
         }
 
@@ -145,7 +157,7 @@ export default function Navbar() {
             <li><a href="#" className="hover:text-blue-600 transition-colors">News</a></li>
           </ul>
 
-          {/* ช่อง Search (แบบดันเมนูไปซ้าย) */}
+          {/* ช่อง Search */}
           <div className="flex items-center ml-2 lg:ml-6 relative">
             <div 
               className={`transition-all duration-500 ease-in-out flex items-center bg-gray-50 rounded-full border ${
@@ -176,7 +188,7 @@ export default function Navbar() {
 
         </div>
 
-        {/* 3. ฝั่งขวา: Actions (ปุ่ม Login / Register แบบใหม่ ขนาดเท่ากัน) */}
+        {/* 3. ฝั่งขวา: Actions */}
         <div className="flex-shrink-0 flex items-center justify-end gap-3 z-50 w-[240px]">
           <button 
             onClick={() => navigate('/login')}
@@ -191,15 +203,13 @@ export default function Navbar() {
             Register
           </button>
 
-          {/* ปุ่มสลับภาษา */}
+          {/* ปุ่มสลับภาษา (เปลี่ยนเป็นไอคอนรูปโลก) */}
           <div 
             onClick={toggleLanguage}
-            className="flex items-center gap-1 text-[13px] font-bold cursor-pointer text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-colors border border-gray-200 ml-1"
+            className="flex items-center gap-1.5 text-[13px] font-bold cursor-pointer text-gray-800 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition-colors border border-gray-200 ml-1"
           >
-            <svg className="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
             </svg>
             <span className="w-5 text-center">{language}</span>
           </div>
