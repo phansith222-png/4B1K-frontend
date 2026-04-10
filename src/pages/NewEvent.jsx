@@ -13,7 +13,6 @@ const NewEventPage = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 font-sans">
-      {/* Header Section - อิงตาม Navbar ในรูปที่คุณแนบ */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center">
