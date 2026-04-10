@@ -5,11 +5,13 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import useUserStore from "../stores/userStore";
+import MainLayout from "../layouts/MainLayout"; // 1. Import MainLayout เข้ามา
 
 const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
 const NewEvent = lazy(() => import("../pages/NewEvent"));
 
+// 2. ปรับแก้ guestRouter โดยเอา MainLayout ครอบไว้ด้านนอกสุด
 const guestRouter = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
   { path: "/login", Component: Login },
@@ -18,12 +20,21 @@ const guestRouter = createBrowserRouter([
   { path: "*", element: <Navigate to="/login" replace /> },
 ]);
 
+// 3. ปรับแก้ userRouter ให้มี MainLayout ครอบเช่นเดียวกัน
 const userRouter = createBrowserRouter([
   {
     path: "/",
-    element: <div className="text-white p-10">Home (coming soon)</div>,
+    element: <MainLayout />,
+    children: [
+      {
+        path: "/",
+        element: (
+          <div className="text-black p-10 mt-20">Home (coming soon)</div>
+        ),
+      },
+      { path: "*", element: <Navigate to="/" replace /> },
+    ],
   },
-  { path: "*", element: <Navigate to="/" replace /> },
 ]);
 
 export default function AppRouter() {

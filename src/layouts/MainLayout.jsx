@@ -1,17 +1,19 @@
-import { MainLayout } from '../layouts/MainLayout';
-import { Button } from '../components/Button';
-import { motion } from 'framer-motion';
-import { fadeInUp } from '../utils/animations';
+import Navbar from '../components/Navbar';
+import { Outlet } from 'react-router';
+import React from 'react';
+import Footer from '../components/Footer';
 
-const Home = () => {
-  return (
-    <MainLayout>
-      <motion.div {...fadeInUp}>
-        <h1 className="text-2xl font-bold mb-4">Welcome to Home</h1>
-        <Button label="Click Me" onClick={() => alert('Hello!')} />
-      </motion.div>
-    </MainLayout>
-  );
-};
+function MainLayout() {
+    return (
 
-export default Home;
+            <div className="min-h-screen">
+                <Navbar />
+                <div>
+                <Outlet />
+                </div>
+                <Footer />
+            </div>
+    )
+}
+
+export default MainLayout;
