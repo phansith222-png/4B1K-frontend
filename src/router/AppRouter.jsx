@@ -1,20 +1,35 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import useUserStore from '../stores/userStore'
+import MainLayout from '../layouts/MainLayout' // 1. Import MainLayout เข้ามา
 
 const Login = lazy(() => import('../pages/Login'))
 const Register = lazy(() => import('../pages/Register'))
 
+// 2. ปรับแก้ guestRouter โดยเอา MainLayout ครอบไว้ด้านนอกสุด
 const guestRouter = createBrowserRouter([
-  { path: '/',         element: <Navigate to="/login" replace /> },
-  { path: '/login',    Component: Login },
-  { path: '/register', Component: Register },
-  { path: '*',         element: <Navigate to="/login" replace /> },
+  {
+    path: '/',
+    element: <MainLayout />, // ให้ MainLayout เป็นหน้าหลัก
+    children: [
+      { path: '/', element: <Navigate to="/login" replace /> },
+      { path: 'login', Component: Login }, // ลบ / ด้านหน้าออกเพื่อให้ต่อจาก path หลัก
+      { path: 'register', Component: Register },
+      { path: '*', element: <Navigate to="/login" replace /> },
+    ]
+  }
 ])
 
+// 3. ปรับแก้ userRouter ให้มี MainLayout ครอบเช่นเดียวกัน
 const userRouter = createBrowserRouter([
-  { path: '/',  element: <div className="text-white p-10">Home (coming soon)</div> },
-  { path: '*',  element: <Navigate to="/" replace /> },
+  {
+    path: '/',
+    element: <MainLayout />,
+    children: [
+      { path: '/', element: <div className="text-black p-10 mt-20">Home (coming soon)</div> },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ]
+  }
 ])
 
 export default function AppRouter() {
