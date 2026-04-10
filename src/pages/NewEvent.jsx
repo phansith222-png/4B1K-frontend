@@ -1,162 +1,179 @@
 import React from "react";
+import Navbar from "../components/Navbar";
 
 const NewEventPage = () => {
-  const eventData = {
-    title: "SUMMER SONIC BANGKOK 2024",
+  const categories = [
+    "All",
+    "Concert",
+    "Fan Meeting",
+    "Festival",
+    "Online Event",
+  ];
+
+  const featuredEvent = {
+    category: "Upcoming Concert",
+    title: "The 2026 World Tour: Beyond the Rhythm",
     description:
-      "เตรียมพบกับเทศกาลดนตรีระดับโลกที่ส่งตรงจากญี่ปุ่นสู่กรุงเทพฯ ครั้งแรก! รวบรวมศิลปินแนวหน้าทั้งไทยและสากล พร้อมโปรดักชั่นสุดอลังการที่จะทำให้ซัมเมอร์นี้ร้อนแรงกว่าที่เคย",
-    date: "24 - 25 สิงหาคม 2567",
-    location: "อิมแพ็ค ชาเลนเจอร์ ฮอลล์ 1-3",
+      "สัมผัสประสบการณ์ดนตรีรูปแบบใหม่ที่ผสมผสานเทคโนโลยี AI และการแสดงสดสุดตระการตา พบกับศิลปินระดับโลกที่จะมาสร้างความประทับใจในซัมเมอร์นี้",
+    date: "APRIL 20, 2026",
+    readTime: "LIVE AT IMPACT ARENA",
     image:
-      "https://media.thaiticketmajor.com/concerts-banner-500/summer-sonic-66.jpg",
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop",
+    author: {
+      name: "4B1K Official",
+      role: "Event Organizer",
+      avatar: "https://ui-avatars.com/api/?name=4B&background=2b5cda&color=fff",
+    },
   };
 
+  const otherEvents = [
+    {
+      category: "Fan Meeting",
+      title: "Exclusive Night with Your Favorite Star",
+      date: "MAY 12, 2025",
+      time: "2 MIN READ",
+      image:
+        "https://images.unsplash.com/photo-1514525253344-f81f50592667?q=80&w=500&auto=format&fit=crop",
+    },
+    {
+      category: "Festival",
+      title: "Neon Summer Festival: Bangkok Edition",
+      date: "JUNE 05, 2025",
+      time: "4 MIN READ",
+      image:
+        "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=500&auto=format&fit=crop",
+    },
+    {
+      category: "Workshop",
+      title: "Music Production 101 for Beginners",
+      date: "JUNE 18, 2025",
+      time: "5 MIN READ",
+      image:
+        "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=500&auto=format&fit=crop",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-slate-900 font-sans">
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="text-3xl font-black tracking-tighter text-slate-800">
-              4<span className="text-[#BEF264]">B</span>1K
+    <div className="min-h-screen bg-white font-sans text-gray-900">
+      <Navbar />
+
+      <main className="max-w-7xl mx-auto px-6 md:px-10 py-12">
+        {/* Header Section */}
+        <section className="mb-12">
+          <h1 className="text-5xl font-black tracking-tight mb-4 text-gray-900">
+            News & <span className="text-[#2b5cda]">Events</span>
+          </h1>
+          <p className="text-gray-500 max-w-2xl text-lg leading-relaxed">
+            ติดตามทุกความเคลื่อนไหว อัปเดตตารางคอนเสิร์ต และกิจกรรมพิเศษจาก 4B1K
+            ที่จะพาคุณไปใกล้ชิดกับศิลปินที่คุณรักมากขึ้น
+          </p>
+        </section>
+
+        {/* Filter Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-10 border-b border-gray-100 pb-6">
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat, index) => (
+              <button
+                key={index}
+                className={`px-5 py-1.5 rounded-md text-sm font-bold transition-all ${
+                  index === 0
+                    ? "bg-[#1e293b] text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          <button className="p-2 text-gray-400 hover:text-[#2b5cda] transition-colors">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-20 items-center">
+          <div className="lg:col-span-7">
+            <div className="rounded-3xl overflow-hidden shadow-2xl shadow-blue-100 group cursor-pointer">
+              <img
+                src={featuredEvent.image}
+                alt="Featured"
+                className="w-full h-[450px] object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+          </div>
+          <div className="lg:col-span-5 flex flex-col justify-center">
+            <span className="bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded w-max mb-4">
+              {featuredEvent.category}
             </span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#"
-              className="text-sm font-semibold text-slate-600 hover:text-[#BEF264] transition-colors"
-            >
-              Concert Event
-            </a>
-            <a
-              href="#"
-              className="text-sm font-semibold text-slate-600 hover:text-[#BEF264] transition-colors"
-            >
-              Artist Biology
-            </a>
-            <a
-              href="#"
-              className="text-sm font-semibold text-slate-600 hover:text-[#BEF264] transition-colors"
-            >
-              Community
-            </a>
-            <a
-              href="#"
-              className="text-sm font-semibold text-slate-600 hover:text-[#BEF264] transition-colors"
-            >
-              News
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-slate-100 rounded-full">🔍</button>
-            <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-[#BEF264] overflow-hidden">
-              <img src="https://ui-avatars.com/api/?name=User" alt="profile" />
+            <h2 className="text-4xl font-black leading-tight mb-5 hover:text-[#2b5cda] cursor-pointer transition-colors">
+              {featuredEvent.title}
+            </h2>
+            <p className="text-gray-500 text-lg mb-6 leading-relaxed">
+              {featuredEvent.description}
+            </p>
+            <div className="text-xs font-black text-gray-400 mb-8 tracking-widest uppercase">
+              {featuredEvent.date} — {featuredEvent.readTime}
             </div>
-          </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-5xl mx-auto pt-12 pb-24 px-6">
-        {/* Back Button */}
-        <button className="mb-8 flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-all">
-          <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center">
-            ←
-          </div>
-          <span className="text-sm font-medium">Back to Home</span>
-        </button>
-
-        {/* Event Card Container */}
-        <div className="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden">
-          {/* Hero Image Section */}
-          <div className="relative h-[450px] w-full">
-            <img
-              src={eventData.image}
-              alt="Cover"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
-              <div className="p-10">
-                <span className="bg-[#BEF264] text-slate-900 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest">
-                  Upcoming Event
-                </span>
-                <h1 className="text-5xl font-black text-white mt-4 tracking-tight">
-                  {eventData.title}
-                </h1>
-              </div>
-            </div>
-          </div>
-
-          {/* Details Section */}
-          <div className="p-12 grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Left: Main Info */}
-            <div className="md:col-span-2 space-y-8">
+            <div className="flex items-center gap-3">
+              <img
+                src={featuredEvent.author.avatar}
+                alt="avatar"
+                className="w-10 h-10 rounded-full border border-gray-200"
+              />
               <div>
-                <h3 className="text-[#BEF264] font-bold text-sm uppercase tracking-[0.2em] mb-4">
-                  About the Event
-                </h3>
-                <p className="text-slate-600 text-lg leading-relaxed">
-                  {eventData.description}
+                <p className="text-sm font-black text-gray-800">
+                  {featuredEvent.author.name}
                 </p>
-              </div>
-
-              <div className="pt-8 border-t border-slate-50">
-                <h3 className="text-slate-400 font-bold text-sm uppercase tracking-[0.2em] mb-6">
-                  Lineup Highlights
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {["Artist A", "Artist B", "Artist C", "Artist D"].map(
-                    (artist) => (
-                      <span
-                        key={artist}
-                        className="px-6 py-2 bg-slate-50 border border-slate-100 rounded-full text-sm font-medium hover:border-[#BEF264] transition-colors cursor-default"
-                      >
-                        {artist}
-                      </span>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Meta Info */}
-            <div className="bg-slate-50/50 p-8 rounded-[32px] space-y-8">
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  Date & Time
+                <p className="text-xs text-gray-400 font-bold uppercase">
+                  {featuredEvent.author.role}
                 </p>
-                <p className="text-lg font-bold text-slate-800">
-                  {eventData.date}
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                  Location
-                </p>
-                <p className="text-lg font-bold text-slate-800">
-                  {eventData.location}
-                </p>
-                <p className="text-sm text-slate-500 underline cursor-pointer hover:text-[#BEF264]">
-                  Open in Google Maps
-                </p>
-              </div>
-
-              <div className="pt-4">
-                <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
-                  Add to Calendar
-                </button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {otherEvents.map((event, index) => (
+            <div key={index} className="group cursor-pointer">
+              <div className="rounded-2xl overflow-hidden mb-6 aspect-video shadow-lg group-hover:shadow-blue-200/50 transition-all">
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+              <span className="bg-gray-100 text-gray-400 text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded w-max mb-3 inline-block">
+                {event.category}
+              </span>
+              <h3 className="text-xl font-black leading-snug mb-3 group-hover:text-[#2b5cda] transition-colors">
+                {event.title}
+              </h3>
+              <div className="text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                {event.date} — {event.time}
+              </div>
+            </div>
+          ))}
+        </section>
       </main>
 
-      {/* Simple Footer */}
-      <footer className="py-12 border-t border-slate-100 text-center">
-        <p className="text-slate-400 text-sm">
-          © 2026 4B1K Concert Platform. All rights reserved.
+      <footer className="border-t border-gray-100 py-10 mt-20 text-center">
+        <div className="text-[20px] font-black italic tracking-tighter text-gray-300 mb-2">
+          4B1K
+        </div>
+        <p className="text-gray-400 text-xs font-bold">
+          © 2026 4B1K PLATFORM. ALL RIGHTS RESERVED.
         </p>
       </footer>
     </div>
