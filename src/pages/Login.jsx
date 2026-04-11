@@ -1,66 +1,37 @@
+
+
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import { loginSchema } from '../validations/loginSchema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import useUserStore from '../stores/userStore'
 
 const API_URL = 'https://your-api.com/api/auth/login'
 
-const initialForm = { email: '', password: '' }
-const initialErrors = { email: '', password: '' }
-
-function validate(form) {
-  const errors = { ...initialErrors }
-  let isValid = true
-  if (!form.email) {
-    errors.email = 'กรุณากรอก Email'
-    isValid = false
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'รูปแบบ Email ไม่ถูกต้อง'
-    isValid = false
-  }
-  if (!form.password) {
-    errors.password = 'กรุณากรอก Password'
-    isValid = false
-  }
-  return { errors, isValid }
-}
 
 export default function Login() {
   const navigate = useNavigate()
-  const [form, setForm] = useState(initialForm)
-  const [errors, setErrors] = useState(initialErrors)
-  const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState('')
   const [rememberMe, setRememberMe] = useState(true)
+  const login = useUserStore(state =>state.setUser)
+  const {register,handleSubmit,formState,reset} = useForm({
+    resolver:zodResolver(loginSchema),
+    defaultValues:{
+      email: '',
+      password: ''
+    }
+  })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
-    if (apiError) setApiError('')
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const {errors,isSubmitting} = formState
+  const onSubmit = async (data)=> {
     setApiError('')
-    const { errors: validationErrors, isValid } = validate(form)
-    if (!isValid) { setErrors(validationErrors); return }
-    setLoading(true)
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setApiError(data.message || 'Email หรือ Password ไม่ถูกต้อง'); return }
-      const storage = rememberMe ? localStorage : sessionStorage
-      storage.setItem('token', data.token)
-      storage.setItem('user', JSON.stringify(data.user))
-      navigate('/dashboard')
+      // await login(data)
     } catch {
       setApiError('ไม่สามารถเชื่อมต่อ server ได้ กรุณาลองใหม่')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -113,8 +84,8 @@ export default function Login() {
                   type="email"
                   name="email"
                   placeholder="Email address"
-                  value={form.email}
-                  onChange={handleChange}
+                  // value={form.email}
+                  // onChange={handleChange}
                   className="w-full bg-white px-5 py-4 rounded-2xl transition-all duration-300 border border-gray-200 focus:border-[#2B5AE8] focus:ring-4 focus:ring-[#2B5AE8]/10 text-gray-900 placeholder:text-gray-400 text-sm outline-none font-medium shadow-sm hover:border-gray-300"
                   style={{ borderColor: errors.email ? '#ef4444' : '' }}
                 />
@@ -127,8 +98,8 @@ export default function Login() {
                   type="password"
                   name="password"
                   placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
+                  // value={form.password}
+                  // onChange={handleChange}
                   className="w-full bg-white px-5 py-4 rounded-2xl transition-all duration-300 border border-gray-200 focus:border-[#2B5AE8] focus:ring-4 focus:ring-[#2B5AE8]/10 text-gray-900 placeholder:text-gray-400 text-sm outline-none font-medium shadow-sm hover:border-gray-300"
                   style={{ borderColor: errors.password ? '#ef4444' : '' }}
                 />
@@ -157,11 +128,11 @@ export default function Login() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isSubmitting}
                 className="w-full py-4 rounded-2xl mt-4 text-[#1b1f27] font-black text-[15px] tracking-wide transition-all duration-300 hover:-translate-y-1 shadow-[0_8px_20px_rgba(206,255,103,0.3)] hover:shadow-[0_12px_25px_rgba(206,255,103,0.4)] flex items-center justify-center"
                 style={{ backgroundColor: '#CEFF67' }}
               >
-                {loading ? <span className="w-5 h-5 border-2 border-gray-900/30 border-t-gray-900 rounded-full animate-spin" /> : 'Sign In'}
+                {isSubmitting ? <span className="w-5 h-5 border-2 border-gray-900/30 border-t-gray-900 rounded-full animate-spin" /> : 'Sign In'}
               </button>
 
               {/* Divider */}

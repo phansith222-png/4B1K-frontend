@@ -1,41 +1,17 @@
-export const LoginFuntion = async (email, password) => {
-  try {
-    const result = await fetch("http://localhost:3000/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+import axios from "axios";
+import useUserStore from "../stores/userStore";
 
-    if (!result.ok) return result.json("Error logging in");
+export const mainapi = axios.create({
+    baseURL: 'http://localhost:5000',
+    headers: {
+        'Content-Type' : 'application/json'
+    }
+})
 
-    return await result.json();
-  } catch (error) {
-    console.error(error);
+mainapi.interceptors.request.use( config => {
+  const token = useUserStore.getState().token
+  if(token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
-};
-
-export const Register = async (email, password) => {
-  try {
-    const result = await fetch("http://localhost:3000/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
-
-    if (!result.ok) return result.json("Error registering");
-
-    return result.json();
-  } catch (error) {
-    console.error(error);
-  }
-};
+  return config
+})

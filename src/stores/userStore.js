@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import Register from "../pages/Register";
 
 const useUserStore = create(
   persist(
-    (set) => ({
+    (set,get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
@@ -13,7 +14,6 @@ const useUserStore = create(
           token,
           isAuthenticated: !!user,
         }),
-
       logout: () =>
         set({
           user: null,
