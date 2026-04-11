@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 const useUserStore = create(
   persist(
-    (set) => ({
+    (set,get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
@@ -13,7 +13,6 @@ const useUserStore = create(
           token,
           isAuthenticated: !!user,
         }),
-
       logout: () =>
         set({
           user: null,
