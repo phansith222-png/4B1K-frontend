@@ -55,7 +55,6 @@ const NewEventPage = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900">
-      <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 md:px-10 py-12">
         {/* Header Section */}
@@ -168,14 +167,7 @@ const NewEventPage = () => {
         </section>
       </main>
 
-      <footer className="border-t border-gray-100 py-10 mt-20 text-center">
-        <div className="text-[20px] font-black italic tracking-tighter text-gray-300 mb-2">
-          4B1K
-        </div>
-        <p className="text-gray-400 text-xs font-bold">
-          © 2026 4B1K PLATFORM. ALL RIGHTS RESERVED.
-        </p>
-      </footer>
+      
     </div>
   );
 };
