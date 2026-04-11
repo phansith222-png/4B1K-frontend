@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import Register from "../pages/Register";
 
 const useUserStore = create(
   persist(
