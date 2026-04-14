@@ -8,13 +8,21 @@ import useUserStore from "../stores/userStore";
 import MainLayout from "../layouts/MainLayout"; // 1. Import MainLayout เข้ามา
 import UserLayout from "../layouts/UserLayout";
 
-// Pages
-const LandingPage = lazy(() => import('../pages/LandingPage')) 
-const Login = lazy(() => import('../pages/Login'))
-const Register = lazy(() => import('../pages/Register'))
-const EditProfile = lazy(() => import('../pages/EditProfile')) 
-const HomePage = lazy(() => import('../pages/HomePage')) // ✨ นำเข้าหน้าใหม่
+// Pages (หน้าเดิมที่มีอยู่)
+const LandingPage = lazy(() => import('../pages/LandingPage'));
+const Login = lazy(() => import('../pages/Login'));
+const Register = lazy(() => import('../pages/Register'));
+const EditProfile = lazy(() => import('../pages/EditProfile'));
+const HomePage = lazy(() => import('../pages/HomePage'));
 const NewEvent = lazy(() => import("../pages/NewEvent"));
+
+// ✨ Pages (หน้าใหม่ที่เพิ่มเข้ามา)
+const PagePop = lazy(() => import('../pages/PagePop'));
+const PageRock = lazy(() => import('../pages/PageRock'));
+const PageClassic = lazy(() => import('../pages/PageClassic'));
+const PageEtc = lazy(() => import('../pages/PageEtc'));
+const PageEntertainment = lazy(() => import('../pages/PageEntertainment'));
+const AllArtist = lazy(() => import('../pages/PageAllArtist'));
 
 const guestRouter = createBrowserRouter([
   {
@@ -24,12 +32,21 @@ const guestRouter = createBrowserRouter([
       { path: '/', element: <LandingPage /> }, 
       { path: 'login', Component: Login },
       { path: 'register', Component: Register },
-       { path: "new-event", Component: NewEvent },
+      { path: 'new-event', Component: NewEvent },
       { path: 'home', element: <HomePage /> }, 
+      
+      // 👉 เพิ่ม Route หน้าใหม่ สำหรับ Guest
+      { path: 'pop', element: <PagePop /> },
+      { path: 'rock', element: <PageRock /> },
+      { path: 'classic', element: <PageClassic /> },
+      { path: 'etc', element: <PageEtc /> },
+      { path: 'entertainment', element: <PageEntertainment /> },
+      { path: 'artists', element: <AllArtist /> },
+      
       { path: '*', element: <Navigate to="/" replace /> },
     ]
   }
-])
+]);
 
 const userRouter = createBrowserRouter([
   {
@@ -39,15 +56,24 @@ const userRouter = createBrowserRouter([
       { path: '/', element: <HomePage /> }, 
       { path: 'home', element: <HomePage /> }, 
       { path: 'editprofile', Component: EditProfile }, 
+      
+      // 👉 เพิ่ม Route หน้าใหม่ สำหรับ User ที่ Login แล้วด้วย
+      { path: 'pop', element: <PagePop /> },
+      { path: 'rock', element: <PageRock /> },
+      { path: 'classic', element: <PageClassic /> },
+      { path: 'etc', element: <PageEtc /> },
+      { path: 'entertainment', element: <PageEntertainment /> },
+      { path: 'artists', element: <AllArtist /> },
+
       { path: '*', element: <Navigate to="/" replace /> },
     ]
   }
-])
+]);
 
 export default function AppRouter() {
-  const user = useUserStore(state => state.user)
+  const user = useUserStore(state => state.user);
 
-  const router = user ? userRouter : guestRouter
+  const router = user ? userRouter : guestRouter;
 
   return (
     <Suspense fallback={
@@ -57,5 +83,5 @@ export default function AppRouter() {
     }>
       <RouterProvider key={user?.id} router={router} />
     </Suspense>
-  )
+  );
 }
