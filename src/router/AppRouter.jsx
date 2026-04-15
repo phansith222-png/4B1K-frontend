@@ -8,6 +8,7 @@ import useUserStore from "../stores/userStore";
 import MainLayout from "../layouts/MainLayout"; // 1. Import MainLayout เข้ามา
 import UserLayout from "../layouts/UserLayout";
 
+
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import('../pages/LandingPage'));
 const Login = lazy(() => import('../pages/Login'));
@@ -15,6 +16,8 @@ const Register = lazy(() => import('../pages/Register'));
 const EditProfile = lazy(() => import('../pages/EditProfile'));
 const HomePage = lazy(() => import('../pages/HomePage'));
 const NewEvent = lazy(() => import("../pages/NewEvent"));
+const Chat = lazy(() => import("../pages/ChatPage"));
+
 
 // ✨ Pages (หน้าใหม่ที่เพิ่มเข้ามา)
 const PagePop = lazy(() => import('../pages/PagePop'));
@@ -55,7 +58,13 @@ const userRouter = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> }, 
       { path: 'home', element: <HomePage /> }, 
+      { path: 'login', Component: Login },
+      { path: 'register', Component: Register },
       { path: 'editprofile', Component: EditProfile }, 
+      { path: 'new-event', element:<NewEvent />},
+      { path: 'chat', element:<Chat />},
+
+      
       
       // 👉 เพิ่ม Route หน้าใหม่ สำหรับ User ที่ Login แล้วด้วย
       { path: 'pop', element: <PagePop /> },
