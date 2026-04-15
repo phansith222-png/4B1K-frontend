@@ -78,6 +78,15 @@ export default function NavbarUser({ isLanding = false }) {
         navigate(path);
     };
 
+     const handleLogout = () => {
+         setIsArtistMenuOpen(false);
+         setIsProfileMenuOpen(false);
+         localStorage.removeItem("token")
+         localStorage.removeItem("auth-storage")
+         window.location.reload();
+    };
+
+
     // 🕒 Effect สำหรับเลื่อนรูปหลักอัตโนมัติ (หยุดเมื่อ Hover)
     useEffect(() => {
         if (!isArtistMenuOpen || isHoveringMain) return;
@@ -301,7 +310,7 @@ export default function NavbarUser({ isLanding = false }) {
                                             </div>
                                             <div className="border-t border-white/5 my-1"></div>
                                             <div className="px-1.5">
-                                                <button onClick={() => handleNavigate('/login')} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors text-left">
+                                                <button onClick={() => handleLogout()} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors text-left">
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                                                     Sign Out
                                                 </button>

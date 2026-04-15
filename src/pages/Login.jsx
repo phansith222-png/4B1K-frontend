@@ -22,7 +22,9 @@ export default function Login() {
 
   const { errors, isSubmitting } = formState
 
+
   const onSubmit = async (data) => {
+    console.log('okc ');
     setApiError('')
     try {
       const resp = await mainapi.post('/auth/login', data)
@@ -33,7 +35,7 @@ export default function Login() {
 
       setUser(userData, authToken);
 
-      // navigate('/dashboard') 
+      navigate('/') 
 
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Invalid username or password'
