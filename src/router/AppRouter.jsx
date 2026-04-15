@@ -83,7 +83,6 @@ export default function AppRouter() {
   const user = useUserStore(state => state.user);
 
   const router = user ? userRouter : guestRouter;
-  console.log('router :>> ', router);
 
   return (
     <Suspense fallback={

@@ -24,7 +24,6 @@ export default function Login() {
 
 
   const onSubmit = async (data) => {
-    console.log('okc ');
     setApiError('')
     try {
       const resp = await mainapi.post('/auth/login', data)
