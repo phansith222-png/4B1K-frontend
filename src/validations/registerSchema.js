@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
 
 export const registerFrontendSchema = z.object({
     // --- เปลี่ยนจาก identity เป็น email และ telephone แยกกัน ---
