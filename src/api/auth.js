@@ -15,3 +15,6 @@ mainapi.interceptors.request.use( config => {
   }
   return config
 })
+
+
+export const getAllPostsApi = () => mainapi.get('/posts')
