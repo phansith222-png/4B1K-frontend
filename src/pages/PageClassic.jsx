@@ -1,7 +1,86 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { getAllArtists, getArtistById, getSongsByArtist, getEventsByArtist } from '../api/artist';
 
 export default function PageElliot() {
+    // ================= STATE สำหรับเก็บข้อมูล Backend =================
+    const [artist, setArtist] = useState(null);
+    const [songs, setSongs] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // ================= LOGIC ดึงข้อมูลศิลปิน R&B =================
+    useEffect(() => {
+        const fetchRandomRnBArtist = async () => {
+            try {
+                setLoading(true);
+
+                // 1. กำหนด ID ของศิลปินแนว R&B อ้างอิงจากไฟล์ seed.js
+                // 16=The Weeknd, 17=Jeff Satur, 18=SZA, 19=NIKI, 20=BOWKYLION
+                const rnbArtistIds = [16, 17, 18, 19, 20];
+
+                // 2. ดึงรายชื่อศิลปินทั้งหมด
+                let allArtistsRes;
+                try {
+                    allArtistsRes = await getAllArtists();
+                } catch (err) {
+                    console.error("Failed to fetch all artists:", err);
+                    allArtistsRes = [];
+                }
+                
+                const allArtistsList = allArtistsRes?.artists || allArtistsRes?.data || allArtistsRes || [];
+
+                // 3. กรองเฉพาะศิลปิน R&B
+                let rnbArtists = allArtistsList.filter(a => rnbArtistIds.includes(a.id));
+
+                // Fallback: หาจากคำว่า R&B หรือ r&b
+                if (rnbArtists.length === 0 && allArtistsList.length > 0) {
+                    rnbArtists = allArtistsList.filter(a => {
+                        if (!a.genres || a.genres.length === 0) return false;
+                        return a.genres.some(ag => {
+                            const gName = ag.genre?.name?.toLowerCase() || "";
+                            return gName.includes('r&b') || gName.includes('rnb');
+                        });
+                    });
+                }
+
+                let ARTIST_ID;
+
+                // สุ่ม 1 คน
+                if (rnbArtists.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * rnbArtists.length);
+                    ARTIST_ID = rnbArtists[randomIndex].id;
+                } else if (allArtistsList.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * allArtistsList.length);
+                    ARTIST_ID = allArtistsList[randomIndex].id;
+                } else {
+                    setArtist(null);
+                    setLoading(false);
+                    return;
+                }
+
+                // 4. ดึงข้อมูลเชิงลึก
+                const [artistData, songsData, eventsData] = await Promise.all([
+                    getArtistById(ARTIST_ID).catch(() => null),
+                    getSongsByArtist(ARTIST_ID).catch(() => ({ songs: [] })),
+                    getEventsByArtist(ARTIST_ID).catch(() => ({ events: [] }))
+                ]);
+
+                // 5. บันทึกข้อมูล
+                setArtist(artistData?.artist || artistData?.data || artistData);
+                setSongs(songsData?.songs || songsData?.data || []);
+                setEvents(eventsData?.events || eventsData?.data || []);
+
+            } catch (error) {
+                console.error("Error fetching R&B artist data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRandomRnBArtist();
+    }, []);
+
     // สร้างข้อมูลหิ่งห้อย (Fireflies) 40 ตัว
     const fireflies = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
         id: i,
@@ -11,6 +90,25 @@ export default function PageElliot() {
         duration: Math.random() * 15 + 10, // ความเร็วในการบิน
         delay: Math.random() * 10,
     })), []);
+
+    // ================= หน้าจอ Loading =================
+    if (loading) {
+        return (
+            <div className="bg-[#0F172A] min-h-screen flex flex-col items-center justify-center text-[#D4AF37]">
+                <div className="w-16 h-16 border-4 border-[#1e293b] border-t-[#D4AF37] rounded-full animate-spin"></div>
+                <p className="mt-4 font-serif italic tracking-widest animate-pulse text-white uppercase">Summoning R&B Soul...</p>
+            </div>
+        );
+    }
+
+    if (!artist) {
+        return (
+            <div className="bg-[#0F172A] min-h-screen flex flex-col items-center justify-center text-white">
+                <p className="font-bold font-serif text-xl text-[#D4AF37] uppercase">No R&B Artists Found.</p>
+                <p className="text-gray-500 mt-2 font-serif">Please run seed to inject data into database.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#0F172A] min-h-screen text-[#FFFFFF] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-black">
@@ -91,9 +189,11 @@ export default function PageElliot() {
                             whileInView={{ opacity: 1, x: 0 }}
                             className="w-full md:w-1/2"
                         >
-                            <span className="text-[#D4AF37] font-sub tracking-[0.5em] text-sm md:text-lg mb-4 block uppercase">The Voice of an Era</span>
-                            <h1 className="text-6xl md:text-[7rem] lg:text-[8.5rem] font-classic font-black leading-[0.85] text-white">
-                                Elliot <br/> <span className="italic font-light text-gray-300">James</span> <br/> Reay
+                            <span className="text-[#D4AF37] font-sub tracking-[0.5em] text-sm md:text-lg mb-4 block uppercase">
+                                {artist.agency?.name || "The Voice of an Era"}
+                            </span>
+                            <h1 className="text-5xl md:text-[6rem] lg:text-[7.5rem] font-classic font-black leading-[0.85] text-white uppercase break-words">
+                                {artist.artistName}
                             </h1>
                         </motion.div>
 
@@ -105,8 +205,8 @@ export default function PageElliot() {
                                 className="absolute top-0 right-0 w-[90%] aspect-[3/4] rounded-sm overflow-hidden border-[12px] border-[#1e293b] shadow-2xl"
                             >
                                 <img
-                                    src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=2000&auto=format&fit=crop"
-                                    alt="Elliot James Reay"
+                                    src={artist.profileImage || "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=2000&auto=format&fit=crop"}
+                                    alt={artist.artistName}
                                     className="w-full h-full object-cover grayscale-[20%] sepia-[10%] brightness-90 hover:scale-105 transition-transform duration-[5s]"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -117,11 +217,17 @@ export default function PageElliot() {
                     <motion.div 
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        className="w-full max-w-5xl mt-20 flex flex-col md:flex-row items-center justify-between border-y border-[#D4AF37]/20 py-10 bg-white/[0.02] backdrop-blur-sm"
+                        className="w-full max-w-5xl mt-20 flex flex-col md:flex-row items-center justify-between border-y border-[#D4AF37]/20 py-10 bg-white/[0.02] backdrop-blur-sm px-6 rounded-sm"
                     >
                         <div className="flex flex-col items-center md:items-start mb-8 md:mb-0">
-                            <h2 className="font-sub tracking-[0.3em] text-[#D4AF37] text-xl">EUROPEAN TOUR 2026</h2>
-                            <p className="font-classic italic text-2xl text-gray-300 mt-2">Albert Hall, London — May 22</p>
+                            <h2 className="font-sub tracking-[0.3em] text-[#D4AF37] text-xl uppercase">UPCOMING TOUR</h2>
+                            {events.length > 0 ? (
+                                <p className="font-classic italic text-2xl text-gray-300 mt-2">
+                                    {events[0].event?.eventName || events[0].eventName} — {new Date(events[0].event?.startTime || events[0].startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </p>
+                            ) : (
+                                <p className="font-classic italic text-2xl text-gray-500 mt-2">More dates to be announced</p>
+                            )}
                         </div>
                         <motion.button 
                             whileHover={{ backgroundColor: "#D4AF37", color: "#000" }}
@@ -139,12 +245,12 @@ export default function PageElliot() {
                     <motion.h2 
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        className="text-4xl md:text-6xl font-classic italic text-white"
+                        className="text-3xl md:text-5xl font-classic italic text-white leading-relaxed"
                     >
-                        "A Voice that Echoes through Time"
+                        "{artist.biography ? artist.biography : 'A Voice that Echoes through Time'}"
                     </motion.h2>
                     <p className="font-sub text-xl md:text-3xl text-gray-400 font-light leading-relaxed italic">
-                        Classic Soul <span className="text-[#D4AF37] mx-4">|</span> Jazz Heritage <span className="text-[#D4AF37] mx-4">|</span> Modern Elegance
+                        Classic Soul <span className="text-[#D4AF37] mx-4">|</span> R&B Heritage <span className="text-[#D4AF37] mx-4">|</span> Modern Elegance
                     </p>
                 </div>
             </section>
@@ -153,13 +259,9 @@ export default function PageElliot() {
             <section className="relative w-full py-24 px-6 bg-black/20">
                 <div className="max-w-6xl mx-auto">
                     <h3 className="text-center font-classic text-3xl md:text-4xl text-[#D4AF37] mb-20 tracking-widest uppercase">The Essential Selection</h3>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
-                        {[
-                            { song: 'I Think They Call This Love', meta: 'Single • 2024' },
-                            { song: 'Always On My Mind', meta: 'Classic Cover' },
-                            { song: 'Unchained Melody', meta: 'The Soul Session' },
-                            { song: 'Devil in Disguise', meta: 'Live in London' }
-                        ].map((item, idx) => (
+                        {songs.slice(0, 4).map((item, idx) => (
                             <motion.div 
                                 key={idx}
                                 whileHover={{ x: 10 }}
@@ -167,28 +269,38 @@ export default function PageElliot() {
                             >
                                 <span className="font-classic text-2xl text-gray-700 group-hover:text-[#D4AF37] transition-colors italic">0{idx + 1}</span>
                                 <div>
-                                    <h4 className="font-classic text-xl text-white uppercase tracking-wider">{item.song}</h4>
-                                    <p className="font-sub text-[#D4AF37] italic">{item.meta}</p>
+                                    <h4 className="font-classic text-xl text-white uppercase tracking-wider line-clamp-1">{item.title}</h4>
+                                    <p className="font-sub text-[#D4AF37] italic">{item.popularity ? `${item.popularity} Popularity` : 'The Soul Session'}</p>
                                 </div>
                             </motion.div>
                         ))}
+                        {songs.length === 0 && (
+                            <p className="text-gray-500 font-classic italic col-span-2 text-center py-10">No tracks available at the moment.</p>
+                        )}
                     </div>
 
+                    {songs.length > 0 && (
                     <div className="w-full max-w-4xl mx-auto bg-[#1e293b]/40 border border-[#D4AF37]/10 p-10 rounded-sm flex flex-col md:flex-row items-center gap-12">
                         <div className="relative">
                             <motion.div 
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                                className="w-48 h-48 rounded-full vinyl-record flex items-center justify-center shadow-2xl"
+                                className="w-48 h-48 rounded-full vinyl-record flex items-center justify-center shadow-2xl relative overflow-hidden"
                             >
-                                <div className="w-16 h-16 rounded-full bg-[#222] border-2 border-[#D4AF37]/40 flex items-center justify-center">
+                                {/* รูปปกแผ่นเสียงไวนิล */}
+                                <img 
+                                    src={songs[0]?.coverImage || artist.profileImage || "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=200&auto=format&fit=crop"} 
+                                    alt="Vinyl Cover" 
+                                    className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay"
+                                />
+                                <div className="w-16 h-16 rounded-full bg-[#222] border-2 border-[#D4AF37]/40 flex items-center justify-center relative z-10">
                                     <div className="w-3 h-3 rounded-full bg-black" />
                                 </div>
                             </motion.div>
                         </div>
                         <div className="flex-1 w-full">
                             <span className="text-[#D4AF37] font-sub tracking-widest uppercase text-xs">Currently Playing</span>
-                            <h4 className="font-classic text-3xl text-white mt-2">I Think They Call This Love</h4>
+                            <h4 className="font-classic text-3xl text-white mt-2 line-clamp-1">{songs[0]?.title}</h4>
                             <div className="w-full bg-gray-800 h-px mt-8 relative">
                                 <motion.div 
                                     initial={{ width: 0 }}
@@ -202,6 +314,7 @@ export default function PageElliot() {
                             </div>
                         </div>
                     </div>
+                    )}
                 </div>
             </section>
 
@@ -214,25 +327,31 @@ export default function PageElliot() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
-                        {[
-                            { city: 'London', venue: 'Royal Albert Hall', date: 'MAY 22', img: '1540039120624-973056ce7ca6' },
-                            { city: 'Paris', venue: 'L\'Olympia', date: 'JUN 04', img: '1470229722913-7c090be5c57d' },
-                            { city: 'Rome', venue: 'Teatro dell\'Opera', date: 'JUN 18', img: '1501281668745-f7f57925c3b4' },
-                            { city: 'Bangkok', venue: 'Siam Pavalai', date: 'AUG 12', img: '1533174072545-e68f8ba81232' }
-                        ].map((item, idx) => (
+                        {events.slice(0, 4).map((item, idx) => {
+                            const evt = item.event || item; 
+                            return (
                             <motion.div 
                                 key={idx}
                                 whileHover={{ y: -10 }}
-                                className="relative aspect-[3/4] overflow-hidden group cursor-pointer bg-black"
+                                className="relative aspect-[3/4] overflow-hidden group cursor-pointer bg-black border border-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition-colors"
                             >
-                                <img src={`https://images.unsplash.com/photo-${item.img}?q=80&w=600&auto=format&fit=crop`} className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
+                                <img 
+                                    src={evt.posterImage || "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=600&auto=format&fit=crop"} 
+                                    className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" 
+                                />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                                <div className="absolute bottom-0 left-0 p-8">
-                                    <span className="text-[#D4AF37] font-sub text-sm tracking-widest">{item.date}</span>
-                                    <h4 className="font-classic text-2xl text-white uppercase">{item.city}</h4>
+                                <div className="absolute bottom-0 left-0 p-8 w-full">
+                                    <span className="text-[#D4AF37] font-sub text-sm tracking-widest">
+                                        {new Date(evt.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+                                    </span>
+                                    <h4 className="font-classic text-2xl text-white uppercase line-clamp-1 mt-1">{evt.eventName}</h4>
+                                    <p className="text-gray-400 font-sub italic text-sm mt-1">{evt.venue?.name || "Venue TBA"}</p>
                                 </div>
                             </motion.div>
-                        ))}
+                        )})}
+                        {events.length === 0 && (
+                            <p className="text-gray-500 font-classic italic col-span-4 text-center py-10">No live performances scheduled.</p>
+                        )}
                     </div>
                 </div>
             </section>
@@ -266,9 +385,9 @@ export default function PageElliot() {
                 <motion.h1 
                     initial={{ y: 50, opacity: 0 }}
                     whileInView={{ y: 0, opacity: 0.15 }}
-                    className="text-[12vw] font-classic font-black text-white whitespace-nowrap tracking-tighter select-none"
+                    className="text-[12vw] font-classic font-black text-white whitespace-nowrap tracking-tighter select-none uppercase"
                 >
-                    ELLIOT JAMES REAY
+                    {artist.artistName}
                 </motion.h1>
             </section>
         </div>

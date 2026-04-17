@@ -1,9 +1,84 @@
-import React, { useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Particles from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import { motion } from 'framer-motion';
+import { getAllArtists, getArtistById, getSongsByArtist, getEventsByArtist } from '../api/artist';
 
 export default function PageRock() {
+    // ================= STATE สำหรับเก็บข้อมูล Backend =================
+    const [artist, setArtist] = useState(null);
+    const [songs, setSongs] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // ================= LOGIC ดึงข้อมูลศิลปิน ROCK =================
+    useEffect(() => {
+        const fetchRandomRockArtist = async () => {
+            try {
+                setLoading(true);
+
+                // 1. กำหนด ID ของศิลปินแนว ROCK อ้างอิงจากไฟล์ seed.js ล่าสุด
+                // 6=Bodyslam, 7=TaitosmitH, 8=Coldplay, 9=Arctic Monkeys, 10=Lomosonic
+                const rockArtistIds = [6, 7, 8, 9, 10];
+
+                // 2. ดึงรายชื่อศิลปินทั้งหมดเพื่อเช็ค
+                let allArtistsRes;
+                try {
+                    allArtistsRes = await getAllArtists();
+                } catch (err) {
+                    console.error("Failed to fetch all artists:", err);
+                    allArtistsRes = [];
+                }
+                
+                const allArtistsList = allArtistsRes?.artists || allArtistsRes?.data || allArtistsRes || [];
+
+                // 3. กรองเฉพาะศิลปินที่อยู่ใน rockArtistIds
+                let rockArtists = allArtistsList.filter(a => rockArtistIds.includes(a.id));
+
+                // Fallback: ถ้าหา ID 6-10 ไม่เจอ ให้ลองหาคนที่มีคำว่า rock ในหมวดหมู่
+                if (rockArtists.length === 0 && allArtistsList.length > 0) {
+                    rockArtists = allArtistsList.filter(a => {
+                        if (!a.genres || a.genres.length === 0) return false;
+                        return a.genres.some(ag => ag.genre?.name?.toLowerCase().includes('rock'));
+                    });
+                }
+
+                let ARTIST_ID;
+
+                // สุ่ม 1 คน
+                if (rockArtists.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * rockArtists.length);
+                    ARTIST_ID = rockArtists[randomIndex].id;
+                } else if (allArtistsList.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * allArtistsList.length);
+                    ARTIST_ID = allArtistsList[randomIndex].id;
+                } else {
+                    setArtist(null);
+                    setLoading(false);
+                    return;
+                }
+
+                // 4. ดึงข้อมูลเชิงลึก
+                const [artistData, songsData, eventsData] = await Promise.all([
+                    getArtistById(ARTIST_ID).catch(() => null),
+                    getSongsByArtist(ARTIST_ID).catch(() => ({ songs: [] })),
+                    getEventsByArtist(ARTIST_ID).catch(() => ({ events: [] }))
+                ]);
+
+                // 5. บันทึกข้อมูล
+                setArtist(artistData?.artist || artistData?.data || artistData);
+                setSongs(songsData?.songs || songsData?.data || []);
+                setEvents(eventsData?.events || eventsData?.data || []);
+
+            } catch (error) {
+                console.error("Error fetching rock artist data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRandomRockArtist();
+    }, []);
     
     // โหลด Engine สำหรับ Particles (ประกายไฟเวทีคอนเสิร์ต)
     const particlesInit = useCallback(async engine => {
@@ -19,6 +94,25 @@ export default function PageRock() {
         duration: Math.random() * 5 + 5, // ความเร็วในการลอยขึ้น
         xOffset: Math.random() * 100 - 50, // ระยะส่ายซ้าย-ขวา
     })), []);
+
+    // ================= หน้าจอ Loading =================
+    if (loading) {
+        return (
+            <div className="bg-[#111111] min-h-screen flex flex-col items-center justify-center text-[#D3131F]">
+                <div className="w-16 h-16 border-4 border-[#333] border-t-[#D3131F] rounded-full animate-spin"></div>
+                <p className="mt-4 font-bold tracking-widest animate-pulse text-white uppercase">Loading Rock...</p>
+            </div>
+        );
+    }
+
+    if (!artist) {
+        return (
+            <div className="bg-[#111111] min-h-screen flex flex-col items-center justify-center text-white">
+                <p className="font-bold text-xl text-[#D3131F] uppercase">No Rock Artists Found.</p>
+                <p className="text-gray-500 mt-2">Please run seed to inject data into database.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#111111] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden selection:bg-[#D3131F] selection:text-white">
@@ -169,8 +263,8 @@ export default function PageRock() {
                     <div className="relative w-full aspect-[16/9] md:aspect-[21/9] rounded-xl overflow-hidden border border-gray-800 shadow-[0_30px_60px_rgba(0,0,0,0.9)] bg-black group">
                         
                         <img
-                            src="https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=2000&auto=format&fit=crop"
-                            alt="Three Man Down"
+                            src={artist.profileImage || "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=2000&auto=format&fit=crop"}
+                            alt={artist.artistName}
                             className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-[10s] ease-out group-hover:scale-105 grayscale-[30%]"
                         />
                         
@@ -178,7 +272,7 @@ export default function PageRock() {
 
                         <div className="absolute bottom-8 md:bottom-12 left-6 md:left-12 z-20">
                             <h1 className="text-4xl md:text-7xl lg:text-[7rem] leading-[0.85] font-black uppercase tracking-tighter text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.9)] transition-colors duration-500 group-hover:text-[#D3131F] group-hover:drop-shadow-[0_0_40px_rgba(211,19,31,0.8)] cursor-default">
-                                THREE MAN <br/> DOWN
+                                {artist.artistName}
                             </h1>
                         </div>
                     </div>
@@ -188,9 +282,19 @@ export default function PageRock() {
                     <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1 mb-6 md:mb-0">
                         <h2 className="text-lg md:text-xl font-bold tracking-widest uppercase text-gray-500">UPCOMING TOUR</h2>
                         <div className="flex items-center gap-3 mt-1">
-                            <span className="text-[#D3131F] font-black text-2xl">DEC 10</span>
-                            <span className="w-[1px] h-6 bg-gray-700"></span>
-                            <span className="text-gray-200 font-medium tracking-wide text-sm md:text-base uppercase">TMD Live, Impact Arena</span>
+                            {events.length > 0 ? (
+                                <>
+                                    <span className="text-[#D3131F] font-black text-2xl">
+                                        {new Date(events[0].event?.startTime || events[0].startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()}
+                                    </span>
+                                    <span className="w-[1px] h-6 bg-gray-700"></span>
+                                    <span className="text-gray-200 font-medium tracking-wide text-sm md:text-base uppercase line-clamp-1">
+                                        {events[0].event?.eventName || events[0].eventName}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-gray-400 font-medium uppercase">No upcoming tours announced</span>
+                            )}
                         </div>
                     </div>
                     <button className="bg-[#D3131F] text-white px-10 py-3.5 rounded font-black tracking-widest uppercase text-sm hover:bg-red-700 transition-colors shadow-[0_5px_20px_rgba(211,19,31,0.3)] hover:shadow-[0_8px_25px_rgba(211,19,31,0.5)] border border-[#D3131F] hover:border-red-500">
@@ -202,26 +306,22 @@ export default function PageRock() {
             {/* ================= 2. LINEUP SECTION ================= */}
             <section className="relative w-full py-24 px-6 bg-gradient-to-b from-[#111111] via-[#1a1213] to-[#111111] overflow-hidden border-y border-gray-900">
                 <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col gap-4">
-                    <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 tracking-tighter hover:text-[#D3131F] hover:drop-shadow-[0_0_25px_rgba(211,19,31,0.6)] transition-all duration-300 cursor-default">
-                        KRIT (VOCAL)
+                    <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 tracking-tighter hover:text-[#D3131F] hover:drop-shadow-[0_0_25px_rgba(211,19,31,0.6)] transition-all duration-300 cursor-default uppercase">
+                        {artist.artistName}
                     </h2>
-                    <h2 className="text-4xl md:text-6xl font-black text-gray-400 tracking-tighter hover:text-white hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all duration-300 cursor-default">
-                        TOON (GUITAR)
+                    <h2 className="text-4xl md:text-6xl font-black text-gray-400 tracking-tighter hover:text-white hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all duration-300 cursor-default uppercase">
+                        {artist.agency?.name || 'ROCK ICON'}
                     </h2>
-                    <h2 className="text-4xl md:text-6xl font-black text-gray-500 tracking-tighter hover:text-[#8D99AE] hover:drop-shadow-[0_0_25px_rgba(141,153,174,0.6)] transition-all duration-300 cursor-default">
-                        TAY (BASS)
-                    </h2>
-                    <h2 className="text-3xl md:text-5xl font-bold text-[#D3131F] tracking-tighter mt-4 hover:drop-shadow-[0_0_20px_rgba(211,19,31,0.8)] transition-all duration-300 cursor-default">
-                        SENG (SYNTH) <span className="text-gray-600 px-3 hover:drop-shadow-none">X</span> OHM (DRUM)
+                    <h2 className="text-4xl md:text-6xl font-black text-gray-500 tracking-tighter hover:text-[#8D99AE] hover:drop-shadow-[0_0_25px_rgba(141,153,174,0.6)] transition-all duration-300 cursor-default uppercase">
+                        ROCK MUSIC
                     </h2>
                     
                     <div className="mt-10 pt-10 border-t border-gray-800 max-w-3xl mx-auto">
                         <p className="text-sm md:text-lg font-bold text-[#8D99AE] tracking-widest leading-loose uppercase">
-                            ฝนตกไหม • วันนี้ฉันอยากไปหาเธอ • คุยคนเดียวเก่ง • ผ่านตา <br />
-                            ถ้าเธอรักฉันจริง • ฝันถึงแฟนเก่า • เก็บไว้ในใจไม่พอ
+                            {artist.biography || "Biography not available at the moment. Keep streaming and supporting the artist!"}
                         </p>
-                        <p className="text-xl md:text-2xl font-black text-white mt-8 tracking-widest border-l-4 border-[#D3131F] pl-4 inline-block">
-                            GENE LAB RECORDS <span className="text-[#D3131F]">/</span> THAI ROCK & POP PUNK
+                        <p className="text-xl md:text-2xl font-black text-white mt-8 tracking-widest border-l-4 border-[#D3131F] pl-4 inline-block uppercase">
+                            {artist.agency?.name || 'ROCK'} RECORDS <span className="text-[#D3131F]">/</span> THAI ROCK
                         </p>
                     </div>
                 </div>
@@ -240,25 +340,24 @@ export default function PageRock() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-20">
-                        {[
-                            { song: 'ฝนตกไหม (Is it raining?)', views: '150M+ Views' },
-                            { song: 'ฝันถึงแฟนเก่า', views: '120M+ Views' },
-                            { song: 'ถ้าเธอรักฉันจริง', views: '95M+ Views' },
-                            { song: 'วันนี้ฉันอยากไปหาเธอ', views: '80M+ Views' }
-                        ].map((item, idx) => (
+                        {songs.slice(0, 4).map((item, idx) => (
                             <button key={idx} className="border border-gray-800 hover:border-[#D3131F] text-white rounded-lg p-5 md:p-6 transition-all duration-300 group flex items-center gap-6 bg-[#151515] hover:bg-[#1a1112] text-left shadow-lg">
                                 <div className="flex-shrink-0 w-12 h-12 rounded bg-black border border-gray-700 flex items-center justify-center font-black text-xl text-gray-600 group-hover:text-[#D3131F] group-hover:border-[#D3131F] transition-all transform group-hover:scale-105 shadow-inner">
                                     0{idx + 1}
                                 </div>
                                 <div className="flex-1 flex flex-col gap-0.5">
                                     <span className="text-[10px] tracking-widest uppercase text-gray-500 font-bold">Top Hit</span>
-                                    <span className="font-black text-lg md:text-xl leading-tight line-clamp-1 group-hover:text-white transition-colors">{item.song}</span>
-                                    <span className="text-xs text-[#D3131F] font-bold tracking-wider">{item.views}</span>
+                                    <span className="font-black text-lg md:text-xl leading-tight line-clamp-1 group-hover:text-white transition-colors">{item.title}</span>
+                                    <span className="text-xs text-[#D3131F] font-bold tracking-wider">{item.popularity || 'Trending'} Score</span>
                                 </div>
                             </button>
                         ))}
+                        {songs.length === 0 && (
+                            <p className="text-gray-500 py-10 col-span-2">No songs available for this artist.</p>
+                        )}
                     </div>
 
+                    {songs.length > 0 && (
                     <div className="w-full max-w-4xl mx-auto bg-[#0a0a0a] rounded-xl p-6 md:p-10 flex flex-col md:flex-row items-center gap-10 border border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative overflow-hidden">
                         <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#D3131F] opacity-10 blur-[80px] pointer-events-none"></div>
 
@@ -277,7 +376,7 @@ export default function PageRock() {
                                     <div
                                         key={i}
                                         className="w-full bg-gradient-to-t from-[#D3131F] to-[#8D99AE] rounded-t-sm beat-bar"
-                                        style={{ animationDuration: `${0.8 + Math.random() * 0.5}s` }} /* ความเร็วสุ่มนิดหน่อยเพื่อความธรรมชาติ */
+                                        style={{ animationDuration: `${0.8 + Math.random() * 0.5}s` }}
                                     ></div>
                                 ))}
                             </div>
@@ -289,7 +388,7 @@ export default function PageRock() {
                                 <div className="absolute inset-0 rounded-full border border-gray-800/50 m-2"></div>
                                 <div className="absolute inset-0 rounded-full border border-gray-800/50 m-6"></div>
                                 <img 
-                                    src="https://images.unsplash.com/photo-1493225457124-a1a2a5f5646a?q=80&w=200&auto=format&fit=crop" 
+                                    src={songs[0]?.coverImage || artist.profileImage || "https://images.unsplash.com/photo-1493225457124-a1a2a5f5646a?q=80&w=200&auto=format&fit=crop"} 
                                     alt="Album Art" 
                                     className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity grayscale"
                                 />
@@ -300,8 +399,8 @@ export default function PageRock() {
                             <div className="flex justify-between items-end mb-4 gap-4 border-b border-gray-800 pb-4">
                                 <div>
                                     <span className="text-[#D3131F] text-[10px] font-bold tracking-widest uppercase">Now Playing</span>
-                                    <h4 className="font-black text-2xl text-white tracking-tight mt-1">THREE MAN DOWN (ALBUM)</h4>
-                                    <p className="text-gray-400 text-sm font-medium tracking-wider mt-1">Three Man Down</p>
+                                    <h4 className="font-black text-2xl text-white tracking-tight mt-1 line-clamp-1">{songs[0]?.title}</h4>
+                                    <p className="text-gray-400 text-sm font-medium tracking-wider mt-1">{artist.artistName}</p>
                                 </div>
                                 <button className="flex-shrink-0 bg-black border border-gray-700 text-gray-300 p-4 rounded-full hover:bg-[#D3131F] hover:text-white hover:border-[#D3131F] transition-all duration-300 shadow-lg">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-0.5" viewBox="0 0 20 20" fill="currentColor">
@@ -321,10 +420,11 @@ export default function PageRock() {
                             </div>
                         </div>
                     </div>
+                    )}
                 </div>
             </section>
 
-            {/* ================= 4. CONCERT EVENT SECTION (ปรับ UI ตามภาพตัวอย่าง) ================= */}
+            {/* ================= 4. CONCERT EVENT SECTION ================= */}
             <section className="relative w-full py-24 px-6 bg-[#0a0a0a] overflow-hidden border-y border-gray-900">
                 <div className="max-w-7xl mx-auto relative z-10">
 
@@ -341,41 +441,41 @@ export default function PageRock() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                        {[
-                            { event: 'TMD Live in Bangkok', date: 'DEC 10, 2026', loc: 'Impact Arena', img: '1540039120624-973056ce7ca6' },
-                            { event: 'Pattaya Music Festival', date: 'DEC 25, 2026', loc: 'Pattaya Beach', img: '1470229722913-7c090be5c57d' },
-                            { event: 'Chiang Mai Rock Fest', date: 'JAN 15, 2027', loc: '700 Years Stadium', img: '1501281668745-f7f57925c3b4' },
-                            { event: 'Khon Kaen Countdown', date: 'DEC 31, 2026', loc: 'KICE Khon Kaen', img: '1533174072545-e68f8ba81232' }
-                        ].map((item, idx) => (
+                        {events.slice(0, 4).map((item, idx) => {
+                            const evt = item.event || item; 
+                            return (
                             <div key={idx} className="flex flex-col group cursor-pointer">
                                 {/* กล่องรูปภาพ */}
                                 <div className="aspect-[4/5] relative rounded-xl overflow-hidden border border-gray-800 group-hover:border-gray-600 transition-colors duration-500 shadow-lg mb-4 bg-[#111]">
                                     <img
-                                        src={`https://images.unsplash.com/photo-${item.img}?q=80&w=600&auto=format&fit=crop`}
-                                        alt={item.event}
+                                        src={evt.posterImage || "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=600&auto=format&fit=crop"}
+                                        alt={evt.eventName}
                                         className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out opacity-70 grayscale-[30%] group-hover:grayscale-0"
                                     />
-                                    {/* ป้าย Date (ด้านซ้ายบนในรูป) */}
+                                    {/* ป้าย Date */}
                                     <div className="absolute top-4 left-4 bg-[#D3131F] text-white px-3 py-1.5 text-[10px] md:text-xs font-black uppercase tracking-widest rounded shadow-md z-20">
-                                        {item.date}
+                                        {new Date(evt.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
                                     </div>
                                 </div>
                                 
                                 {/* ข้อมูลใต้รูป */}
                                 <div className="flex flex-col items-start px-1">
-                                    <h4 className="font-bold text-lg leading-tight tracking-wide text-white group-hover:text-[#D3131F] transition-colors">{item.event}</h4>
+                                    <h4 className="font-bold text-lg leading-tight tracking-wide text-white group-hover:text-[#D3131F] transition-colors line-clamp-2">{evt.eventName}</h4>
                                     <div className="flex items-center gap-1.5 text-xs text-[#8D99AE] font-medium uppercase tracking-widest mt-1.5">
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                        {item.loc}
+                                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                        <span className="line-clamp-1">{evt.venue?.name || "TBA"}</span>
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )})}
+                        {events.length === 0 && (
+                            <p className="text-gray-500 py-10 col-span-4 text-center">No upcoming events for this artist.</p>
+                        )}
                     </div>
                 </div>
             </section>
 
-            {/* ================= 5. STATS SECTION (ปรับ UI กราฟใหม่สวยหรู) ================= */}
+            {/* ================= 5. STATS & MEMBERS SECTION ================= */}
             <section className="relative w-full py-24 px-6 bg-[#111111]">
                 <div className="max-w-6xl mx-auto relative z-10">
 
@@ -419,15 +519,13 @@ export default function PageRock() {
                                     <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end relative z-10 group">
                                         
                                         <div className="flex w-full justify-center gap-1.5 md:gap-2.5 items-end h-full px-1">
-                                            {/* แท่ง Spotify (สีเทาไล่ระดับ หรูหรา) */}
+                                            {/* แท่ง Spotify */}
                                             <div className="w-[40%] md:w-8 bar-spotify-v3 relative group-hover:brightness-110" style={{ height: data.sHeight }}>
-                                                {/* Tooltip */}
                                                 <span className="absolute -top-7 text-[9px] md:text-[10px] text-white font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap left-1/2 -translate-x-1/2 bg-black border border-gray-700 px-1.5 py-0.5 rounded z-20">{data.spotify}M</span>
                                             </div>
                                             
-                                            {/* แท่ง YouTube (สีแดงไล่ระดับ พร้อมแสงเงาฐาน) */}
+                                            {/* แท่ง YouTube */}
                                             <div className="w-[40%] md:w-8 bar-youtube-v3 relative group-hover:brightness-110" style={{ height: data.yHeight }}>                                                
-                                                {/* Tooltip */}
                                                 <span className="absolute -top-7 text-[9px] md:text-[10px] text-white font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap left-1/2 -translate-x-1/2 bg-black border border-[#D3131F]/50 px-1.5 py-0.5 rounded z-20">{data.youtube}M</span>
                                             </div>
                                         </div>
@@ -442,14 +540,13 @@ export default function PageRock() {
                         </div>
                     </div>
 
-                    {/* แถบรายชื่อสมาชิกวง */}
+                    {/* แถบตำแหน่งสมาชิกวง (ปรับให้ดูเป็นสากลเพื่อรองรับหลายวง) */}
                     <div className="mt-32 pt-16 border-t border-gray-900 flex flex-wrap justify-center items-center gap-10 md:gap-20 transition-all duration-500">
                         {[
-                            { name: 'KRIT', role: 'VOCAL' },
-                            { name: 'TOON', role: 'GUITAR' },
-                            { name: 'TAY', role: 'BASS' },
-                            { name: 'SENG', role: 'SYNTH' },
-                            { name: 'OHM', role: 'DRUM' }
+                            { name: 'VOCALS', role: 'MAIN' },
+                            { name: 'GUITAR', role: 'LEAD' },
+                            { name: 'BASS', role: 'RHYTHM' },
+                            { name: 'DRUMS', role: 'BEAT' },
                         ].map((member, idx) => (
                             <div key={idx} className="flex flex-col items-center gap-1 hover:-translate-y-2 transition-transform duration-300 cursor-default group">
                                 <span className="text-2xl md:text-4xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-t from-gray-700 to-[#111111] opacity-90 select-none transition-all duration-500 group-hover:from-[#D3131F] group-hover:to-white group-hover:opacity-100">
@@ -467,8 +564,8 @@ export default function PageRock() {
 
             {/* ================= 6. BIG BOTTOM TEXT ================= */}
             <section className="relative w-full h-[30vh] md:h-[40vh] overflow-hidden flex items-end justify-center bg-gradient-to-t from-[#D3131F]/10 to-[#111111]">
-                <h1 className="text-[11vw] leading-none font-black text-transparent bg-clip-text bg-gradient-to-t from-gray-700 to-[#111111] tracking-tighter select-none whitespace-nowrap hover:from-white transition-all duration-700 cursor-default">
-                    THREE MAN DOWN
+                <h1 className="text-[11vw] leading-none font-black text-transparent bg-clip-text bg-gradient-to-t from-gray-700 to-[#111111] tracking-tighter select-none whitespace-nowrap hover:from-white transition-all duration-700 cursor-default uppercase pb-4">
+                    {artist.artistName}
                 </h1>
             </section>
 
