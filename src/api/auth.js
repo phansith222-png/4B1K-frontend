@@ -15,3 +15,11 @@ mainapi.interceptors.request.use( config => {
   }
   return config
 })
+
+// User store
+export const getProfile = () => mainapi.get('/users/me')
+export const editProfile = (body) => mainapi.patch('/users/me',body)
+
+// Artist store
+export const getAllArtists = () => mainapi.get('/artists')
+export const getArtistsById = (id) => mainapi.get(`/artists/${id}`)

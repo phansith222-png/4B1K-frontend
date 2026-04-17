@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllArtists } from '../api/artist'; 
@@ -178,7 +178,7 @@ export default function NavbarUser({ isLanding = false }) {
             `}</style>
 
             {/* ================= HEADER ================= */}
-            <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-[#0B0C10]/90 backdrop-blur-md relative z-50 border-b border-white/10 shadow-lg">
+            <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
                 
                 {/* 1. ฝั่งซ้าย: Logo */}
                 <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50 w-[220px]" onClick={() => navigate('/')}>
@@ -238,7 +238,7 @@ export default function NavbarUser({ isLanding = false }) {
 
                             <div className="relative" ref={profileRef}>
                                 <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 focus:outline-none transition-all hover:opacity-80">
-                                    <div className="w-[42px] h-[42px] profile-gradient-border shadow-[0_0_15px_rgba(0,229,255,0.2)] overflow-hidden">
+                                    <div className="w-[42px] h-[42px] profile-gradient-border shadow-[0_0_15px_rgba(0,229,255,0.2)] overflow-hidden rounded-full">
                                         <img src={user.profileImage || "https://ui-avatars.com/api/?name=User&background=1A1C23&color=00E5FF"} alt="Profile" className="w-full h-full object-cover rounded-full" />
                                     </div>
                                     <motion.svg animate={{ rotate: isProfileMenuOpen ? 180 : 0 }} className={`w-3.5 h-3.5 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
@@ -285,13 +285,13 @@ export default function NavbarUser({ isLanding = false }) {
                         animate={{ opacity: 1, y: 0, scaleY: 1 }} 
                         exit={{ opacity: 0, y: -20, scaleY: 0.95 }} 
                         transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }} 
-                        className="absolute top-full left-0 right-0 w-full z-40 bg-[#0B0C10]/95 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-b-[2rem] border-t border-white/10 pb-12 pt-10" 
+                        className="absolute top-full left-0 right-0 w-full z-40 bg-[#0B0C10]/95 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-b-[2rem] border-t border-white/5 pb-12 pt-10" 
                         ref={menuRef}
                     >
                         <section className="max-w-7xl mx-auto px-6 md:px-10">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
                                 
-                                {/* Column 1: Sidebar Links (เพิ่ม Icon และ Hover Effect ตามสี) */}
+                                {/* Column 1: Sidebar Links */}
                                 <div className="col-span-1 md:col-span-2 flex flex-col gap-2 text-sm pr-4">
                                     <span className="text-white font-extrabold text-base mb-3 border-b-2 border-[#00E5FF] pb-2 inline-block w-max">Artist Hub</span>
                                     
@@ -316,7 +316,7 @@ export default function NavbarUser({ isLanding = false }) {
                                         Entertainment Hub
                                     </button>
                                     
-                                    <div className="mt-2 pt-4 border-t border-white/10">
+                                    <div className="mt-2 pt-4 border-t border-white/5">
                                         <button onClick={() => handleNavigate('/artists')} className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[#00E5FF] font-bold hover:text-white hover:bg-white/5 transition-all group">
                                             <div className="flex items-center gap-3">
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
@@ -327,9 +327,9 @@ export default function NavbarUser({ isLanding = false }) {
                                     </div>
                                 </div>
 
-                                {/* Column 2: Main Featured Card (Smooth Transition) */}
+                                {/* Column 2: Main Featured Card */}
                                 <div className="col-span-1 md:col-span-6 lg:col-span-7 flex flex-col items-center" onMouseEnter={() => setIsHoveringMain(true)} onMouseLeave={() => setIsHoveringMain(false)}>
-                                    <div className="relative w-full h-[300px] md:h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl group cursor-pointer border border-white/10 transition-all duration-700" style={{ boxShadow: `0 20px 50px -10px ${mainSlides[currentSlide].color}40` }} onClick={() => handleNavigate(mainSlides[currentSlide].path)}>
+                                    <div className="relative w-full h-[300px] md:h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl group cursor-pointer border border-white/5 transition-all duration-700 bg-black" style={{ boxShadow: `0 20px 50px -10px ${mainSlides[currentSlide].color}30` }} onClick={() => handleNavigate(mainSlides[currentSlide].path)}>
                                         <AnimatePresence mode="wait">
                                             <motion.div 
                                                 key={currentSlide}
@@ -364,7 +364,7 @@ export default function NavbarUser({ isLanding = false }) {
 
                                 {/* Column 3: Top Chart List */}
                                 <div className="col-span-1 md:col-span-4 lg:col-span-3 pl-0 md:pl-4 overflow-hidden relative min-h-[320px]">
-                                    <h3 className="text-white font-extrabold mb-5 text-[15px] border-b-2 border-white/10 pb-2 uppercase tracking-widest">Trending Now</h3>
+                                    <h3 className="text-white font-extrabold mb-5 text-[15px] border-b-2 border-white/5 pb-2 uppercase tracking-widest">Trending Now</h3>
                                     <div className="flex flex-col gap-3 relative">
                                         {chartOrder.slice(0, 3).map((chartIndex, position) => {
                                             const item = topCharts[chartIndex];
