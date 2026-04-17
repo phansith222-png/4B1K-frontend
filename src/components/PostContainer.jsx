@@ -10,6 +10,8 @@ function PostContainer() {
     const getAllPosts = usePostStore(state => state.getAllPosts) || null
     const posts = usePostStore(state => state.posts)
 
+    console.log('postcontainer',posts)
+
     useEffect(() => {
         getAllPosts()
     },[])

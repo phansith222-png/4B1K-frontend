@@ -18,7 +18,7 @@ const usePostStore = create(
         }catch(error) {
             console.error("Failed to fetch posts:", error)
         }
-    }
+    },
 }),
     {
         name : "post-storage"
