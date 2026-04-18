@@ -41,10 +41,10 @@ mainapi.interceptors.response.use(
 
 // --- API Methods ---
 
-// User 관련 (User Store)
-export const getProfile = () => mainapi.get('/users/me');
-export const editProfile = (body) => mainapi.patch('/users/me', body);
-
+export const getAllPostsApi = () => mainapi.get('/posts')
+// User store
+export const getProfile = () => mainapi.get('/users/me')
+export const editProfile = (body) => mainapi.patch('/users/me',body)
 // Artist 관련 (Artist Store)
 export const getAllArtists = () => mainapi.get('/artists');
 export const getArtistsById = (id) => mainapi.get(`/artists/${id}`);
