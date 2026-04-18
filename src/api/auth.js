@@ -45,6 +45,10 @@ mainapi.interceptors.response.use(
 export const getAllPostsApi = () => mainapi.get('/posts')
 // get all like
 export const getAllLikePostApi = (postId) => mainapi.get(`/posts/${postId}/like`)
+// like post
+export const likePostApi = (postId) => mainapi.post(`/posts/${postId}/like`)
+// unlike post
+export const unlikePostApi = (postId) => mainapi.delete(`/posts/${postId}/like`)
 
 // User store
 export const getProfile = () => mainapi.get('/users/me')

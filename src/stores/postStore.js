@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getAllLikePostApi, getAllPostsApi } from "../api/auth";
+import { getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
 
 const usePostStore = create(
     persist(
         (set,get) => ({
             posts : [],
             currentPost : null,
-            likes : [],
+            currentLikes : [],
     
     getAllPosts : async () => {
         try {
@@ -25,7 +25,7 @@ const usePostStore = create(
         try {
         const resp = await getAllLikePostApi(postId)
 
-        console.log('get all like',resp)
+        // console.log('get all like',resp)
         set ((state) => ({
             posts : state.posts.map((post) => post.id === postId ? 
             {...post,totalLikes: resp.data.totalLikes || 0 } : post
@@ -34,7 +34,31 @@ const usePostStore = create(
 
         return resp
         }catch(error) {
-        console.error("Failed to get like", error)
+        console.dir("Failed to get like", error)
+        }
+    },
+
+    likePost : async (postId) => {
+        try {
+            const resp = await likePostApi(postId)
+            set ({currentLikes : resp.data})
+            get().getAllPosts()
+
+            // console.log(resp)
+            return resp
+
+        }catch(error) {
+            console.dir('like post fail',error)
+        }
+    },
+    unlikePost : async (postId) => {
+        try {
+            const resp = await unlikePostApi(postId)
+            set ({currentLikes : resp.data})
+            get().getAllPosts()
+            return resp
+        }catch(error) {
+            console.dir('unlike Post fail',error)
         }
     }
 }),
