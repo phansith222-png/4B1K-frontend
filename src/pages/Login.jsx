@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginSchema } from '../validations/loginSchema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { mainapi } from '../api/auth'
+import  mainapi  from '../api/auth'
 import { useForm } from 'react-hook-form'
 import useUserStore from '../stores/userStore'
 

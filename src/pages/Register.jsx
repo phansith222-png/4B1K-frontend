@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerFrontendSchema } from '../validations/registerSchema'
 import useUserStore from '../stores/userStore'
-import { mainapi } from '../api/auth'
+import  mainapi  from '../api/auth'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -55,7 +55,7 @@ export default function Register() {
   }
 
   const handleSocialLogin = (provider) => {
-    window.location.href = `http://localhost:3000/auth/${provider}`
+    window.location.href = `http://localhost:5000/auth/${provider}`
   }
 
   // const handleSubmit = async (e) => {
