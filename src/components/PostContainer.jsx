@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, aspectRatio } from 'framer-motion';
 import usePostStore from '../stores/postStore';
 import { Heart, MessageCircle, MoreHorizontal, Share2, Verified } from 'lucide-react';
 import { ActionButton } from '../icon/icon';
@@ -10,11 +10,27 @@ function PostContainer() {
     const getAllPosts = usePostStore(state => state.getAllPosts) || null
     const posts = usePostStore(state => state.posts)
 
-    console.log('postcontainer',posts)
+    const getAllLikes = usePostStore(state => state.getAllLikes) || null
 
-    useEffect(() => {
+    // const countLikes = likes.length()
+
+    // console.log(getAllLikes)
+    // console.log('postcontainer',posts)
+
+    useEffect (() => {
         getAllPosts()
     },[])
+
+    useEffect(() => {
+        if (posts && posts.length > 0) {
+        // วนลูปเพื่อยิง API ดึง Like ของ "ทุกโพสต์" ที่โหลดมาได้
+        posts.forEach((post) => {
+            if (post.id) {
+                getAllLikes(post.id);
+            }
+        });
+    }
+    },[posts.length])
 
     if (!posts || posts.length === 0) {
         return <div className="text-gray-500 text-center py-10">กำลังโหลดข้อมูล...</div>;
@@ -75,8 +91,8 @@ function PostContainer() {
                         {/* Post Actions */}
                         <div className="px-6 py-4 flex justify-between items-center text-gray-400 border-t border-white/5 bg-white/[0.01]">
                             <div className="flex gap-6">
-                                <ActionButton icon={<Heart size={18} />} label={post.likes?.toLocaleString()} hoverColor="hover:text-red-500" />
-                                <ActionButton icon={<MessageCircle size={18} />} label={post.comments?.toLocaleString()} hoverColor="hover:text-[#c6ff00]" />
+                                <ActionButton icon={<Heart size={18} />} label={post.totalLikes?.toLocaleString() || "0"} hoverColor="hover:text-red-500" />
+                                <ActionButton icon={<MessageCircle size={18} />} label={post.totalLikes?.toLocaleString() || "0"} hoverColor="hover:text-[#c6ff00]" />
                             </div>
                             <ActionButton icon={<Share2 size={18} />} hoverColor="hover:text-blue-400" />
                         </div>

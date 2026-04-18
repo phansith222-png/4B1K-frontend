@@ -1,5 +1,6 @@
 import axios from 'axios';
 import useUserStore from '../stores/userStore';
+import { id } from 'zod/v4/locales';
 
 const mainapi = axios.create({
   baseURL: 'http://localhost:5000', // ตรวจสอบว่าตรงกับ Backend port 5000
@@ -40,8 +41,11 @@ mainapi.interceptors.response.use(
 );
 
 // --- API Methods ---
-
+// get all post
 export const getAllPostsApi = () => mainapi.get('/posts')
+// get all like
+export const getAllLikePostApi = (postId) => mainapi.get(`/posts/${postId}/like`)
+
 // User store
 export const getProfile = () => mainapi.get('/users/me')
 export const editProfile = (body) => mainapi.patch('/users/me',body)
