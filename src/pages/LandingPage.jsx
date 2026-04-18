@@ -138,7 +138,7 @@ export default function LandingPage() {
             to="/register" 
             className="w-full md:w-auto bg-[#c6ff00] text-black font-black px-12 py-5 rounded-3xl text-xl hover:bg-white transition-all shadow-[0_0_40px_rgba(198,255,0,0.4)] active:scale-95 whitespace-nowrap"
           >
-            START SING UP →
+            START SIGN UP →
           </Link>
         </motion.div>
 
