@@ -11,7 +11,7 @@ function PostContainer() {
     const posts = usePostStore(state => state.posts);
     const getAllLikes = usePostStore(state => state.getAllLikes);
 
-  
+    console.log('post',posts)
     // ดึงโพสต์ทั้งหมดครั้งแรก
     useEffect(() => {
         getAllPosts();
