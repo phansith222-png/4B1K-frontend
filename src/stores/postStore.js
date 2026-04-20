@@ -11,6 +11,7 @@ const usePostStore = create(
     
     getAllPosts : async () => {
         try {
+            console.log('get all posts')
         const resp = await getAllPostsApi()
         set ({ posts : resp.data.posts})
         // console.log('get all poststore',resp)
@@ -64,17 +65,10 @@ const usePostStore = create(
     createPost : async (body) => {
         try {
             const resp = await createPostApi(body)
-            set (state => ({
-            posts : [{...resp.data.post,
-                user:useUserStore.getState().user,
-                likes:[],
-                comments:[],
-                postArtists:[]
-                },...state.posts]
-        }))
-
+            get().getAllPosts()
+            return resp
         }catch(error) {
-            console.dir('unlike Post fail',error)
+            console.log('create Post fail',error)
         }
     },
     editPost : async (postId,body) => {
