@@ -1,0 +1,94 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { getAllArtists } from '../../api/artist';
+
+export default function ArtistShowcase() {
+  const navigate = useNavigate();
+  const [artists, setArtists] = useState([]);
+
+  useEffect(() => {
+    const fetchRandomArtists = async () => {
+      try {
+        const res = await getAllArtists();
+        let data = res?.artists || res?.data || res || [];
+        // สุ่มศิลปิน 6 คน
+        const shuffled = [...data].sort(() => 0.5 - Math.random()).slice(0, 6);
+        setArtists(shuffled);
+      } catch (err) {
+        console.error("Failed to load artists", err);
+      }
+    };
+    fetchRandomArtists();
+  }, []);
+
+  // ฟังก์ชันหาว่าศิลปินอยู่หน้าไหน (เหมือนใน Navbar)
+  const getArtistPath = (artist) => {
+    const aId = Number(artist.id);
+    const popIds = [1, 2, 3, 4, 5];
+    const rockIds = [6, 7, 8, 9, 10];
+    const classicIds = [16, 17, 18, 19, 20];
+    const etcIds = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25];
+
+    if (popIds.includes(aId)) return '/pop';
+    if (rockIds.includes(aId)) return '/rock';
+    if (classicIds.includes(aId)) return '/classic';
+    if (etcIds.includes(aId)) return '/etc';
+    return '/artists';
+  };
+
+  if (artists.length === 0) return null;
+
+  return (
+    <section className="relative z-20 py-24 px-6 max-w-7xl mx-auto mb-20">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <span className="text-[#d000ff] font-black text-[10px] tracking-[0.3em] uppercase mb-2 block">Discover Music</span>
+        <h2 className="text-4xl md:text-5xl font-black uppercase text-white tracking-tighter">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d000ff] to-[#FF007F]">Artists</span></h2>
+      </motion.div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-10">
+        {artists.map((artist, idx) => {
+          // สุ่มเพลงมา 1 เพลง ถ้ามี
+          const randomSong = artist.songs && artist.songs.length > 0 
+            ? artist.songs[Math.floor(Math.random() * artist.songs.length)] 
+            : null;
+
+          return (
+          <motion.div
+            key={artist.id}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: idx * 0.1 }}
+            onClick={() => { window.scrollTo(0,0); navigate(`${getArtistPath(artist)}?artistId=${artist.id}`); }}
+            className="flex flex-col items-center group cursor-pointer"
+          >
+            <div className="w-32 h-32 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-tr from-white/5 to-white/20 group-hover:from-[#d000ff] group-hover:to-[#00E5FF] transition-all duration-500 shadow-xl mb-6 relative">
+              <img 
+                src={artist.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400&auto=format&fit=crop"} 
+                alt={artist.artistName} 
+                className="w-full h-full object-cover rounded-full bg-black"
+              />
+              <div className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300">
+                <svg className="w-4 h-4 text-black ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4.018 14L14.22 9 4.018 4v10z" /></svg>
+              </div>
+            </div>
+            
+            <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-wide group-hover:text-[#00E5FF] transition-colors text-center line-clamp-1">
+              {artist.artistName}
+            </h3>
+            
+            {randomSong && (
+              <p className="mt-2 text-[10px] md:text-xs font-bold text-gray-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 text-center line-clamp-1 max-w-[90%]">
+                🎵 {randomSong.title}
+              </p>
+            )}
+          </motion.div>
+        )})}
+      </div>
+    </section>
+  );
+}
