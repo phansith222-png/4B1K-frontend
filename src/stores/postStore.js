@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
+import { createPostApi, deletePostApi, editPostApi, getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
 
 const usePostStore = create(
     persist(
@@ -59,6 +59,40 @@ const usePostStore = create(
             return resp
         }catch(error) {
             console.dir('unlike Post fail',error)
+        }
+    },
+    createPost : async (body) => {
+        try {
+            const resp = await createPostApi(body)
+            set (state => ({
+            posts : [{...resp.data.post,
+                user:useUserStore.getState().user,
+                likes:[],
+                comments:[],
+                postArtists:[]
+                },...state.posts]
+        }))
+
+        }catch(error) {
+            console.dir('unlike Post fail',error)
+        }
+    },
+    editPost : async (postId,body) => {
+        try {
+            const resp = await editPostApi(postId,body)
+            get().getAllPosts()
+            return resp
+        }catch(error) {
+            console.dir('edit post fail',error)
+        }
+    },
+    deletePost : async (postId) => {
+        try {
+            const resp = await deletePostApi(postId)
+            get().getAllPosts()
+            return resp
+        }catch(error) {
+            console.dir('delete Post fail',error)
         }
     }
 }),

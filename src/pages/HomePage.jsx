@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import PostContainer from '../components/PostContainer';
 import { ArtistItem, PostToolButton, SidebarItem } from '../icon/icon';
+import PostCreator from '../components/PostCreator';
 
 // --- 🌟 MOCK DATA (เพื่อให้หน้าเว็บดูมีชีวิต) ---
 const mockPosts = [
@@ -98,25 +99,10 @@ export default function CommunityHomePage() {
 
         {/* --- 📱 CENTER FEED (Main Content) --- */}
         <div className="xl:col-span-6 space-y-8">
+
+
           {/* Post Creator */}
-          <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl">
-            <div className="flex gap-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#c6ff00] to-blue-500 flex-shrink-0 shadow-lg border-2 border-white/10" />
-              <textarea 
-                placeholder="Share your concert vibes, ask questions, or find squad mates..." 
-                className="w-full bg-transparent border-none outline-none resize-none pt-2 text-lg text-white placeholder:text-gray-600 h-20"
-              />
-            </div>
-            <div className="flex justify-between items-center mt-5 pt-5 border-t border-white/5">
-              <div className="flex gap-2">
-                <PostToolButton icon={<Plus size={18} />} label="Media" />
-                <PostToolButton icon={<Music4 size={18} />} label="Artist" />
-              </div>
-              <button className="bg-[#c6ff00] text-black px-8 py-3 rounded-full font-black text-sm hover:bg-white transition-colors shadow-lg">
-                Post
-              </button>
-            </div>
-          </div>
+          <PostCreator />
 
           {/* Feed Filter (น่าเชื่อถือตรงนี้) */}
           <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 p-2 rounded-full px-6">

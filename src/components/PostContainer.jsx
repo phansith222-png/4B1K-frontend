@@ -9,7 +9,7 @@ import PostItem from './PostItems';
 function PostContainer() {
     const getAllPosts = usePostStore(state => state.getAllPosts);
     const posts = usePostStore(state => state.posts);
-    const getAllLikes = usePostStore(state => state.getAllLikes);
+
 
     console.log('post',posts)
     // ดึงโพสต์ทั้งหมดครั้งแรก
@@ -17,17 +17,6 @@ function PostContainer() {
         getAllPosts();
     }, []);
 
-    // เมื่อมีโพสต์มาแล้ว ให้ไปดึง Like ของแต่ละอัน
-    useEffect(() => {
-        if (posts && posts.length > 0) {
-            posts.forEach((post) => {
-                // ดึง Like เฉพาะอันที่ยังไม่ได้ดึง totalLikes มา
-                if (post.id && post.totalLikes === undefined) {
-                    getAllLikes(post.id);
-                }
-            });
-        }
-    }, []); // รันเมื่อจำนวนโพสต์เปลี่ยน
 
     if (!posts || posts.length === 0) {
         return <div className="text-gray-500 text-center py-10">กำลังโหลดข้อมูล...</div>;

@@ -49,6 +49,12 @@ export const getAllLikePostApi = (postId) => mainapi.get(`/posts/${postId}/like`
 export const likePostApi = (postId) => mainapi.post(`/posts/${postId}/like`)
 // unlike post
 export const unlikePostApi = (postId) => mainapi.delete(`/posts/${postId}/like`)
+// create Post
+export const createPostApi = (body) => mainapi.post(`/posts`,body)
+// user edit post
+export const editPostApi = (postId,body) => mainapi.patch(`/posts/${postId}`,body)
+// user delete post
+export const deletePostApi = (postId) => mainapi.delete(`/posts/${postId}`) 
 
 // User store
 export const getProfile = () => mainapi.get('/users/me')
