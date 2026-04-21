@@ -1,11 +1,12 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react"; // 📌 นำเข้า useEffect
 import {
   createBrowserRouter,
   Navigate,
   RouterProvider,
+  useLocation // 📌 นำเข้า useLocation
 } from "react-router-dom";
 import useUserStore from "../stores/userStore";
-import MainLayout from "../layouts/MainLayout"; // 1. Import MainLayout เข้ามา
+import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
 import OAuthCallback from "../pages/OAuthCallback";
 
