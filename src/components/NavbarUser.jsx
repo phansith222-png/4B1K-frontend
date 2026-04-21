@@ -56,7 +56,6 @@ export default function NavbarUser({ isLanding = false }) {
                         : artistsList[Math.floor(Math.random() * artistsList.length)];
 
                     return {
-                        // 📌 ดึง URL รูปโปรไฟล์ตรงๆ ถ้าไม่มีให้ใช้รูป Default
                         img: randomArt.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
                         title: `${randomArt.artistName}\nTop in ${config.label}`,
                         desc: `View the latest from our ${config.label} collection.`,
@@ -192,96 +191,101 @@ export default function NavbarUser({ isLanding = false }) {
     return (
         <div className="relative">
             <style>{`
-                @keyframes runGradient { 0% { background-position: 200% 0; } 100% { background-position: 0% 0; } }
-                .text-gradient-chat { background: linear-gradient(90deg, #00E5FF, #FF00FF, #00E5FF); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: runGradient 3s linear infinite; }
-                .btn-custom-chat { background: transparent; border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 20px; padding: 4px 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 6px; cursor: pointer; }
-                .btn-custom-chat:hover { border-color: #00E5FF; box-shadow: 0 0 10px rgba(0, 229, 255, 0.3); transform: translateY(-2px); }
-                .profile-gradient-border { background: linear-gradient(#1A1C23, #1A1C23) padding-box, linear-gradient(90deg, #00E5FF, #7000FF, #FF00FF, #00E5FF) border-box; background-size: 300% auto; border: 2px solid transparent; border-radius: 50%; animation: runGradient 5s linear infinite; }
                 .text-shine { background: linear-gradient(120deg, #FFFFFF 0%, #FFFFFF 40%, #00E5FF 50%, #FFFFFF 60%, #FFFFFF 100%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: shine 4s linear infinite; }
                 @keyframes shine { to { background-position: 200% center; } }
-                @keyframes smoothWave { 0%, 100% { height: 10px; opacity: 0.7; } 50% { height: 24px; opacity: 1; box-shadow: 0 0 10px currentColor; } }
+                @keyframes smoothWave { 0%, 100% { height: 12px; opacity: 0.7; } 50% { height: 28px; opacity: 1; box-shadow: 0 0 10px currentColor; } }
+                
                 .bar-1 { background-color: #FF00FF; color: #FF00FF; animation: smoothWave 2.5s infinite ease-in-out 0s; }
                 .bar-2 { background-color: #7000FF; color: #7000FF; animation: smoothWave 2.5s infinite ease-in-out 0.4s; }
                 .bar-3 { background-color: #00E5FF; color: #00E5FF; animation: smoothWave 2.5s infinite ease-in-out 0.8s; }
                 .bar-4 { background-color: #FFFFFF; color: #FFFFFF; animation: smoothWave 2.5s infinite ease-in-out 1.2s; }
-                .btn-custom-login { background: linear-gradient(#0B0C10, #0B0C10) padding-box, linear-gradient(90deg, #00E5FF, #FF00FF, #00E5FF) border-box; background-size: 200% auto; animation: runGradient 3s linear infinite; border: 2px solid transparent; color: #FFFFFF; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 105px; height: 38px; display: flex; align-items: center; justify-content: center; }
-                .btn-custom-login:hover { box-shadow: 0 4px 15px rgba(0, 229, 255, 0.25); color: #00E5FF; transform: translateY(-1px); }
-                .btn-custom-register { background: linear-gradient(90deg, #00E5FF, #7000FF, #00E5FF); background-size: 200% auto; animation: runGradient 3s linear infinite; border: none; color: #FFFFFF; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 105px; height: 38px; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3); }
-                .btn-custom-register:hover { box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5); transform: translateY(-1px); }
+                
                 .chart-item-move { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease; }
             `}</style>
 
-            <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
-                <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50 w-[220px]" onClick={() => navigate('/')}>
-                    <div className="flex items-end gap-[3px] h-6 w-5">
-                        <div className="w-1 rounded-full bar-1"></div>
-                        <div className="w-1 rounded-full bar-2"></div>
-                        <div className="w-1 rounded-full bar-3"></div>
-                        <div className="w-1 rounded-full bar-4"></div>
+            {/* 📌 ปรับขนาด Navbar ให้ใหญ่และโปร่งขึ้น */}
+            <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
+                
+                {/* 📌 โลโก้ฝั่งซ้าย: ขยายขนาด */}
+                <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer z-50 w-auto md:w-[240px]" onClick={() => navigate('/')}>
+                    <div className="flex items-end gap-[3px] h-7 w-6">
+                        <div className="w-1.5 rounded-full bar-1"></div>
+                        <div className="w-1.5 rounded-full bar-2"></div>
+                        <div className="w-1.5 rounded-full bar-3"></div>
+                        <div className="w-1.5 rounded-full bar-4"></div>
                     </div>
-                    <div className="text-[26px] font-black italic tracking-tighter text-shine">4B1K</div>
+                    <div className="text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                 </div>
 
+                {/* 📌 เมนูตรงกลาง: ขยายฟอนต์เป็น 15px */}
                 <div className="flex-1 flex justify-center items-center overflow-hidden">
-                    <ul className="hidden xl:flex items-center gap-8 text-[13px] font-bold text-gray-300">
+                    <ul className="hidden xl:flex items-center gap-10 text-[15px] font-bold text-gray-300">
                         <li><Link to="/new-event" className="hover:text-[#00E5FF] transition-colors">Concert Event</Link></li>
                         <li>
-                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(!isArtistMenuOpen)} className={`flex items-center gap-1 focus:outline-none transition-colors ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}>
+                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(!isArtistMenuOpen)} className={`flex items-center gap-1.5 focus:outline-none transition-colors ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}>
                                 Artist Biology
-                                <motion.svg animate={{ rotate: isArtistMenuOpen ? 180 : 0 }} className={`w-3.5 h-3.5 ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
+                                <motion.svg animate={{ rotate: isArtistMenuOpen ? 180 : 0 }} className={`w-4 h-4 ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
                             </button>
                         </li>
                         <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
                     </ul>
 
-                    <div className="flex items-center ml-2 lg:ml-6 relative">
-                        <div className={`transition-all duration-500 ease-in-out flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border ${isSearchOpen ? 'w-56 xl:w-64 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100' : 'w-0 border-transparent opacity-0 overflow-hidden'}`}>
+                    {/* ช่องค้นหา: ขยายขนาดให้เท่ากับ Navbar หลัก */}
+                    <div className="flex items-center ml-2 lg:ml-8 relative">
+                        <div className={`transition-all duration-500 ease-in-out flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border ${isSearchOpen ? 'w-64 xl:w-72 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100' : 'w-0 border-transparent opacity-0 overflow-hidden'}`}>
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
                                 placeholder="Artist or Genre..."
-                                className="w-full text-xs bg-transparent outline-none text-white placeholder:text-gray-500 px-4 py-2"
+                                className="w-full text-[14px] bg-transparent outline-none text-white placeholder:text-gray-500 px-5 py-2.5"
                             />
                             {isSearchOpen && (
-                                <button onClick={executeSearch} className="pr-3 text-gray-400 hover:text-[#00E5FF] transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                <button onClick={executeSearch} className="pr-4 text-gray-400 hover:text-[#00E5FF] transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                 </button>
                             )}
                         </div>
                         {!isSearchOpen && (
-                            <button onClick={() => setIsSearchOpen(true)} className="p-2 rounded-full transition-all duration-300 flex-shrink-0 z-10 text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-full transition-all duration-300 flex-shrink-0 z-10 text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
                         )}
                         {isSearchOpen && (
-                             <button onClick={() => setIsSearchOpen(false)} className="p-2 rounded-full transition-all duration-300 absolute -right-8 text-gray-500 hover:text-red-400">
-                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                             <button onClick={() => setIsSearchOpen(false)} className="p-2.5 rounded-full transition-all duration-300 absolute -right-10 text-gray-500 hover:text-red-400">
+                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                              </button>
                         )}
                     </div>
                 </div>
 
-                <div className="flex-shrink-0 flex items-center justify-end gap-5 z-50 w-[240px]">
+                {/* 📌 เมนูฝั่งขวา: Login / Chat / Profile (จัดการให้อยู่แถวเดียวกันด้วย whitespace-nowrap) */}
+                <div className="flex-shrink-0 flex items-center justify-end gap-4 lg:gap-6 z-50 w-auto">
                     {!user || isLanding ? (
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => navigate('/login')} className="btn-custom-login text-[14px] font-semibold hidden sm:flex">Log In</button>
-                            <button onClick={() => navigate('/register')} className="btn-custom-register text-[14px] font-semibold hidden sm:flex">Register</button>
+                        <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
+                            <button onClick={() => navigate('/login')} className="text-[15px] font-bold text-gray-400 hover:text-white transition-colors">
+                                Log In
+                            </button>
+                            <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300 hover:scale-105 shadow-[0_4px_15px_rgba(255,255,255,0.1)] hover:shadow-[0_4px_20px_rgba(0,229,255,0.4)]">
+                                Register
+                            </button>
                         </div>
                     ) : (
-                        <>
-                            <button onClick={() => navigate('/chat')} className="btn-custom-chat hidden sm:flex">
-                                <span className="text-gradient-chat text-[13px] font-extrabold tracking-widest uppercase">Chat</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#00E5FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                        <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
+                            {/* 📌 ปุ่ม Chat: ทำเลียนแบบปุ่ม Register ที่ดูเป็นมืออาชีพ */}
+                            <button onClick={() => navigate('/chat')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-5 md:px-7 py-2 rounded-full transition-all duration-300 hover:scale-105 shadow-[0_4px_15px_rgba(255,255,255,0.1)] hover:shadow-[0_4px_20px_rgba(0,229,255,0.4)] hidden sm:flex items-center gap-2">
+                                <span className="tracking-wide">Chat</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                             </button>
 
+                            {/* 📌 รูปโปรไฟล์: เอาแอนิเมชันสีวิ่งออก เปลี่ยนเป็นขอบเรียบๆ */}
                             <div className="relative" ref={profileRef}>
-                                <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 focus:outline-none transition-all hover:opacity-80">
-                                    <div className="w-[42px] h-[42px] profile-gradient-border shadow-[0_0_15px_rgba(0,229,255,0.2)] overflow-hidden rounded-full bg-[#1A1C23]">
-                                        <img src={user.profileImage || "https://ui-avatars.com/api/?name=User&background=1A1C23&color=00E5FF"} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                                <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 focus:outline-none group">
+                                    <div className="w-[44px] h-[44px] rounded-full border-2 border-white/20 group-hover:border-[#00E5FF] shadow-sm overflow-hidden bg-[#1A1C23] transition-colors duration-300">
+                                        <img src={user.profileImage || "https://ui-avatars.com/api/?name=User&background=1A1C23&color=00E5FF"} alt="Profile" className="w-full h-full object-cover" />
                                     </div>
-                                    <motion.svg animate={{ rotate: isProfileMenuOpen ? 180 : 0 }} className={`w-3.5 h-3.5 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
+                                    <motion.svg animate={{ rotate: isProfileMenuOpen ? 180 : 0 }} className={`w-4 h-4 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
                                 </button>
                                 
                                 <AnimatePresence>
@@ -307,7 +311,7 @@ export default function NavbarUser({ isLanding = false }) {
                                             <div className="border-t border-white/5 my-2"></div>
                                             <div className="px-2">
                                                 <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-all group">
-                                                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013-3v1" /></svg>
                                                     Sign Out
                                                 </button>
                                             </div>
@@ -315,11 +319,12 @@ export default function NavbarUser({ isLanding = false }) {
                                     )}
                                 </AnimatePresence>
                             </div>
-                        </>
+                        </div>
                     )}
-                    <div onClick={toggleLanguage} className="flex items-center gap-1.5 text-[13px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-3 py-1.5 rounded-full transition-colors border border-white/10 ml-1">
+                    
+                    <div onClick={toggleLanguage} className="flex items-center gap-1.5 text-[14px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-4 py-2 rounded-full transition-colors border border-white/10 shrink-0">
                         <svg className="w-4 h-4 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
-                        <span className="w-5 text-center">{language}</span>
+                        <span className="w-6 text-center">{language}</span>
                     </div>
                 </div>
             </header>
@@ -386,7 +391,6 @@ export default function NavbarUser({ isLanding = false }) {
                                                 transition={{ duration: 0.8 }}
                                                 className="absolute inset-0"
                                             >
-                                                {/* 📌 ตรงนี้แก้ให้ใช้ภาพเต็มๆ ตรงๆ */}
                                                 <img src={mainSlides[currentSlide].img} alt="Featured Artist" className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[3s] ease-out" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/40 to-transparent"></div>
                                                 <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end items-start pb-16">
@@ -429,7 +433,6 @@ export default function NavbarUser({ isLanding = false }) {
                                                 >
                                                     <div className="w-[85px] h-[65px] rounded-xl overflow-hidden shadow-sm shrink-0 relative bg-black border border-white/5">
                                                         <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10"></div>
-                                                        {/* 📌 ตรงนี้แก้ให้ใช้ภาพเต็มๆ ตรงๆ */}
                                                         <img src={item.img} alt="Chart Item" className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-100" />
                                                     </div>
                                                     <div className="flex-1 pr-2">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useScroll, useTransform } from 'framer-motion';
 
-// Import Components ที่เราแยกไว้
+// Import Components
 import BackgroundEffects from '../components/LandingPageComponent/BackgroundEffects';
 import HeroSection from '../components/LandingPageComponent/HeroSection';
 import FeatureSection from '../components/LandingPageComponent/FeatureSection';
@@ -10,11 +9,6 @@ import ArtistShowcase from '../components/LandingPageComponent/ArtistShowcase';
 
 export default function LandingPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const { scrollY } = useScroll();
-  
-  // Parallax & Opacity สำหรับหน้า Hero
-  const yImage = useTransform(scrollY, [0, 500], [0, -100]);
-  const opacityHero = useTransform(scrollY, [0, 400], [1, 0]);
 
   // ติดตามตำแหน่งเมาส์สำหรับแสง Glow
   useEffect(() => {
@@ -30,7 +24,7 @@ export default function LandingPage() {
       <BackgroundEffects mousePos={mousePos} />
 
       {/* 2. Hero Section */}
-      <HeroSection yImage={yImage} opacityHero={opacityHero} />
+      <HeroSection />
 
       {/* 3. Features Section */}
       <FeatureSection />

@@ -9,6 +9,7 @@ import MusicPlayerSection from '../components/PagePopComponent/MusicPlayerSectio
 import ConcertSection from '../components/PagePopComponent/ConcertSection';
 import StatsSection from '../components/PagePopComponent/StatsSection';
 import BottomTextSection from '../components/PagePopComponent/BottomTextSection';
+import Reveal from '../components/Reveal';
 
 export default function PagePop() {
     const [searchParams] = useSearchParams();
@@ -24,7 +25,7 @@ export default function PagePop() {
     const [progress, setProgress] = useState(0);
     const [currentTime, setCurrentTime] = useState('0:00');
     const [duration, setDuration] = useState('0:00');
-    
+
     const playerRef = useRef(null);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
 
@@ -40,13 +41,13 @@ export default function PagePop() {
                     console.error("Failed to fetch all artists:", err);
                     allArtistsRes = [];
                 }
-                
+
                 const allArtistsList = allArtistsRes?.artists || allArtistsRes?.data || allArtistsRes || [];
-                const popArtistIds = [1, 2, 3, 4, 5]; 
+                const popArtistIds = [1, 2, 3, 4, 5];
 
                 let popArtists = allArtistsList.filter(a => popArtistIds.includes(a.id));
                 if (popArtists.length === 0 && allArtistsList.length > 0) {
-                    popArtists = allArtistsList; 
+                    popArtists = allArtistsList;
                 }
 
                 let ARTIST_ID;
@@ -54,7 +55,7 @@ export default function PagePop() {
                 // 📌 ถ้ามี ID ส่งมาจากช่องค้นหา ให้ใช้ ID นั้นเลย จะได้ไม่สุ่ม
                 if (queryArtistId) {
                     ARTIST_ID = Number(queryArtistId);
-                } 
+                }
                 // 📌 ถ้าไม่มี ID ส่งมา (แปลว่ากดเข้าหน้าเว็บมาตรงๆ) ให้สุ่มตามปกติ
                 else if (popArtists.length > 0) { // เปลี่ยน popArtists ตามตัวแปรของหน้านั้นๆ (เช่น rockArtists, targetArtists)
                     const randomIndex = Math.floor(Math.random() * popArtists.length);
@@ -67,19 +68,19 @@ export default function PagePop() {
 
                 const [artistRes, songsRes, eventsRes] = await Promise.all([
                     getArtistById(ARTIST_ID).catch(() => null),
-                    getSongsByArtist(ARTIST_ID).catch(() => null), 
+                    getSongsByArtist(ARTIST_ID).catch(() => null),
                     getEventsByArtist(ARTIST_ID).catch(() => null)
                 ]);
 
                 const mainArtist = artistRes?.artist || artistRes?.data || artistRes || popArtists[0];
                 setArtist(mainArtist);
-                
+
                 let extractedSongs = [];
                 if (Array.isArray(songsRes)) extractedSongs = songsRes;
                 else if (songsRes?.data && Array.isArray(songsRes.data)) extractedSongs = songsRes.data;
                 else if (songsRes?.songs && Array.isArray(songsRes.songs)) extractedSongs = songsRes.songs;
                 else if (mainArtist?.songs && Array.isArray(mainArtist.songs)) extractedSongs = mainArtist.songs;
-                
+
                 setSongs(extractedSongs);
 
                 let extractedEvents = [];
@@ -114,7 +115,7 @@ export default function PagePop() {
 
         const initPlayer = () => {
             if (playerRef.current) return;
-            const firstVideoId = extractYouTubeID(songs[0].streamUrl) || 'dQw4w9WgXcQ'; 
+            const firstVideoId = extractYouTubeID(songs[0].streamUrl) || 'dQw4w9WgXcQ';
 
             playerRef.current = new window.YT.Player('yt-player-hidden-pop', {
                 height: '0',
@@ -167,9 +168,9 @@ export default function PagePop() {
     };
 
     const togglePlayPause = (e) => {
-        if(e) e.stopPropagation();
+        if (e) e.stopPropagation();
         if (!playerRef.current || !isPlayerReady) return;
-        
+
         if (isPlaying) {
             playerRef.current.pauseVideo();
         } else {
@@ -191,18 +192,18 @@ export default function PagePop() {
             if (next < 0) next = songs.length - 1;
             if (next >= songs.length) next = 0;
         }
-        
+
         setCurrentSongIndex(next);
         setProgress(0);
         setCurrentTime('0:00');
-        
+
         const nextVideoId = extractYouTubeID(songs[next].streamUrl) || 'dQw4w9WgXcQ';
         playerRef.current.loadVideoById(nextVideoId);
         setIsPlaying(true);
     };
 
     const handleSongEnded = () => {
-        changeSong(1); 
+        changeSong(1);
     };
 
     const handleSongSelect = (idx, e) => {
@@ -219,7 +220,7 @@ export default function PagePop() {
         const rect = e.currentTarget.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
         const percentage = clickX / rect.width;
-        
+
         const total = playerRef.current.getDuration();
         if (total > 0) {
             playerRef.current.seekTo(percentage * total, true);
@@ -247,8 +248,9 @@ export default function PagePop() {
     }
 
     return (
-        <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden selection:bg-[#FF007F] selection:text-white">
-            
+
+        <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans  selection:bg-[#FF007F] selection:text-white">
+
             {/* ซ่อนระบบเครื่องเล่น YouTube ไว้ตรงนี้ */}
             <div id="yt-player-hidden-pop" className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden"></div>
 
@@ -275,29 +277,42 @@ export default function PagePop() {
                 }
                 .group:hover .tooltip-box { opacity: 1; transform: translateY(0); }
             `}</style>
-            
+
             <div className="dark-grain" />
 
             <HeroSection artist={artist} events={events} />
-            <BioSection artist={artist} />
-            <MusicPlayerSection 
-                artist={artist} 
-                songs={songs} 
-                currentSongIndex={currentSongIndex} 
-                isPlaying={isPlaying} 
-                progress={progress} 
-                currentTime={currentTime} 
-                duration={duration} 
-                togglePlayPause={togglePlayPause} 
-                changeSong={changeSong} 
-                handleSongSelect={handleSongSelect} 
-                handleProgressClick={handleProgressClick} 
-                currentSong={songs[currentSongIndex]}
-            />
-            <ConcertSection events={events} />
-            <StatsSection songs={songs} />
-            <BottomTextSection artist={artist} />
+            
+           
+              <BioSection artist={artist} />
+            
+            
+           
+              <MusicPlayerSection 
+                  artist={artist} 
+                  songs={songs} 
+                  currentSongIndex={currentSongIndex} 
+                  isPlaying={isPlaying} 
+                  progress={progress} 
+                  currentTime={currentTime} 
+                  duration={duration} 
+                  togglePlayPause={togglePlayPause} 
+                  changeSong={changeSong} 
+                  handleSongSelect={handleSongSelect} 
+                  handleProgressClick={handleProgressClick} 
+                  currentSong={songs[currentSongIndex]}
+              />
+            
 
+            <ConcertSection events={events} />
+            
+            
+              <StatsSection songs={songs} />
+            
+            
+            
+              <BottomTextSection artist={artist} />
+            
         </div>
+
     );
 }

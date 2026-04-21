@@ -1,13 +1,13 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react"; // 📌 นำเข้า useEffect
 import {
   createBrowserRouter,
   Navigate,
   RouterProvider,
+  useLocation // 📌 นำเข้า useLocation
 } from "react-router-dom";
 import useUserStore from "../stores/userStore";
-import MainLayout from "../layouts/MainLayout"; // 1. Import MainLayout เข้ามา
+import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
-
 
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import('../pages/LandingPage'));
@@ -18,7 +18,6 @@ const HomePage = lazy(() => import('../pages/HomePage'));
 const NewEvent = lazy(() => import("../pages/NewEvent"));
 const Chat = lazy(() => import("../pages/ChatPage"));
 
-
 // ✨ Pages (หน้าใหม่ที่เพิ่มเข้ามา)
 const PagePop = lazy(() => import('../pages/PagePop'));
 const PageRock = lazy(() => import('../pages/PageRock'));
@@ -27,10 +26,16 @@ const PageEtc = lazy(() => import('../pages/PageEtc'));
 const PageEntertainment = lazy(() => import('../pages/PageEntertainment'));
 const AllArtist = lazy(() => import('../pages/PageAllArtist'));
 
+
 const guestRouter = createBrowserRouter([
   {
     path: '/',
-    element: <MainLayout />, // ให้ MainLayout เป็นหน้าหลัก
+    // 📌 นำ ScrollToTop มาวางคู่กับ Layout ให้อยู่ภายใต้ Router
+    element: (
+      <>
+        <MainLayout />
+      </>
+    ),
     children: [
       { path: '/', element: <LandingPage /> }, 
       { path: 'login', Component: Login },
@@ -54,7 +59,12 @@ const guestRouter = createBrowserRouter([
 const userRouter = createBrowserRouter([
   {
     path: '/',
-    element: <UserLayout />,
+    // 📌 นำ ScrollToTop มาวางคู่กับ Layout ของ User ด้วย
+    element: (
+      <>
+        <UserLayout />
+      </>
+    ),
     children: [
       { path: '/', element: <HomePage /> }, 
       { path: 'home', element: <HomePage /> }, 
@@ -63,10 +73,8 @@ const userRouter = createBrowserRouter([
       { path: 'editprofile', Component: EditProfile }, 
       { path: 'new-event', element:<NewEvent />},
       { path: 'chat', element:<Chat />},
-
       
-      
-      // 👉 เพิ่ม Route หน้าใหม่ สำหรับ User ที่ Login แล้วด้วย
+      // 👉 เพิ่ม Route หน้าใหม่ สำหรับ User ที่ Login แล้ว
       { path: 'pop', element: <PagePop /> },
       { path: 'rock', element: <PageRock /> },
       { path: 'classic', element: <PageClassic /> },
@@ -81,15 +89,15 @@ const userRouter = createBrowserRouter([
 
 export default function AppRouter() {
   const user = useUserStore(state => state.user);
-
   const router = user ? userRouter : guestRouter;
 
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#111418] flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg text-white" />
+        <span className="loading loading-spinner loading-lg text-[#00E5FF]" />
       </div>
     }>
+      {/* 📌 ลบ ScrollToTop ออกจากตรงนี้ เพราะย้ายไปอยู่ข้างใน Router แล้ว */}
       <RouterProvider key={user?.id} router={router} />
     </Suspense>
   );

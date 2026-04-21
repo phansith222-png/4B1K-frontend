@@ -8,6 +8,7 @@ export default function MusicPlayerSection({
     const currentSong = songs[currentSongIndex] || null;
 
     return (
+        
         <section className="relative w-full py-32 px-6 overflow-hidden z-10">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
