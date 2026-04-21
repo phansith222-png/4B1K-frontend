@@ -19,5 +19,6 @@ export default function BioSection({ artist }) {
                 </p>
             </div>
         </section>
+       
     );
 }

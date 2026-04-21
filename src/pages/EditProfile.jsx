@@ -98,7 +98,7 @@ export default function EditProfile() {
                     transition: opacity 0.3s ease;
                     z-index: 0;
                 }
-                .animated-border-box.active::before { opacity: 1; }
+                .animated-border-box.active::before { opacity: 0.15; }
                 @property --angle {
                     syntax: '<angle>';
                     initial-value: 0deg;

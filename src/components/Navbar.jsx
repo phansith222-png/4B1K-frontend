@@ -27,7 +27,7 @@ export default function Navbar() {
             try {
                 const response = await getAllArtists();
                 const artistsList = response?.artists || response?.data || response || [];
-                setAllArtists(artistsList); // เก็บไว้รอ Search
+                setAllArtists(artistsList);
 
                 if (artistsList.length === 0) return;
 
@@ -51,7 +51,6 @@ export default function Navbar() {
                         : artistsList[Math.floor(Math.random() * artistsList.length)];
 
                     return {
-                        // 📌 ใช้ URL เต็มจาก Backend (ถ้าไม่มีใช้รูป Default)
                         img: randomArt.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
                         title: `${randomArt.artistName}\nTop in ${config.label}`,
                         desc: `View the latest from our ${config.label} collection.`,
@@ -74,7 +73,7 @@ export default function Navbar() {
         fetchAndOrganize(); 
     }, []);
 
-    // ================= 2. ระบบค้นหา (พาไปหน้าหมวดหมู่ + ส่ง ID) =================
+    // ================= 2. ระบบค้นหา =================
     const executeSearch = () => {
         if (searchQuery.trim() !== "") {
             const query = searchQuery.toLowerCase().trim();
@@ -117,10 +116,8 @@ export default function Navbar() {
                         else if (isEtc) targetPath = '/etc';
                     }
 
-                    // พาไปหน้าหมวดหมู่พร้อมแนบ ID ศิลปิน
                     navigate(`${targetPath}?artistId=${aId}`); 
                 } else {
-                    // ถ้าหาไม่เจอ ไปหน้ารวมแล้วฟิลเตอร์เอา
                     navigate(`/artists?search=${searchQuery}`);
                 }
             }
@@ -180,85 +177,93 @@ export default function Navbar() {
                 @keyframes runGradient { 0% { background-position: 200% 0; } 100% { background-position: 0% 0; } }
                 .text-shine { background: linear-gradient(120deg, #FFFFFF 0%, #FFFFFF 40%, #00E5FF 50%, #FFFFFF 60%, #FFFFFF 100%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: shine 4s linear infinite; }
                 @keyframes shine { to { background-position: 200% center; } }
-                @keyframes smoothWave { 0%, 100% { height: 10px; opacity: 0.7; } 50% { height: 24px; opacity: 1; box-shadow: 0 0 10px currentColor; } }
+                @keyframes smoothWave { 0%, 100% { height: 12px; opacity: 0.7; } 50% { height: 28px; opacity: 1; box-shadow: 0 0 10px currentColor; } }
+                
                 .bar-1 { background-color: #FF00FF; color: #FF00FF; animation: smoothWave 2.5s infinite ease-in-out 0s; }
                 .bar-2 { background-color: #7000FF; color: #7000FF; animation: smoothWave 2.5s infinite ease-in-out 0.4s; }
                 .bar-3 { background-color: #00E5FF; color: #00E5FF; animation: smoothWave 2.5s infinite ease-in-out 0.8s; }
                 .bar-4 { background-color: #FFFFFF; color: #FFFFFF; animation: smoothWave 2.5s infinite ease-in-out 1.2s; }
                 
-                .btn-custom-login { background: linear-gradient(#0B0C10, #0B0C10) padding-box, linear-gradient(90deg, #00E5FF, #FF00FF, #00E5FF) border-box; background-size: 200% auto; animation: runGradient 3s linear infinite; border: 2px solid transparent; color: #FFFFFF; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 105px; height: 38px; display: flex; align-items: center; justify-content: center; }
-                .btn-custom-login:hover { box-shadow: 0 4px 15px rgba(0, 229, 255, 0.25); color: #00E5FF; transform: translateY(-1px); }
-                .btn-custom-register { background: linear-gradient(90deg, #00E5FF, #7000FF, #00E5FF); background-size: 200% auto; animation: runGradient 3s linear infinite; border: none; color: #FFFFFF; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 105px; height: 38px; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3); }
-                .btn-custom-register:hover { box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5); transform: translateY(-1px); }
                 .chart-item-move { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease; }
             `}</style>
 
             {/* ================= HEADER ================= */}
-            <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
+            {/* 📌 ปรับ py-4 md:py-5 ให้ Navbar ดูสูงและโปร่งขึ้น */}
+            <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
                 
-                {/* 1. ฝั่งซ้าย: Logo */}
-                <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50 w-[220px]" onClick={() => navigate('/')}>
-                    <div className="flex items-end gap-[3px] h-6 w-5">
-                        <div className="w-1 rounded-full bar-1"></div>
-                        <div className="w-1 rounded-full bar-2"></div>
-                        <div className="w-1 rounded-full bar-3"></div>
-                        <div className="w-1 rounded-full bar-4"></div>
+                {/* 📌 1. ฝั่งซ้าย: Logo (ขยายฟอนต์เป็น text-3xl และขยายไอคอนคลื่นเสียง) */}
+                <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer z-50 w-auto md:w-[240px]" onClick={() => navigate('/')}>
+                    <div className="flex items-end gap-[3px] h-7 w-6">
+                        <div className="w-1.5 rounded-full bar-1"></div>
+                        <div className="w-1.5 rounded-full bar-2"></div>
+                        <div className="w-1.5 rounded-full bar-3"></div>
+                        <div className="w-1.5 rounded-full bar-4"></div>
                     </div>
-                    <div className="text-[26px] font-black italic tracking-tighter text-shine">4B1K</div>
+                    <div className="text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                 </div>
 
-                {/* 2. ตรงกลาง: Navigation */}
+                {/* 📌 2. ตรงกลาง: Navigation (ขยายฟอนต์เป็น text-[15px] และเพิ่มระยะห่าง) */}
                 <div className="flex-1 flex justify-center items-center overflow-hidden">
-                    <ul className="hidden xl:flex items-center gap-8 text-[13px] font-bold text-gray-300">
+                    <ul className="hidden xl:flex items-center gap-10 text-[15px] font-bold text-gray-300">
                         <li><Link to="/new-event" className="hover:text-[#00E5FF] transition-colors">Concert Event</Link></li>
                         <li>
-                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(!isArtistMenuOpen)} className={`flex items-center gap-1 focus:outline-none transition-colors ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}>
+                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(!isArtistMenuOpen)} className={`flex items-center gap-1.5 focus:outline-none transition-colors ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}>
                                 Artist Biology
-                                <motion.svg animate={{ rotate: isArtistMenuOpen ? 180 : 0 }} className={`w-3.5 h-3.5 ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
+                                <motion.svg animate={{ rotate: isArtistMenuOpen ? 180 : 0 }} className={`w-4 h-4 ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
                             </button>
                         </li>
                         <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
                     </ul>
 
-                    {/* ช่อง Search (มีแว่นขยายให้กด) */}
-                    <div className="flex items-center ml-2 lg:ml-6 relative">
-                        <div className={`transition-all duration-500 ease-in-out flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border ${isSearchOpen ? 'w-56 xl:w-64 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100' : 'w-0 border-transparent opacity-0 overflow-hidden'}`}>
+                    {/* ช่อง Search (ขยายขนาดช่องกรอกและไอคอน) */}
+                    <div className="flex items-center ml-2 lg:ml-8 relative">
+                        <div className={`transition-all duration-500 ease-in-out flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border ${isSearchOpen ? 'w-64 xl:w-72 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100' : 'w-0 border-transparent opacity-0 overflow-hidden'}`}>
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
                                 placeholder="Artist or Genre..."
-                                className="w-full text-xs bg-transparent outline-none text-white placeholder:text-gray-500 px-4 py-2"
+                                className="w-full text-[14px] bg-transparent outline-none text-white placeholder:text-gray-500 px-5 py-2.5"
                             />
                             {isSearchOpen && (
-                                <button onClick={executeSearch} className="pr-3 text-gray-400 hover:text-[#00E5FF] transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                <button onClick={executeSearch} className="pr-4 text-gray-400 hover:text-[#00E5FF] transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                                 </button>
                             )}
                         </div>
                         {!isSearchOpen && (
-                            <button onClick={() => setIsSearchOpen(true)} className="p-2 rounded-full transition-all duration-300 flex-shrink-0 z-10 text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-full transition-all duration-300 flex-shrink-0 z-10 text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </button>
                         )}
                         {isSearchOpen && (
-                             <button onClick={() => setIsSearchOpen(false)} className="p-2 rounded-full transition-all duration-300 absolute -right-8 text-gray-500 hover:text-red-400">
-                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                             <button onClick={() => setIsSearchOpen(false)} className="p-2.5 rounded-full transition-all duration-300 absolute -right-10 text-gray-500 hover:text-red-400">
+                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                              </button>
                         )}
                     </div>
                 </div>
 
-                {/* 3. ฝั่งขวา: Login / Register */}
-                <div className="flex-shrink-0 flex items-center justify-end gap-5 z-50 w-[240px]">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => navigate('/login')} className="btn-custom-login text-[14px] font-semibold hidden sm:flex">Log In</button>
-                        <button onClick={() => navigate('/register')} className="btn-custom-register text-[14px] font-semibold hidden sm:flex">Register</button>
+                {/* 📌 3. ฝั่งขวา: Login / Register (ขยายฟอนต์เป็น text-[15px] และเพิ่ม padding ให้ปุ่มใหญ่ขึ้น) */}
+                <div className="flex-shrink-0 flex items-center justify-end gap-4 lg:gap-6 z-50 w-auto">
+                    <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
+                        <button 
+                            onClick={() => navigate('/login')} 
+                            className="text-[15px] font-bold text-gray-400 hover:text-white transition-colors"
+                        >
+                            Log In
+                        </button>
+                        <button 
+                            onClick={() => navigate('/register')} 
+                            className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300 hover:scale-105 shadow-[0_4px_15px_rgba(255,255,255,0.1)] hover:shadow-[0_4px_20px_rgba(0,229,255,0.4)]"
+                        >
+                            Register
+                        </button>
                     </div>
-                    <div onClick={toggleLanguage} className="flex items-center gap-1.5 text-[13px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-3 py-1.5 rounded-full transition-colors border border-white/10 ml-1">
+                    <div onClick={toggleLanguage} className="flex items-center gap-1.5 text-[14px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-4 py-2 rounded-full transition-colors border border-white/10 shrink-0">
                         <svg className="w-4 h-4 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
-                        <span className="w-5 text-center">{language}</span>
+                        <span className="w-6 text-center">{language}</span>
                     </div>
                 </div>
             </header>

@@ -15,13 +15,14 @@ export default function FeatureSection() {
         {features.map((item, idx) => (
           <motion.div 
             key={idx}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            // 📌 เอฟเฟกต์พลิก 3 มิติ ขึ้นมาจากด้านล่าง
+            initial={{ opacity: 0, y: 80, rotateX: 20, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: idx * 0.2 }}
-            className="p-10 rounded-[2.5rem] bg-[#12141A]/60 border border-white/5 backdrop-blur-xl hover:bg-[#1A1C23] hover:border-white/10 transition-all duration-500 group shadow-lg hover:shadow-2xl hover:-translate-y-2"
+            transition={{ type: "spring", stiffness: 80, damping: 20, delay: idx * 0.15 }}
+            className="p-10 rounded-[2.5rem] bg-[#12141A]/60 border border-white/5 backdrop-blur-xl hover:bg-[#1A1C23] hover:border-white/10 transition-all duration-500 group shadow-lg hover:shadow-2xl"
           >
-            <div className="mb-8 p-4 bg-white/5 w-fit rounded-2xl group-hover:scale-110 transition-transform duration-300">
+            <div className="mb-8 p-4 bg-white/5 w-fit rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">
               {item.icon}
             </div>
             <h3 className="text-xl font-black mb-4 tracking-widest text-white">{item.title}</h3>
