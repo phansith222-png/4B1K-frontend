@@ -26,14 +26,24 @@ export const PostToolButton = ({ icon, label }) => {
   );
 }
 
-export const ActionButton = ({ icon, label, hoverColor }) => {
+export const ActionButton = ({ icon, label, hoverColor, onClick }) => {
   return (
-    <button className={`flex items-center gap-2.5 transition-colors ${hoverColor} group`}>
-      <div className="group-hover:scale-110 transition-transform">{icon}</div>
-      {label && <span className="text-sm font-bold group-hover:text-white">{label}</span>}
+    <button 
+      type="button"
+      onClick={onClick}
+      // เพิ่ม relative, z-10 และ cursor-pointer เพื่อความชัวร์
+      className={`relative z-10 cursor-pointer flex items-center gap-2.5 transition-colors ${hoverColor} group border-none bg-transparent p-1`}
+    >
+      <div className="group-hover:scale-110 transition-transform pointer-events-none">
+        {icon}
+      </div>
+      {label && <span className="text-sm font-bold group-hover:text-white pointer-events-none">{label}</span>}
     </button>
   );
 }
+
+
+
 export const ArtistItem = ({ name, fans, avatar }) => {
   return (
     <div className="flex items-center justify-between group cursor-pointer p-2 rounded-xl hover:bg-white/5 transition-colors">
