@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function HeroSection({ artist, events, embers }) {
     return (
@@ -63,36 +64,42 @@ export default function HeroSection({ artist, events, embers }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent opacity-95"></div>
 
                     <div className="absolute bottom-8 md:bottom-12 left-6 md:left-12 z-20">
-                        <h1 className="text-5xl md:text-7xl lg:text-[8rem] leading-[0.85] font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-[0_5px_15px_rgba(0,0,0,0.9)] transition-all duration-500 group-hover:from-white group-hover:to-[#D3131F] cursor-default">
-                            {artist.artistName}
-                        </h1>
+                        {/* 📌 ใส่ Reveal คลุมชื่อศิลปิน */}
+                        <Reveal delay={0.2}>
+                            <h1 className="text-5xl md:text-7xl lg:text-[8rem] leading-[0.85] font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 drop-shadow-[0_5px_15px_rgba(0,0,0,0.9)] transition-all duration-500 group-hover:from-white group-hover:to-[#D3131F] cursor-default">
+                                {artist.artistName}
+                            </h1>
+                        </Reveal>
                     </div>
                 </div>
             </div>
 
-            <div className="relative z-20 mt-12 flex flex-col md:flex-row items-center justify-between w-full max-w-5xl bg-[#111111]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 md:px-10 md:py-8 shadow-2xl">
-                <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1 mb-6 md:mb-0">
-                    <h2 className="text-sm md:text-base font-bold tracking-[0.3em] uppercase text-gray-500">Upcoming Tour</h2>
-                    <div className="flex items-center gap-4 mt-2">
-                        {events.length > 0 ? (
-                            <>
-                                <span className="text-[#D3131F] font-black text-2xl md:text-3xl drop-shadow-[0_0_10px_rgba(211,19,31,0.5)]">
-                                    {new Date(events[0].event?.startTime || events[0].startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()}
-                                </span>
-                                <span className="w-[2px] h-8 bg-gray-700"></span>
-                                <span className="text-gray-200 font-bold tracking-wide text-sm md:text-lg uppercase line-clamp-1">
-                                    {events[0].event?.eventName || events[0].eventName}
-                                </span>
-                            </>
-                        ) : (
-                            <span className="text-gray-500 font-medium uppercase tracking-widest text-sm">No upcoming tours announced</span>
-                        )}
+            {/* 📌 ใส่ Reveal คลุมแถบ Upcoming Tour */}
+            <Reveal delay={0.4} effect="fade-up">
+                <div className="relative z-20 mt-12 flex flex-col md:flex-row items-center justify-between w-full max-w-5xl bg-[#111111]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6 md:px-10 md:py-8 shadow-2xl">
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left gap-1 mb-6 md:mb-0">
+                        <h2 className="text-sm md:text-base font-bold tracking-[0.3em] uppercase text-gray-500">Upcoming Tour</h2>
+                        <div className="flex items-center gap-4 mt-2">
+                            {events.length > 0 ? (
+                                <>
+                                    <span className="text-[#D3131F] font-black text-2xl md:text-3xl drop-shadow-[0_0_10px_rgba(211,19,31,0.5)]">
+                                        {new Date(events[0].event?.startTime || events[0].startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()}
+                                    </span>
+                                    <span className="w-[2px] h-8 bg-gray-700"></span>
+                                    <span className="text-gray-200 font-bold tracking-wide text-sm md:text-lg uppercase line-clamp-1">
+                                        {events[0].event?.eventName || events[0].eventName}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-gray-500 font-medium uppercase tracking-widest text-sm">No upcoming tours announced</span>
+                            )}
+                        </div>
                     </div>
+                    <button className="bg-gradient-to-r from-[#D3131F] to-[#991b1b] text-white px-10 py-4 rounded font-black tracking-widest uppercase text-sm hover:scale-105 transition-transform shadow-[0_5px_20px_rgba(211,19,31,0.4)] border border-[#ff4d4d]/30">
+                        GET TICKETS
+                    </button>
                 </div>
-                <button className="bg-gradient-to-r from-[#D3131F] to-[#991b1b] text-white px-10 py-4 rounded font-black tracking-widest uppercase text-sm hover:scale-105 transition-transform shadow-[0_5px_20px_rgba(211,19,31,0.4)] border border-[#ff4d4d]/30">
-                    GET TICKETS
-                </button>
-            </div>
+            </Reveal>
         </section>
     );
 }

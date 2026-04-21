@@ -58,46 +58,6 @@ export default function Register() {
     window.location.href = `http://localhost:5000/auth/${provider}`
   }
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault()
-  //   setApiError('')
-
-  //   const { errors: validationErrors, isValid } = validate(form)
-  //   if (!isValid) {
-  //     setErrors(validationErrors)
-  //     return
-  //   }
-
-  //   setLoading(true)
-  //   try {
-  //     const res = await fetch(API_URL, {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({
-  //         email: form.email,
-  //         username: form.username,
-  //         password: form.password,
-  //         firstname: form.firstname,
-  //         lastname: form.lastname,
-  //       }),
-  //     })
-
-  //     const data = await res.json()
-
-  //     if (!res.ok) {
-  //       setApiError(data.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่')
-  //       return
-  //     }
-
-  //     setSuccess(true)
-  //     setTimeout(() => navigate('/login'), 2000)
-  //   } catch (err) {
-  //     setApiError('ไม่สามารถเชื่อมต่อ server ได้ กรุณาลองใหม่')
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
   return (
     <div className="bg-[#0B0C10] text-white min-h-screen flex flex-col font-sans relative selection:bg-[#00E5FF] selection:text-black">
       
