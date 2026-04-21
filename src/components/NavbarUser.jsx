@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllArtists } from '../api/artist'; 
@@ -27,7 +27,6 @@ export default function NavbarUser({ isLanding = false }) {
     const [isHoveringMain, setIsHoveringMain] = useState(false);
     const [chartOrder, setChartOrder] = useState([0, 1, 2, 3, 4, 5]);
 
-    // ================= 1. ดึงข้อมูลและจัดการหมวดหมู่ =================
     useEffect(() => {
         const fetchAndOrganize = async () => {
             try {
@@ -57,7 +56,8 @@ export default function NavbarUser({ isLanding = false }) {
                         : artistsList[Math.floor(Math.random() * artistsList.length)];
 
                     return {
-                        img: randomArt.profileImage || "1516450360452-9312f5e86fc7",
+                        // 📌 ดึง URL รูปโปรไฟล์ตรงๆ ถ้าไม่มีให้ใช้รูป Default
+                        img: randomArt.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
                         title: `${randomArt.artistName}\nTop in ${config.label}`,
                         desc: `View the latest from our ${config.label} collection.`,
                         path: config.path,
@@ -76,28 +76,64 @@ export default function NavbarUser({ isLanding = false }) {
             }
         };
 
-        if (isArtistMenuOpen) fetchAndOrganize();
-    }, [isArtistMenuOpen]);
+        fetchAndOrganize(); 
+    }, []);
 
-    // ================= 2. ระบบค้นหา =================
-    const handleSearch = (e) => {
-        if (e.key === 'Enter' && searchQuery.trim() !== "") {
+    const executeSearch = () => {
+        if (searchQuery.trim() !== "") {
             const query = searchQuery.toLowerCase().trim();
             const genres = ['pop', 'rock', 'r&b', 'classic', 'hip hop', 'edm'];
             
             if (genres.includes(query)) {
-                const path = query === 'pop' ? '/pop' : query === 'rock' ? '/rock' : query === 'classic' || query === 'r&b' ? '/classic' : '/etc';
+                const path = query === 'pop' ? '/pop' : query === 'rock' ? '/rock' : (query === 'classic' || query === 'r&b') ? '/classic' : '/etc';
                 navigate(path);
             } else {
                 const foundArtist = allArtists.find(a => a.artistName.toLowerCase().includes(query));
+                
                 if (foundArtist) {
-                    navigate(`/artists/${foundArtist.id}`);
+                    const aId = Number(foundArtist.id);
+                    let targetPath = '/artists';
+
+                    const popIds = [1, 2, 3, 4, 5];
+                    const rockIds = [6, 7, 8, 9, 10];
+                    const classicIds = [16, 17, 18, 19, 20];
+                    const etcIds = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25];
+
+                    if (popIds.includes(aId)) targetPath = '/pop';
+                    else if (rockIds.includes(aId)) targetPath = '/rock';
+                    else if (classicIds.includes(aId)) targetPath = '/classic';
+                    else if (etcIds.includes(aId)) targetPath = '/etc';
+                    else {
+                        const isPop = foundArtist.genres?.some(g => g.genre?.name?.toLowerCase().includes('pop'));
+                        const isRock = foundArtist.genres?.some(g => g.genre?.name?.toLowerCase().includes('rock'));
+                        const isClassic = foundArtist.genres?.some(g => {
+                            const gName = g.genre?.name?.toLowerCase() || '';
+                            return gName.includes('r&b') || gName.includes('rnb') || gName.includes('classic');
+                        });
+                        const isEtc = foundArtist.genres?.some(g => {
+                            const gName = g.genre?.name?.toLowerCase() || '';
+                            return gName.includes('hip hop') || gName.includes('rap') || gName.includes('edm') || gName.includes('electronic');
+                        });
+
+                        if (isPop) targetPath = '/pop';
+                        else if (isRock) targetPath = '/rock';
+                        else if (isClassic) targetPath = '/classic';
+                        else if (isEtc) targetPath = '/etc';
+                    }
+
+                    navigate(`${targetPath}?artistId=${aId}`); 
                 } else {
                     navigate(`/artists?search=${searchQuery}`);
                 }
             }
             setIsSearchOpen(false);
             setSearchQuery("");
+        }
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            executeSearch();
         }
     };
 
@@ -130,14 +166,12 @@ export default function NavbarUser({ isLanding = false }) {
         window.location.reload();
     };
 
-    // Auto-slide 
     useEffect(() => {
         if (!isArtistMenuOpen || isHoveringMain || mainSlides.length === 0) return;
         const slideTimer = setInterval(() => setCurrentSlide((prev) => (prev + 1) % mainSlides.length), 4000);
         return () => clearInterval(slideTimer);
     }, [isArtistMenuOpen, isHoveringMain, mainSlides.length]);
 
-    // Auto-shuffle 
     useEffect(() => {
         if (!isArtistMenuOpen || topCharts.length === 0) return;
         const chartTimer = setInterval(() => {
@@ -150,6 +184,10 @@ export default function NavbarUser({ isLanding = false }) {
         }, 3000);
         return () => clearInterval(chartTimer);
     }, [isArtistMenuOpen, topCharts.length]);
+
+    const displayName = user?.firstName && user?.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user?.username || 'User';
 
     return (
         <div className="relative">
@@ -166,21 +204,14 @@ export default function NavbarUser({ isLanding = false }) {
                 .bar-2 { background-color: #7000FF; color: #7000FF; animation: smoothWave 2.5s infinite ease-in-out 0.4s; }
                 .bar-3 { background-color: #00E5FF; color: #00E5FF; animation: smoothWave 2.5s infinite ease-in-out 0.8s; }
                 .bar-4 { background-color: #FFFFFF; color: #FFFFFF; animation: smoothWave 2.5s infinite ease-in-out 1.2s; }
-                
-                /* ปุ่ม Login / Register แบบ Landing */
                 .btn-custom-login { background: linear-gradient(#0B0C10, #0B0C10) padding-box, linear-gradient(90deg, #00E5FF, #FF00FF, #00E5FF) border-box; background-size: 200% auto; animation: runGradient 3s linear infinite; border: 2px solid transparent; color: #FFFFFF; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 105px; height: 38px; display: flex; align-items: center; justify-content: center; }
                 .btn-custom-login:hover { box-shadow: 0 4px 15px rgba(0, 229, 255, 0.25); color: #00E5FF; transform: translateY(-1px); }
                 .btn-custom-register { background: linear-gradient(90deg, #00E5FF, #7000FF, #00E5FF); background-size: 200% auto; animation: runGradient 3s linear infinite; border: none; color: #FFFFFF; border-radius: 12px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 105px; height: 38px; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3); }
                 .btn-custom-register:hover { box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5); transform: translateY(-1px); }
-
-                /* Smooth UI Animation */
                 .chart-item-move { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease; }
             `}</style>
 
-            {/* ================= HEADER ================= */}
             <header className="flex justify-between items-center px-6 md:px-10 py-3 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
-                
-                {/* 1. ฝั่งซ้าย: Logo */}
                 <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50 w-[220px]" onClick={() => navigate('/')}>
                     <div className="flex items-end gap-[3px] h-6 w-5">
                         <div className="w-1 rounded-full bar-1"></div>
@@ -191,7 +222,6 @@ export default function NavbarUser({ isLanding = false }) {
                     <div className="text-[26px] font-black italic tracking-tighter text-shine">4B1K</div>
                 </div>
 
-                {/* 2. ตรงกลาง: Navigation */}
                 <div className="flex-1 flex justify-center items-center overflow-hidden">
                     <ul className="hidden xl:flex items-center gap-8 text-[13px] font-bold text-gray-300">
                         <li><Link to="/new-event" className="hover:text-[#00E5FF] transition-colors">Concert Event</Link></li>
@@ -204,25 +234,35 @@ export default function NavbarUser({ isLanding = false }) {
                         <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
                     </ul>
 
-                    {/* ช่อง Search */}
                     <div className="flex items-center ml-2 lg:ml-6 relative">
                         <div className={`transition-all duration-500 ease-in-out flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border ${isSearchOpen ? 'w-56 xl:w-64 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100' : 'w-0 border-transparent opacity-0 overflow-hidden'}`}>
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={handleSearch}
+                                onKeyDown={handleSearchKeyDown}
                                 placeholder="Artist or Genre..."
-                                className="w-full text-xs bg-transparent outline-none text-white placeholder:text-gray-500 px-4 py-1.5"
+                                className="w-full text-xs bg-transparent outline-none text-white placeholder:text-gray-500 px-4 py-2"
                             />
+                            {isSearchOpen && (
+                                <button onClick={executeSearch} className="pr-3 text-gray-400 hover:text-[#00E5FF] transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                </button>
+                            )}
                         </div>
-                        <button onClick={() => setIsSearchOpen(!isSearchOpen)} className={`p-1.5 rounded-full transition-all duration-300 flex-shrink-0 z-10 ${isSearchOpen ? 'text-[#00E5FF] absolute right-1' : 'text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]'}`}>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                        </button>
+                        {!isSearchOpen && (
+                            <button onClick={() => setIsSearchOpen(true)} className="p-2 rounded-full transition-all duration-300 flex-shrink-0 z-10 text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </button>
+                        )}
+                        {isSearchOpen && (
+                             <button onClick={() => setIsSearchOpen(false)} className="p-2 rounded-full transition-all duration-300 absolute -right-8 text-gray-500 hover:text-red-400">
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                             </button>
+                        )}
                     </div>
                 </div>
 
-                {/* 3. ฝั่งขวา: Actions */}
                 <div className="flex-shrink-0 flex items-center justify-end gap-5 z-50 w-[240px]">
                     {!user || isLanding ? (
                         <div className="flex items-center gap-3">
@@ -238,7 +278,7 @@ export default function NavbarUser({ isLanding = false }) {
 
                             <div className="relative" ref={profileRef}>
                                 <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 focus:outline-none transition-all hover:opacity-80">
-                                    <div className="w-[42px] h-[42px] profile-gradient-border shadow-[0_0_15px_rgba(0,229,255,0.2)] overflow-hidden rounded-full">
+                                    <div className="w-[42px] h-[42px] profile-gradient-border shadow-[0_0_15px_rgba(0,229,255,0.2)] overflow-hidden rounded-full bg-[#1A1C23]">
                                         <img src={user.profileImage || "https://ui-avatars.com/api/?name=User&background=1A1C23&color=00E5FF"} alt="Profile" className="w-full h-full object-cover rounded-full" />
                                     </div>
                                     <motion.svg animate={{ rotate: isProfileMenuOpen ? 180 : 0 }} className={`w-3.5 h-3.5 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg>
@@ -246,20 +286,27 @@ export default function NavbarUser({ isLanding = false }) {
                                 
                                 <AnimatePresence>
                                     {isProfileMenuOpen && (
-                                        <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.2 }} className="absolute right-0 mt-4 w-56 bg-[#1A1C23]/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 py-2 z-50">
-                                            <div className="px-4 py-3 border-b border-white/5 mb-1">
-                                                <p className="text-sm font-bold text-white truncate uppercase">{user.username || 'User'}</p>
-                                                <p className="text-[10px] font-medium text-gray-500 truncate">{user.email || ''}</p>
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                                            animate={{ opacity: 1, y: 0, scale: 1 }} 
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }} 
+                                            transition={{ duration: 0.2 }} 
+                                            className="absolute right-0 mt-4 w-60 bg-[#1A1C23]/95 backdrop-blur-2xl rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 py-2 z-50"
+                                        >
+                                            <div className="px-5 py-4 border-b border-white/5 mb-2 bg-gradient-to-b from-white/5 to-transparent">
+                                                <p className="text-sm font-black text-white truncate uppercase tracking-wider">{displayName}</p>
+                                                <p className="text-[10px] font-bold text-gray-400 truncate mt-1 tracking-widest">{user?.email || 'No email provided'}</p>
                                             </div>
-                                            <div className="flex flex-col px-1.5">
-                                                <button onClick={() => handleNavigate('/editprofile')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-[#00E5FF] hover:bg-[#252830]/80 rounded-xl transition-colors text-left group">
+
+                                            <div className="flex flex-col px-2">
+                                                <button onClick={() => handleNavigate('/editprofile')} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:text-[#00E5FF] hover:bg-white/5 rounded-xl transition-all group">
                                                     <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                                     Edit Profile
                                                 </button>
                                             </div>
-                                            <div className="border-t border-white/5 my-1"></div>
-                                            <div className="px-1.5">
-                                                <button onClick={handleLogout} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-colors text-left group">
+                                            <div className="border-t border-white/5 my-2"></div>
+                                            <div className="px-2">
+                                                <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-xl transition-all group">
                                                     <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                                                     Sign Out
                                                 </button>
@@ -285,10 +332,10 @@ export default function NavbarUser({ isLanding = false }) {
                         animate={{ opacity: 1, y: 0, scaleY: 1 }} 
                         exit={{ opacity: 0, y: -20, scaleY: 0.95 }} 
                         transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }} 
-                        className="absolute top-full left-0 right-0 w-full z-40 bg-[#0B0C10]/95 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-b-[2rem] border-t border-white/5 pb-12 pt-10" 
+                        className="absolute top-full left-0 right-0 w-full z-40 bg-[#0B0C10]/95 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-b-[2.5rem] border-t border-white/5 pb-12 pt-10 overflow-hidden" 
                         ref={menuRef}
                     >
-                        <section className="max-w-7xl mx-auto px-6 md:px-10">
+                        <section className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
                                 
                                 {/* Column 1: Sidebar Links */}
@@ -329,7 +376,7 @@ export default function NavbarUser({ isLanding = false }) {
 
                                 {/* Column 2: Main Featured Card */}
                                 <div className="col-span-1 md:col-span-6 lg:col-span-7 flex flex-col items-center" onMouseEnter={() => setIsHoveringMain(true)} onMouseLeave={() => setIsHoveringMain(false)}>
-                                    <div className="relative w-full h-[300px] md:h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl group cursor-pointer border border-white/5 transition-all duration-700 bg-black" style={{ boxShadow: `0 20px 50px -10px ${mainSlides[currentSlide].color}30` }} onClick={() => handleNavigate(mainSlides[currentSlide].path)}>
+                                    <div className="relative w-full h-[300px] md:h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl group cursor-pointer border border-white/5 transition-all duration-700 bg-black" style={{ boxShadow: `0 20px 50px -10px ${mainSlides[currentSlide].color}40` }} onClick={() => handleNavigate(mainSlides[currentSlide].path)}>
                                         <AnimatePresence mode="wait">
                                             <motion.div 
                                                 key={currentSlide}
@@ -339,7 +386,8 @@ export default function NavbarUser({ isLanding = false }) {
                                                 transition={{ duration: 0.8 }}
                                                 className="absolute inset-0"
                                             >
-                                                <img src={`https://images.unsplash.com/photo-${mainSlides[currentSlide].img}?q=80&w=1000&auto=format&fit=crop`} alt="Featured Artist" className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[3s] ease-out" />
+                                                {/* 📌 ตรงนี้แก้ให้ใช้ภาพเต็มๆ ตรงๆ */}
+                                                <img src={mainSlides[currentSlide].img} alt="Featured Artist" className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[3s] ease-out" />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/40 to-transparent"></div>
                                                 <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end items-start pb-16">
                                                     <h2 className="text-white text-3xl md:text-5xl font-black leading-tight mb-3 whitespace-pre-line uppercase drop-shadow-lg">{mainSlides[currentSlide].title}</h2>
@@ -379,13 +427,14 @@ export default function NavbarUser({ isLanding = false }) {
                                                         boxShadow: `0 4px 20px ${item.color}10`
                                                     }}
                                                 >
-                                                    <div className="w-[85px] h-[65px] rounded-xl overflow-hidden shadow-sm shrink-0 relative bg-black">
+                                                    <div className="w-[85px] h-[65px] rounded-xl overflow-hidden shadow-sm shrink-0 relative bg-black border border-white/5">
                                                         <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10"></div>
-                                                        <img src={`https://images.unsplash.com/photo-${item.img}?q=80&w=200&auto=format&fit=crop`} alt="Chart Item" className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-100" />
+                                                        {/* 📌 ตรงนี้แก้ให้ใช้ภาพเต็มๆ ตรงๆ */}
+                                                        <img src={item.img} alt="Chart Item" className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-100" />
                                                     </div>
                                                     <div className="flex-1 pr-2">
                                                         <h4 className="text-[11px] font-black tracking-widest mb-1 transition-colors uppercase" style={{ color: item.color }}>{item.artistName}</h4>
-                                                        <p className="text-[11px] text-gray-300 font-medium line-clamp-1">Discover the sound</p>
+                                                        <p className="text-[11px] text-gray-400 font-medium line-clamp-1 group-hover:text-white transition-colors">Discover the sound</p>
                                                     </div>
                                                 </div>
                                             );
