@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { getArtistById, getSongsByArtist, getEventsByArtist, getAllArtists } from '../api/artist';
-import { useSearchParams } from 'react-router-dom'; // เพิ่มบรรทัดนี้
+import { useSearchParams } from 'react-router-dom'; 
 
-// นำเข้า Components ย่อย
 import HeroSection from '../components/PageClassicComponent/HeroSection';
 import BioSection from '../components/PageClassicComponent/BioSection';
 import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSection';
@@ -19,7 +18,6 @@ export default function PageClassic() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // ================= STATE สำหรับ Music Player =================
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
@@ -29,7 +27,6 @@ export default function PageClassic() {
     
     const playerRef = useRef(null);
 
-    // ================= LOGIC ดึงข้อมูลศิลปิน R&B / Classic =================
     useEffect(() => {
         const fetchArtistData = async () => {
             try {
@@ -59,17 +56,17 @@ export default function PageClassic() {
 
                 let ARTIST_ID;
 
-            if (queryArtistId) {
-                ARTIST_ID = Number(queryArtistId);
-            } 
-            else if (rnbArtists.length > 0) { // 📌 ต้องเป็น rnbArtists ให้ตรงกับในไฟล์
-                const randomIndex = Math.floor(Math.random() * rnbArtists.length);
-                ARTIST_ID = rnbArtists[randomIndex].id;
-            } else {
-                setArtist(null);
-                setLoading(false);
-                return;
-            }
+                if (queryArtistId) {
+                    ARTIST_ID = Number(queryArtistId);
+                } 
+                else if (rnbArtists.length > 0) { 
+                    const randomIndex = Math.floor(Math.random() * rnbArtists.length);
+                    ARTIST_ID = rnbArtists[randomIndex].id;
+                } else {
+                    setArtist(null);
+                    setLoading(false);
+                    return;
+                }
 
                 const [artistData, songsData, eventsData] = await Promise.all([
                     getArtistById(ARTIST_ID).catch(() => null),
@@ -103,11 +100,9 @@ export default function PageClassic() {
             }
         };
 
-        // ... โค้ด fetch...
         fetchArtistData();
-    }, [queryArtistId]); // 📌 เพิ่ม queryArtistId เข้าไปในวงเล็บนี้
+    }, [queryArtistId]); 
 
-    // ================= LOGIC ระบบเล่นเพลงจาก YOUTUBE =================
     const extractYouTubeID = (url) => {
         if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -223,58 +218,58 @@ export default function PageClassic() {
         }
     };
 
-    // หิ่งห้อย Background
-    const fireflies = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
+    const neonDust = useMemo(() => Array.from({ length: 30 }).map((_, i) => ({
         id: i,
-        size: Math.random() * 4 + 1, 
+        size: Math.random() * 4 + 2, 
         initialX: Math.random() * 100,
         initialY: Math.random() * 100,
         duration: Math.random() * 15 + 10, 
         delay: Math.random() * 10,
     })), []);
 
-
     if (loading) {
         return (
-            <div className="bg-[#0F172A] min-h-screen flex flex-col items-center justify-center text-[#D4AF37] relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#D4AF37] opacity-10 blur-[80px] rounded-full"></div>
-                <div className="w-16 h-16 border-4 border-[#1e293b] border-t-[#D4AF37] rounded-full animate-spin z-10"></div>
-                <p className="mt-4 font-serif italic tracking-widest animate-pulse text-white uppercase z-10 text-sm">Summoning Soul...</p>
+            <div className="bg-[#221c38] min-h-screen flex flex-col items-center justify-center text-[#d83bb6] relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#9b2d96] opacity-30 blur-[80px] rounded-full"></div>
+                <div className="w-16 h-16 border-4 border-[#30294e] border-t-[#d83bb6] rounded-full animate-spin z-10 shadow-[0_0_20px_#d83bb6]"></div>
+                <p className="mt-4 font-bold tracking-widest animate-pulse text-[#f9c1db] uppercase z-10 text-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>Vibing...</p>
             </div>
         );
     }
 
     if (!artist) {
         return (
-            <div className="bg-[#0F172A] min-h-screen flex flex-col items-center justify-center text-white">
-                <p className="font-bold font-serif text-xl text-[#D4AF37] uppercase">No Artists Found.</p>
-                <p className="text-gray-500 mt-2 font-serif tracking-widest">Please run seed to inject data into database.</p>
+            <div className="bg-[#221c38] min-h-screen flex flex-col items-center justify-center text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                <p className="font-bold text-xl text-[#d83bb6] uppercase">No Artists Found.</p>
+                <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-[#0F172A] min-h-screen text-[#FFFFFF] font-serif overflow-x-hidden selection:bg-[#D4AF37] selection:text-black">
+        <div className="bg-[#1c172e] min-h-screen text-[#FFFFFF] overflow-x-hidden selection:bg-[#d83bb6] selection:text-white">
             
             <div id="yt-player-hidden-classic" className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden"></div>
 
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,900;1,400&family=Cormorant+Garamond:wght@300;600&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;1,400&display=swap');
                 
-                .font-classic { font-family: 'Playfair Display', serif; }
-                .font-sub { font-family: 'Cormorant Garamond', serif; }
+                .font-classic { font-family: 'Outfit', sans-serif; }
+                .font-sub { font-family: 'Plus Jakarta Sans', sans-serif; }
 
                 .classic-grain {
-                    position: fixed; inset: 0; opacity: 0.03; pointer-events: none; z-index: 100;
+                    position: fixed; inset: 0; opacity: 0.04; pointer-events: none; z-index: 100;
                     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
                 }
-                .vinyl-record {
-                    background: repeating-radial-gradient(circle, #0F172A, #0F172A 2px, #1e293b 3px, #0F172A 4px);
-                    border: 2px solid #1e293b;
-                }
-                @keyframes spinVinyl { 100% { transform: rotate(360deg); } }
-                .vinyl-spin { animation: spinVinyl 8s linear infinite; }
-                .firefly-glow { box-shadow: 0 0 10px #D4AF37, 0 0 20px rgba(212, 175, 55, 0.4); }
+                
+                /* CD & Beat Animations */
+                @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                .cd-rotate { animation: rotateCD 8s linear infinite; }
+
+                @keyframes eqPlay { 0%, 100% { height: 15%; } 50% { height: 100%; } }
+                .eq-bar { animation: eqPlay 1.2s ease-in-out infinite; }
+
+                .neon-glow { box-shadow: 0 0 10px #d83bb6, 0 0 20px rgba(249, 193, 219, 0.4); }
 
                 .tooltip-box { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
                 .group:hover .tooltip-box { opacity: 1; transform: translateY(0); }
@@ -282,15 +277,14 @@ export default function PageClassic() {
 
             <div className="classic-grain" />
             
-            {/* Background Fireflies Layer */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <motion.div animate={{ opacity: [0.1, 0.2, 0.1], scale: [1, 1.1, 1] }} transition={{ duration: 15, repeat: Infinity }} className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-[#D4AF37] blur-[150px]" />
-                <motion.div animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }} transition={{ duration: 20, repeat: Infinity }} className="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] rounded-full bg-[#D4AF37] blur-[120px]" />
+                <motion.div animate={{ opacity: [0.15, 0.25, 0.15], scale: [1, 1.1, 1] }} transition={{ duration: 15, repeat: Infinity }} className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-[#9b2d96] blur-[150px]" />
+                <motion.div animate={{ opacity: [0.1, 0.2, 0.1], scale: [1, 1.2, 1] }} transition={{ duration: 20, repeat: Infinity }} className="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] rounded-full bg-[#30294e] blur-[120px]" />
                 
-                {fireflies.map(f => (
+                {neonDust.map(f => (
                     <motion.div
                         key={f.id}
-                        className="absolute bg-[#D4AF37] rounded-full firefly-glow"
+                        className="absolute bg-[#f9c1db] rounded-full neon-glow"
                         style={{ width: f.size, height: f.size, left: `${f.initialX}%`, top: `${f.initialY}%` }}
                         animate={{ 
                             x: [0, Math.random() * 200 - 100, Math.random() * 200 - 100, 0],

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { getAllArtists, getArtistById, getSongsByArtist, getEventsByArtist } from '../api/artist';
-import { useSearchParams } from 'react-router-dom'; // เพิ่มบรรทัดนี้
+import { useSearchParams } from 'react-router-dom';
 
 // นำเข้า Components ย่อย
-// import BackgroundEffects from '../components/PageEtcComponent/BackgroundEffects';
 import HeroSection from '../components/PageEtcComponent/HeroSection';
 import BioSection from '../components/PageEtcComponent/BioSection';
 import MusicPlayerSection from '../components/PageEtcComponent/MusicPlayerSection';
@@ -20,7 +19,6 @@ export default function PageEtc() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // ================= STATE สำหรับ Music Player (YouTube) =================
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
@@ -30,7 +28,6 @@ export default function PageEtc() {
     
     const playerRef = useRef(null);
 
-    // ================= LOGIC ดึงข้อมูลศิลปิน HIP HOP / EDM =================
     useEffect(() => {
         const fetchHiphopEdmArtist = async () => {
             try {
@@ -65,7 +62,7 @@ export default function PageEtc() {
             if (queryArtistId) {
                 ARTIST_ID = Number(queryArtistId);
             } 
-            else if (targetArtists.length > 0) { // 📌 ต้องเป็น targetArtists ให้ตรงกับในไฟล์
+            else if (targetArtists.length > 0) { 
                 const randomIndex = Math.floor(Math.random() * targetArtists.length);
                 ARTIST_ID = targetArtists[randomIndex].id;
             } else {
@@ -106,11 +103,9 @@ export default function PageEtc() {
             }
         };
 
-        // ... โค้ด fetch...
         fetchHiphopEdmArtist();
-    }, [queryArtistId]); // 📌 เพิ่ม queryArtistId เข้าไปในวงเล็บนี้
+    }, [queryArtistId]); 
 
-    // ================= LOGIC ระบบเล่นเพลงจาก YOUTUBE =================
     const extractYouTubeID = (url) => {
         if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -238,7 +233,6 @@ export default function PageEtc() {
         color: i % 2 === 0 ? '#2B5AE8' : '#CEFF67'
     })), []);
 
-
     if (loading) {
         return (
             <div className="bg-[#050505] min-h-screen flex flex-col items-center justify-center text-[#2B5AE8] relative overflow-hidden">
@@ -263,7 +257,6 @@ export default function PageEtc() {
             
             <div id="yt-player-hidden-etc" className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden"></div>
 
-            {/* นำเข้า Style จาก Component หรือใส่ไว้ในหน้าหลัก */}
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;900&display=swap');
                 body { font-family: 'Outfit', sans-serif; }
@@ -271,6 +264,8 @@ export default function PageEtc() {
                 .shape-blob { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; filter: blur(90px); }
                 @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 .vinyl-rotate { animation: spin-slow 12s linear infinite; }
+                .cd-rotate { animation: spin-slow 12s linear infinite; } /* 📌 เพิ่มให้ตรงกับ MusicPlayer */
+                
                 .eq-bar { animation: eqRun 1.5s ease-in-out infinite; }
                 @keyframes eqRun { 0%, 100% { height: 20%; } 50% { height: 100%; } }
 
@@ -288,9 +283,6 @@ export default function PageEtc() {
                 @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
             `}</style>
 
-            {/* <BackgroundEffects /> */}
-
-            {/* Background Blobs Layer */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <div className="absolute inset-[-100%] bg-grid-animation z-0"></div>
                 {floatingBlobs.map(blob => (
