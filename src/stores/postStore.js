@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createPostApi, deletePostApi, editPostApi, getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
+import { createCommentApi, createPostApi, deleteCommentApi, deletePostApi, editCommentApi, editPostApi, getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
 
 const usePostStore = create(
     persist(
         (set,get) => ({
             posts : [],
+            comments : [],
             currentPost : null,
             currentLikes : [],
     
@@ -90,8 +91,52 @@ const usePostStore = create(
         }catch(error) {
             console.dir('delete Post fail',error)
         }
+    },
+    createComment : async (postId,body) => {
+        try {
+            const resp = await createCommentApi(postId,body)
+            get().getAllPosts()
+            return resp
+        }catch(error) {
+            console.log('create post fail',error)
+        }
+    },
+    editComment : async (postId, commentId, body) => {
+        try {
+            const resp = await editCommentApi(postId, commentId, body)
+
+            // Optimistic update: อัปเดต comment ใน local store ทันที
+            // ทำให้รูปและข้อความโชว์โดยไม่ต้องรอ getAllPosts()
+            set((state) => ({
+                posts: state.posts.map((post) =>
+                    post.id === postId
+                        ? {
+                            ...post,
+                            comments: post.comments.map((c) =>
+                                c.id === commentId ? { ...c, ...body } : c
+                            ),
+                          }
+                        : post
+                ),
+            }))
+
+            get().getAllPosts()
+            return resp
+        }catch (error) {
+            console.log('edit comment fail',error)
+        }
+    },
+    deleteComment : async (postId, commentId) => {
+        try {
+            const resp = await deleteCommentApi(postId, commentId)
+            get().getAllPosts()
+            return resp
+        }catch(error) {
+            console.log('delete comment fail',error)
+        }
     }
 }),
+
     {
         name : "post-storage"
     }
