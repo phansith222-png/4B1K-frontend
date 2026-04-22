@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function ConcertSection({ events }) {
+    const navigate = useNavigate();
     return (
         <section className="relative w-full py-24 px-6 bg-[#0a0a0a] overflow-hidden border-y border-white/5">
             <div className="max-w-7xl mx-auto relative z-10">
@@ -13,7 +15,7 @@ export default function ConcertSection({ events }) {
                                 LIVE <span className="text-[#D3131F]">CONCERTS</span>
                             </h3>
                         </div>
-                        <button onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')} className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group bg-[#111] px-5 py-2.5 rounded border border-white/5">
+                        <button onClick={() => navigate('/new-event')} className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group bg-[#111] px-5 py-2.5 rounded border border-white/5">
                             VIEW ALL SHOWS
                             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                         </button>
@@ -26,7 +28,7 @@ export default function ConcertSection({ events }) {
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')}
+                                onClick={() => navigate('/new-event')}
                                 className="flex flex-col group cursor-pointer"
                             >
                                 <div className="aspect-[4/5] relative rounded-xl overflow-hidden border border-white/5 group-hover:border-[#D3131F]/50 transition-colors duration-500 shadow-xl mb-4 bg-[#111]">
