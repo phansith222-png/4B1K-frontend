@@ -1,12 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function HeroSection({ artist, events, embers }) {
+    const navigate = useNavigate();
     return (
         <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center py-20 px-6 overflow-hidden bg-[#050505]">
             <div className="absolute inset-0 z-0 overflow-hidden bg-black pointer-events-none">
-                <motion.div 
+                <motion.div
                     className="absolute inset-0 opacity-40 mix-blend-overlay grayscale-[90%]"
                     style={{
                         backgroundImage: `url('https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=2500&auto=format&fit=crop')`,
@@ -16,7 +18,7 @@ export default function HeroSection({ artist, events, embers }) {
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
                 />
-                
+
                 <motion.div
                     className="absolute w-[600px] h-[600px] rounded-full bg-[#D3131F] opacity-20 blur-[120px]"
                     animate={{ x: ['-10%', '20%', '-10%'], y: ['-10%', '10%', '-10%'] }}
@@ -43,9 +45,9 @@ export default function HeroSection({ artist, events, embers }) {
                         }}
                         initial={{ y: 0, opacity: 0, x: 0 }}
                         animate={{
-                            y: [0, -800, -1200], 
-                            opacity: [0, 0.8, 1, 0], 
-                            x: [0, ember.xOffset, ember.xOffset * 1.5] 
+                            y: [0, -800, -1200],
+                            opacity: [0, 0.8, 1, 0],
+                            x: [0, ember.xOffset, ember.xOffset * 1.5]
                         }}
                         transition={{ duration: ember.duration, delay: ember.delay, repeat: Infinity, ease: "linear" }}
                     />
@@ -95,9 +97,14 @@ export default function HeroSection({ artist, events, embers }) {
                             )}
                         </div>
                     </div>
-                    <button className="bg-gradient-to-r from-[#D3131F] to-[#991b1b] text-white px-10 py-4 rounded font-black tracking-widest uppercase text-sm hover:scale-105 transition-transform shadow-[0_5px_20px_rgba(211,19,31,0.4)] border border-[#ff4d4d]/30">
-                        GET TICKETS
-                    </button>
+                    <motion.button
+                        onClick={() => navigate('/new-event')}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="ml-100  from-[#D3131F] to-[#991b1b] text-white px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(211,19,31,0.4)] border border-[#ff4d4d]/30 hover:border-white transition-all whitespace-nowrap"
+                    >
+                        Get Tickets
+                    </motion.button>
                 </div>
             </Reveal>
         </section>

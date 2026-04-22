@@ -45,7 +45,10 @@ export default function ArtistShowcase() {
         className="text-center mb-16"
       >
         <span className="text-[#d000ff] font-black text-[10px] tracking-[0.3em] uppercase mb-2 block">Discover Music</span>
-        <h2 className="text-4xl md:text-5xl font-black uppercase text-white tracking-tighter">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d000ff] to-[#FF007F]">Artists</span></h2>
+        <h2 className="text-4xl md:text-5xl font-black uppercase text-white tracking-tighter mb-4">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d000ff] to-[#FF007F]">Artists</span></h2>
+        <p className="text-gray-400 text-sm md:text-base font-medium max-w-xl mx-auto">
+          Explore profiles of trending artists, stream their top tracks, and learn their journey. Click on any artist to dive into their world.
+        </p>
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12">

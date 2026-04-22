@@ -1,12 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; 
+import Reveal from '../Reveal';
 
 export default function HeroSection({ artist, events }) {
+    const navigate = useNavigate();
     return (
         <section className="relative w-full min-h-screen flex flex-col justify-center items-center py-20 px-6 z-10 overflow-hidden">
             <div className="relative w-full max-w-7xl mx-auto flex flex-col items-start gap-12">
-                
+
                 <div className="relative w-full flex flex-col md:flex-row items-center gap-16">
                     <div className="w-full md:w-1/2">
                         <Reveal delay={0.1}>
@@ -23,7 +25,7 @@ export default function HeroSection({ artist, events }) {
 
                     <div className="w-full md:w-1/2 relative flex justify-center md:justify-end">
                         <div className="relative w-[70%] aspect-[3/4] border-2 border-[#9b2d96]/40 rounded-2xl translate-x-8 translate-y-8 opacity-60 shadow-[0_0_50px_rgba(178,102,197,0.3)]" />
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 1, ease: "easeOut" }}
@@ -40,7 +42,7 @@ export default function HeroSection({ artist, events }) {
                 </div>
 
                 <Reveal delay={0.5} effect="fade-up">
-                    <motion.div 
+                    <motion.div
                         whileHover={{ y: -5 }}
                         className="w-full max-w-5xl mt-24 flex flex-col md:flex-row items-center justify-between border border-[#b266c5]/20 py-10 px-10 bg-[#30294e]/40 backdrop-blur-2xl rounded-3xl shadow-[0_20px_40px_rgba(48,41,78,0.6)]"
                     >
@@ -54,11 +56,11 @@ export default function HeroSection({ artist, events }) {
                                 <p className="font-classic text-xl text-[#f9c1db]/50 mt-3 tracking-wider">More dates to be announced</p>
                             )}
                         </div>
-                        <motion.button 
-                            onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')}
-                            whileHover={{ backgroundColor: "#d83bb6", color: "#ffffff", scale: 1.05 }}
+                        <motion.button
+                            onClick={() => navigate('/new-event')}
+                            whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="border-2 border-[#d83bb6] text-[#f9c1db] bg-[#d83bb6]/10 px-12 py-4 rounded-full font-classic font-bold tracking-widest text-sm uppercase transition-all shadow-[0_0_20px_rgba(216,59,182,0.2)]"
+                            className="ml-50 bg-gradient-to-r from-[#d83bb6] to-[#9b2d96] text-white px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(216,59,182,0.4)] border border-[#f9c1db]/30 hover:border-white transition-all whitespace-nowrap"
                         >
                             Reserve Tickets
                         </motion.button>

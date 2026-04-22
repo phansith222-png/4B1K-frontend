@@ -1,23 +1,25 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function HeroSection({ artist, events }) {
+    const navigate = useNavigate();
     return (
         <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center py-20 px-6 z-10 border-b border-gray-900">
             <div className="relative w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10">
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8 }}
                     className="relative w-full md:w-3/4 h-[400px] md:h-[600px]"
                 >
-                    <motion.div 
+                    <motion.div
                         animate={{ opacity: [0.3, 0.6, 0.3] }}
                         transition={{ duration: 4, repeat: Infinity }}
                         className="absolute -top-6 -left-6 w-32 h-32 border-t-4 border-l-4 border-[#2B5AE8] rounded-tl-3xl"
                     />
-                    <motion.div 
+                    <motion.div
                         animate={{ opacity: [0.3, 0.6, 0.3] }}
                         transition={{ duration: 4, repeat: Infinity, delay: 2 }}
                         className="absolute -bottom-6 -right-6 w-32 h-32 border-b-4 border-r-4 border-[#CEFF67] rounded-br-3xl"
@@ -33,9 +35,9 @@ export default function HeroSection({ artist, events }) {
 
                         <div className="absolute bottom-10 left-10 md:left-14 z-20">
                             {/* 📌 ครอบด้วย Reveal */}
-                            
+
                             <Reveal delay={0.4}>
-                                <motion.h1 
+                                <motion.h1
                                     whileHover={{ skewX: -5 }}
                                     className="text-5xl md:text-8xl lg:text-9xl font-black italic tracking-tighter text-white drop-shadow-[0_10px_20px_rgba(43,90,232,0.8)] cursor-default uppercase line-clamp-2"
                                 >
@@ -49,7 +51,7 @@ export default function HeroSection({ artist, events }) {
 
             {/* 📌 ครอบส่วน Banner ด้วย Reveal */}
             <Reveal delay={0.6} effect="fade-up">
-                <motion.div 
+                <motion.div
                     className="relative z-20 mt-16 flex flex-col md:flex-row items-center gap-8 w-full max-w-6xl bg-gray-900/30 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-800"
                 >
                     <div className="flex-1">
@@ -70,12 +72,13 @@ export default function HeroSection({ artist, events }) {
                             )}
                         </div>
                     </div>
-                    <motion.button 
-                        whileHover={{ scale: 1.05, backgroundColor: '#2B5AE8', color: '#FFFFFF', borderColor: '#2B5AE8' }}
+                    <motion.button
+                        onClick={() => navigate('/new-event')}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="bg-[#CEFF67] text-black px-12 py-4 rounded-full font-black tracking-widest uppercase text-lg shadow-[0_10px_30px_rgba(206,255,103,0.2)] border border-[#CEFF67] transition-colors"
+                        className="ml-50 bg-gradient-to-r from-[#2B5AE8] to-[#CEFF67] text-black px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(206,255,103,0.3)] border border-white/20 hover:border-black transition-all whitespace-nowrap"
                     >
-                        Get Tickets
+                        Book Now
                     </motion.button>
                 </motion.div>
             </Reveal>
