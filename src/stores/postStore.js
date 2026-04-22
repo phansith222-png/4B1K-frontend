@@ -15,6 +15,7 @@ const usePostStore = create(
         const resp = await getAllPostsApi()
         set ({ posts : resp.data.posts})
         // console.log('get all poststore',resp)
+        console.log('get all posts',resp)
         return resp
         
         }catch(error) {
@@ -65,6 +66,7 @@ const usePostStore = create(
     createPost : async (body) => {
         try {
             const resp = await createPostApi(body)
+            console.log(resp)
             get().getAllPosts()
             return resp
         }catch(error) {
