@@ -20,6 +20,7 @@ function PostItem({ post, index }) {
   const unlikePost = usePostStore((state) => state.unlikePost);
   const deletePost = usePostStore((state) => state.deletePost);
 
+  console.log(post)
   const likeCount = post.likes?.length || 0;
   const commentCount = post.comments?.length || 0;
 
@@ -180,14 +181,23 @@ function PostItem({ post, index }) {
           </div>
         </div>
 
-        {/* Post Image */}
-        {post.image && (
-          <div className="px-6 mb-4">
-            <img
-              src={post.image}
-              className="w-full h-[350px] object-cover rounded-2xl border border-white/10 shadow-inner"
-              alt="Post content"
-            />
+        {/* Post Images (Multiple) */}
+        {post.images && post.images.length > 0 && (
+          <div
+            className={`px-6 mb-4 grid gap-2 ${
+              post.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+            }`}
+          >
+            {post.images.map((imgUrl, idx) => (
+              <img
+                key={idx}
+                src={imgUrl}
+                className={`w-full object-cover rounded-2xl border border-white/10 shadow-inner ${
+                  post.images.length === 1 ? "h-[400px]" : "h-[200px]"
+                }`}
+                alt={`Post content ${idx}`}
+              />
+            ))}
           </div>
         )}
 
