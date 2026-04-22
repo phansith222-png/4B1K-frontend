@@ -182,18 +182,18 @@ function PostItem({ post, index }) {
         </div>
 
         {/* Post Images (Multiple) */}
-        {post.images && post.images.length > 0 && (
+        {post.postImages && post.postImages.length > 0 && (
           <div
             className={`px-6 mb-4 grid gap-2 ${
-              post.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+              post.postImages.length === 1 ? "grid-cols-1" : "grid-cols-2"
             }`}
           >
-            {post.images.map((imgUrl, idx) => (
+            {post.postImages.map((el, idx) => (
               <img
-                key={idx}
-                src={imgUrl}
+                key={el.id || index}
+                src={el.url}
                 className={`w-full object-cover rounded-2xl border border-white/10 shadow-inner ${
-                  post.images.length === 1 ? "h-[400px]" : "h-[200px]"
+                  post.postImages.length === 1 ? "h-[400px]" : "h-[200px]"
                 }`}
                 alt={`Post content ${idx}`}
               />
