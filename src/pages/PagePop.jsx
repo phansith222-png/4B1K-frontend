@@ -279,40 +279,25 @@ export default function PagePop() {
             `}</style>
 
             <div className="dark-grain" />
-
             <HeroSection artist={artist} events={events} />
-            
-           
-              <BioSection artist={artist} />
-            
-            
-           
-              <MusicPlayerSection 
-                  artist={artist} 
-                  songs={songs} 
-                  currentSongIndex={currentSongIndex} 
-                  isPlaying={isPlaying} 
-                  progress={progress} 
-                  currentTime={currentTime} 
-                  duration={duration} 
-                  togglePlayPause={togglePlayPause} 
-                  changeSong={changeSong} 
-                  handleSongSelect={handleSongSelect} 
-                  handleProgressClick={handleProgressClick} 
-                  currentSong={songs[currentSongIndex]}
-              />
-            
-
+            <BioSection artist={artist} />
+            <MusicPlayerSection
+                artist={artist}
+                songs={songs}
+                currentSongIndex={currentSongIndex}
+                isPlaying={isPlaying}
+                progress={progress}
+                currentTime={currentTime}
+                duration={duration}
+                togglePlayPause={togglePlayPause}
+                changeSong={changeSong}
+                handleSongSelect={handleSongSelect}
+                handleProgressClick={handleProgressClick}
+                currentSong={songs[currentSongIndex]}
+            />
             <ConcertSection events={events} />
-            
-            
-              <StatsSection songs={songs} />
-            
-            
-            
-              <BottomTextSection artist={artist} />
-            
+            <StatsSection songs={songs} />
+            <BottomTextSection artist={artist} />
         </div>
-
     );
 }

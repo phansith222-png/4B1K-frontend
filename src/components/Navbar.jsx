@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllArtists } from '../api/artist'; 
+import { getAllEvents } from '../api/event';
 
 export default function Navbar() {
     const navigate = useNavigate();
@@ -14,59 +15,100 @@ export default function Navbar() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const [mainSlides, setMainSlides] = useState([]);
-    const [topCharts, setTopCharts] = useState([]);
+    const [topEvents, setTopEvents] = useState([]); 
     const [allArtists, setAllArtists] = useState([]); 
 
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isHoveringMain, setIsHoveringMain] = useState(false);
     const [chartOrder, setChartOrder] = useState([0, 1, 2, 3, 4, 5]);
 
-    // ================= 1. ดึงข้อมูลและจัดการหมวดหมู่ =================
+    // ================= 1. ดึงข้อมูล ศิลปิน และ คอนเสิร์ต =================
     useEffect(() => {
         const fetchAndOrganize = async () => {
             try {
+                // ดึงข้อมูลศิลปิน
                 const response = await getAllArtists();
                 const artistsList = response?.artists || response?.data || response || [];
                 setAllArtists(artistsList);
 
+                // ดึงข้อมูลคอนเสิร์ต
+                const eventRes = await getAllEvents();
+                let eventsList = [];
+                if (Array.isArray(eventRes)) eventsList = eventRes;
+                else if (eventRes?.data?.events) eventsList = eventRes.data.events;
+                else if (eventRes?.events) eventsList = eventRes.events;
+                
+                eventsList.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+                
+                let validEvents = eventsList.slice(0, 6);
+                if(validEvents.length > 0 && validEvents.length < 6) {
+                    while(validEvents.length < 6) {
+                        validEvents = [...validEvents, ...validEvents].slice(0, 6);
+                    }
+                }
+                setTopEvents(validEvents);
+
                 if (artistsList.length === 0) return;
 
-                const genreConfigs = [
-                    { name: 'pop', color: '#FF00FF', path: '/pop', label: 'Pop' },
-                    { name: 'rock', color: '#00E5FF', path: '/rock', label: 'Rock' },
-                    { name: 'r&b', color: '#D4AF37', path: '/classic', label: 'R&B' },
-                    { name: 'classic', color: '#FFFFFF', path: '/classic', label: 'Classic' },
-                    { name: 'hip hop', color: '#CEFF67', path: '/etc', label: 'Hip Hop' },
-                    { name: 'edm', color: '#7000FF', path: '/etc', label: 'EDM' }
-                ];
+                // 📌 อัปเดตลอจิก: สุ่มศิลปินขึ้นมาก่อน 6 คน แล้วค่อยเช็คว่าอยู่หมวดไหน
+                const getArtistInfo = (artist) => {
+                    const aId = Number(artist.id);
+                    const popIds = [1, 2, 3, 4, 5];
+                    const rockIds = [6, 7, 8, 9, 10];
+                    const classicIds = [16, 17, 18, 19, 20];
+                    const etcIds = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25];
 
-                const randomizedData = genreConfigs.map(config => {
-                    const filtered = artistsList.filter(a =>
-                        a.genres?.some(g => g.genre?.name?.toLowerCase().includes(config.name)) ||
-                        a.biography?.toLowerCase().includes(config.name)
-                    );
+                    let type = 'pop'; 
+                    if (popIds.includes(aId)) type = 'pop';
+                    else if (rockIds.includes(aId)) type = 'rock';
+                    else if (classicIds.includes(aId)) type = 'classic';
+                    else if (etcIds.includes(aId)) type = 'etc';
+                    else {
+                        const isRock = artist.genres?.some(g => g.genre?.name?.toLowerCase().includes('rock'));
+                        const isClassic = artist.genres?.some(g => {
+                            const gName = g.genre?.name?.toLowerCase() || '';
+                            return gName.includes('r&b') || gName.includes('rnb') || gName.includes('classic');
+                        });
+                        const isEtc = artist.genres?.some(g => {
+                            const gName = g.genre?.name?.toLowerCase() || '';
+                            return gName.includes('hip hop') || gName.includes('rap') || gName.includes('edm') || gName.includes('electronic');
+                        });
 
-                    const randomArt = filtered.length > 0
-                        ? filtered[Math.floor(Math.random() * filtered.length)]
-                        : artistsList[Math.floor(Math.random() * artistsList.length)];
+                        if (isRock) type = 'rock';
+                        else if (isClassic) type = 'classic';
+                        else if (isEtc) type = 'etc';
+                    }
 
+                    switch (type) {
+                        case 'pop': return { path: '/pop', color: '#FF007F', label: 'Pop' };
+                        case 'rock': return { path: '/rock', color: '#D3131F', label: 'Rock' };
+                        case 'classic': return { path: '/classic', color: '#d83bb6', label: 'R&B / Classic' };
+                        case 'etc': return { path: '/etc', color: '#CEFF67', label: 'Hiphop / EDM' };
+                        default: return { path: '/pop', color: '#FF007F', label: 'Pop' };
+                    }
+                };
+
+                const shuffled = [...artistsList].sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, 6);
+
+                const randomizedData = selected.map(art => {
+                    const info = getArtistInfo(art);
                     return {
-                        img: randomArt.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
-                        title: `${randomArt.artistName}\nTop in ${config.label}`,
-                        desc: `View the latest from our ${config.label} collection.`,
-                        path: config.path,
-                        color: config.color,
-                        artistId: randomArt.id,
-                        artistName: randomArt.artistName
+                        img: art.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
+                        title: `${art.artistName}\nTop in ${info.label}`,
+                        desc: `View the latest from our ${info.label} collection.`,
+                        path: info.path,
+                        color: info.color,
+                        artistId: art.id,
+                        artistName: art.artistName
                     };
                 });
 
                 setMainSlides(randomizedData);
-                setTopCharts(randomizedData);
                 setChartOrder(randomizedData.map((_, i) => i));
 
             } catch (error) {
-                console.error("Failed to load artists for navbar:", error);
+                console.error("Failed to load data for navbar:", error);
             }
         };
 
@@ -156,9 +198,9 @@ export default function Navbar() {
         return () => clearInterval(slideTimer);
     }, [isArtistMenuOpen, isHoveringMain, mainSlides.length]);
 
-    // Auto-shuffle 
+    // Auto-shuffle Events
     useEffect(() => {
-        if (!isArtistMenuOpen || topCharts.length === 0) return;
+        if (!isArtistMenuOpen || topEvents.length === 0) return;
         const chartTimer = setInterval(() => {
             setChartOrder((prev) => {
                 const newOrder = [...prev];
@@ -168,11 +210,10 @@ export default function Navbar() {
             });
         }, 3000);
         return () => clearInterval(chartTimer);
-    }, [isArtistMenuOpen, topCharts.length]);
+    }, [isArtistMenuOpen, topEvents.length]);
 
     return (
         <div className="relative">
-            {/* ================= STYLES ================= */}
             <style>{`
                 @keyframes runGradient { 0% { background-position: 200% 0; } 100% { background-position: 0% 0; } }
                 .text-shine { background: linear-gradient(120deg, #FFFFFF 0%, #FFFFFF 40%, #00E5FF 50%, #FFFFFF 60%, #FFFFFF 100%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: shine 4s linear infinite; }
@@ -187,11 +228,7 @@ export default function Navbar() {
                 .chart-item-move { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease; }
             `}</style>
 
-            {/* ================= HEADER ================= */}
-            {/* 📌 ปรับ py-4 md:py-5 ให้ Navbar ดูสูงและโปร่งขึ้น */}
             <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
-                
-                {/* 📌 1. ฝั่งซ้าย: Logo (ขยายฟอนต์เป็น text-3xl และขยายไอคอนคลื่นเสียง) */}
                 <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer z-50 w-auto md:w-[240px]" onClick={() => navigate('/')}>
                     <div className="flex items-end gap-[3px] h-7 w-6">
                         <div className="w-1.5 rounded-full bar-1"></div>
@@ -202,7 +239,6 @@ export default function Navbar() {
                     <div className="text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                 </div>
 
-                {/* 📌 2. ตรงกลาง: Navigation (ขยายฟอนต์เป็น text-[15px] และเพิ่มระยะห่าง) */}
                 <div className="flex-1 flex justify-center items-center overflow-hidden">
                     <ul className="hidden xl:flex items-center gap-10 text-[15px] font-bold text-gray-300">
                         <li><Link to="/new-event" className="hover:text-[#00E5FF] transition-colors">Concert Event</Link></li>
@@ -215,7 +251,6 @@ export default function Navbar() {
                         <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
                     </ul>
 
-                    {/* ช่อง Search (ขยายขนาดช่องกรอกและไอคอน) */}
                     <div className="flex items-center ml-2 lg:ml-8 relative">
                         <div className={`transition-all duration-500 ease-in-out flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border ${isSearchOpen ? 'w-64 xl:w-72 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100' : 'w-0 border-transparent opacity-0 overflow-hidden'}`}>
                             <input
@@ -245,7 +280,6 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* 📌 3. ฝั่งขวา: Login / Register (ขยายฟอนต์เป็น text-[15px] และเพิ่ม padding ให้ปุ่มใหญ่ขึ้น) */}
                 <div className="flex-shrink-0 flex items-center justify-end gap-4 lg:gap-6 z-50 w-auto">
                     <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
                         <button 
@@ -268,7 +302,6 @@ export default function Navbar() {
                 </div>
             </header>
 
-            {/* ================= ARTIST BIOLOGY EXPANDED SECTION (Mega Menu) ================= */}
             <AnimatePresence>
                 {isArtistMenuOpen && mainSlides.length > 0 && (
                     <motion.div 
@@ -282,19 +315,18 @@ export default function Navbar() {
                         <section className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
                                 
-                                {/* Column 1: Sidebar Links */}
                                 <div className="col-span-1 md:col-span-2 flex flex-col gap-2 text-sm pr-4">
                                     <span className="text-white font-extrabold text-base mb-3 border-b-2 border-[#00E5FF] pb-2 inline-block w-max">Artist Hub</span>
                                     
-                                    <button onClick={() => handleNavigate('/pop')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:text-[#FF00FF] hover:bg-[#FF00FF]/10 hover:translate-x-1 transition-all group">
+                                    <button onClick={() => handleNavigate('/pop')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:text-[#FF007F] hover:bg-[#FF007F]/10 hover:translate-x-1 transition-all group">
                                         <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                                         Pop
                                     </button>
-                                    <button onClick={() => handleNavigate('/rock')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 hover:translate-x-1 transition-all group">
+                                    <button onClick={() => handleNavigate('/rock')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:text-[#D3131F] hover:bg-[#D3131F]/10 hover:translate-x-1 transition-all group">
                                         <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                         Rock
                                     </button>
-                                    <button onClick={() => handleNavigate('/classic')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 hover:translate-x-1 transition-all group">
+                                    <button onClick={() => handleNavigate('/classic')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:text-[#d83bb6] hover:bg-[#d83bb6]/10 hover:translate-x-1 transition-all group">
                                         <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
                                         R&B / Classic
                                     </button>
@@ -318,9 +350,12 @@ export default function Navbar() {
                                     </div>
                                 </div>
 
-                                {/* Column 2: Main Featured Card */}
                                 <div className="col-span-1 md:col-span-6 lg:col-span-7 flex flex-col items-center" onMouseEnter={() => setIsHoveringMain(true)} onMouseLeave={() => setIsHoveringMain(false)}>
-                                    <div className="relative w-full h-[300px] md:h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl group cursor-pointer border border-white/5 transition-all duration-700 bg-black" style={{ boxShadow: `0 20px 50px -10px ${mainSlides[currentSlide].color}40` }} onClick={() => handleNavigate(mainSlides[currentSlide].path)}>
+                                    <div 
+                                        className="relative w-full h-[300px] md:h-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl group cursor-pointer border border-white/5 transition-all duration-700 bg-black" 
+                                        style={{ boxShadow: `0 20px 50px -10px ${mainSlides[currentSlide].color}40` }} 
+                                        onClick={() => handleNavigate(`${mainSlides[currentSlide].path}?artistId=${mainSlides[currentSlide].artistId}`)}
+                                    >
                                         <AnimatePresence mode="wait">
                                             <motion.div 
                                                 key={currentSlide}
@@ -353,34 +388,40 @@ export default function Navbar() {
                                     </div>
                                 </div>
 
-                                {/* Column 3: Top Chart List */}
                                 <div className="col-span-1 md:col-span-4 lg:col-span-3 pl-0 md:pl-4 overflow-hidden relative min-h-[320px]">
-                                    <h3 className="text-white font-extrabold mb-5 text-[15px] border-b-2 border-white/5 pb-2 uppercase tracking-widest">Trending Now</h3>
+                                    <h3 className="text-white font-extrabold mb-5 text-[15px] border-b-2 border-white/5 pb-2 uppercase tracking-widest">Upcoming Concerts</h3>
                                     <div className="flex flex-col gap-3 relative">
-                                        {chartOrder.slice(0, 3).map((chartIndex, position) => {
-                                            const item = topCharts[chartIndex];
+                                        {topEvents.length > 0 ? chartOrder.slice(0, 3).map((chartIndex, position) => {
+                                            const event = topEvents[chartIndex];
+                                            if (!event) return null;
                                             return (
                                                 <div 
                                                     key={chartIndex} 
-                                                    onClick={() => handleNavigate(item.path)}
-                                                    className="absolute w-full flex gap-4 items-center cursor-pointer group bg-[#1A1C23]/80 backdrop-blur-md hover:bg-[#252830] p-2.5 rounded-2xl border border-white/5 hover:border-white/20 shadow-lg chart-item-move"
+                                                    onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')}
+                                                    className="absolute w-full flex gap-4 items-center cursor-pointer group bg-[#1A1C23]/80 backdrop-blur-md hover:bg-[#252830] p-2.5 rounded-2xl border border-white/5 hover:border-[#00E5FF]/40 shadow-lg chart-item-move"
                                                     style={{ 
                                                         top: `${position * 95}px`,
                                                         zIndex: 10 - position,
-                                                        boxShadow: `0 4px 20px ${item.color}10`
+                                                        boxShadow: `0 4px 20px rgba(0,229,255,0.05)`
                                                     }}
                                                 >
                                                     <div className="w-[85px] h-[65px] rounded-xl overflow-hidden shadow-sm shrink-0 relative bg-black border border-white/5">
                                                         <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10"></div>
-                                                        <img src={item.img} alt="Chart Item" className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-100" />
+                                                        <img src={event.posterImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=600&auto=format&fit=crop"} alt="Concert" className="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-500 group-hover:opacity-100" />
                                                     </div>
                                                     <div className="flex-1 pr-2">
-                                                        <h4 className="text-[11px] font-black tracking-widest mb-1 transition-colors uppercase" style={{ color: item.color }}>{item.artistName}</h4>
-                                                        <p className="text-[11px] text-gray-400 font-medium line-clamp-1 group-hover:text-white transition-colors">Discover the sound</p>
+                                                        <h4 className="text-[11px] font-black tracking-widest mb-1 transition-colors uppercase text-[#00E5FF] group-hover:text-white line-clamp-1">
+                                                            {event.eventName}
+                                                        </h4>
+                                                        <p className="text-[10px] text-gray-400 font-medium line-clamp-1 group-hover:text-gray-300 transition-colors">
+                                                            {new Date(event.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {event.venue?.name || "TBA"}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             );
-                                        })}
+                                        }) : (
+                                            <p className="text-gray-500 text-sm mt-4 italic">No upcoming concerts.</p>
+                                        )}
                                     </div>
                                 </div>
 
