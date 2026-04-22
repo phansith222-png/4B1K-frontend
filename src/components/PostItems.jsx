@@ -20,7 +20,7 @@ function PostItem({ post, index }) {
   const unlikePost = usePostStore((state) => state.unlikePost);
   const deletePost = usePostStore((state) => state.deletePost);
 
-  console.log(post)
+//   console.log(post)
   const likeCount = post.likes?.length || 0;
   const commentCount = post.comments?.length || 0;
 
