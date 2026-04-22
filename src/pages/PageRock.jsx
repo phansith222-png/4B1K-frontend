@@ -304,11 +304,15 @@ export default function PageRock() {
                     transition: all 0.3s ease;
                 }
 
-                /* --- Tooltip กราฟ --- */
-                .tooltip-box {
-                    opacity: 0; transform: translateY(10px); pointer-events: none;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                }
+                @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                .cd-rotate { animation: rotateCD 8s linear infinite; }
+
+                @keyframes eqPlay { 0%, 100% { height: 15%; } 50% { height: 100%; } }
+                .eq-bar { animation: eqPlay 1.2s ease-in-out infinite; }
+
+                .firefly-glow { box-shadow: 0 0 10px #D4AF37, 0 0 20px rgba(212, 175, 55, 0.4); }
+
+                .tooltip-box { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
                 .group:hover .tooltip-box { opacity: 1; transform: translateY(0); }
             `}</style>
 
