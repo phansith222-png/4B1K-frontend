@@ -103,7 +103,7 @@ export default function HeroSection({ artist, events, embers }) {
                         whileTap={{ scale: 0.95 }}
                         className="ml-100  from-[#D3131F] to-[#991b1b] text-white px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(211,19,31,0.4)] border border-[#ff4d4d]/30 hover:border-white transition-all whitespace-nowrap"
                     >
-                        Get Tickets
+                        Join Event
                     </motion.button>
                 </div>
             </Reveal>

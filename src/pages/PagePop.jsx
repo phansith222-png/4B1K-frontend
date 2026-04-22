@@ -14,7 +14,6 @@ import BioSection from '../components/PagePopComponent/BioSection';
 import MusicPlayerSection from '../components/PagePopComponent/MusicPlayerSection';
 import ConcertSection from '../components/PagePopComponent/ConcertSection';
 import StatsSection from '../components/PagePopComponent/StatsSection';
-import BottomTextSection from '../components/PagePopComponent/BottomTextSection';
 import Reveal from '../components/Reveal';
 
 const PLAYER_ID = 'yt-player-hidden-pop';
@@ -75,12 +74,12 @@ export default function PagePop() {
             <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
 
             <style>{`
-                .shape-blob-1 { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; animation: morph 8s ease-in-out infinite; }
-                .shape-blob-2 { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation: morph 8s ease-in-out infinite reverse; }
-                @keyframes morph {
-                    0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-                    34%       { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
-                    67%       { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+                .shape-blob-1 { animation: float 10s ease-in-out infinite; }
+                .shape-blob-2 { animation: float 10s ease-in-out infinite reverse; }
+                @keyframes float {
+                    0%, 100% { transform: translate(0, 0) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
                 }
                 @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 .cd-rotate { animation: rotateCD 12s linear infinite; }
@@ -114,9 +113,6 @@ export default function PagePop() {
             </Reveal>
             <Reveal>
                 <StatsSection songs={songs} />
-            </Reveal>
-            <Reveal>
-                <BottomTextSection artist={artist} />
             </Reveal>
         </div>
     );

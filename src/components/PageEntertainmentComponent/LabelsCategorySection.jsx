@@ -106,8 +106,8 @@ export default function LabelsCategorySection({ topAgencies, indieAgencies, card
                 {indieAgencies.length > 0 && (
                     <div>
                         <div className="flex items-center gap-4 mb-12">
-                            <h3 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase">Rising & <span className="text-[#FF007F]">Independent</span></h3>
-                            <div className="flex-1 h-px bg-gradient-to-r from-[#FF007F]/50 to-transparent"></div>
+                            <h3 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase">Rising & <span className="text-[#FF00FF]">Independent</span></h3>
+                            <div className="flex-1 h-px bg-gradient-to-r from-[#FF00FF]/50 to-transparent"></div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

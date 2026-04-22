@@ -28,7 +28,7 @@ export default function EditProfile() {
         defaultValues: {
             firstName: user?.firstName || '',
             lastName: user?.lastName || '',
-            Gender: user?.gender || '',
+            gender: user?.gender || '',
             nationalId: user?.nationalId || '',
             username: user?.username || '',
             telephone: user?.telephone || '',
@@ -64,10 +64,6 @@ export default function EditProfile() {
 
             if (success) {
                 await getProfile(); 
-                toast.success('Profile updated successfully!');
-                setTimeout(() => {
-                    navigate(-1);
-                }, 500);
             }
         } catch (error) {
             console.error("Update profile failed:", error);
@@ -177,7 +173,7 @@ export default function EditProfile() {
                             <ProfileInput id="nationalId" label="National ID" placeholder="13 digits" register={register} error={errors.nationalId} focusedInput={focusedInput} setFocusedInput={setFocusedInput} />
                             
                             <ProfileSelect 
-                                id="Gender" label="Gender" register={register} error={errors.gender} focusedInput={focusedInput} setFocusedInput={setFocusedInput}
+                                id="gender" label="Gender" register={register} error={errors.gender} focusedInput={focusedInput} setFocusedInput={setFocusedInput}
                                 options={[
                                     { value: "MALE", label: "Male" },
                                     { value: "FEMALE", label: "Female" },

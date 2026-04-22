@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; 
-
+import FeaturedArtists from '../FeaturedArtists';
 export default function StatsSection({ songs }) {
     return (
         <section className="relative w-full py-24 px-6 bg-transparent border-t border-[#30294e]/50 z-10">
@@ -13,7 +13,7 @@ export default function StatsSection({ songs }) {
                     </h3>
                 </Reveal>
 
-                <Reveal delay={0.2} effect="fade-up">
+                <Reveal delay={0.2} effect="fade-up" overflow="visible">
                     <div className="max-w-4xl mx-auto bg-[#30294e]/30 backdrop-blur-2xl p-8 md:p-14 rounded-[3rem] border border-[#b266c5]/20 shadow-[0_30px_60px_rgba(48,41,78,0.8)] relative">
                         <div className="flex justify-between items-end h-56 md:h-72 gap-3 md:gap-8 border-b border-[#b266c5]/30 pb-2 relative">
                             <div className="absolute w-full top-1/4 h-px bg-white/5 z-0"></div>
@@ -28,6 +28,8 @@ export default function StatsSection({ songs }) {
                                 const spValue = (song.popularity / 1000000).toFixed(1);
                                 const ytValue = (spValue * (youtubePop / spotifyPop)).toFixed(1);
 
+                                const maxHeight = Math.max(spotifyPop, youtubePop);
+
                                 return (
                                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-crosshair z-10">
                                         <div className="flex w-full justify-center gap-1.5 md:gap-3 items-end h-full px-1">
@@ -38,7 +40,10 @@ export default function StatsSection({ songs }) {
                                         </div>
                                         <span className="font-sub text-[#b266c5] text-[10px] md:text-xs font-bold uppercase mt-6 truncate w-full text-center px-1 group-hover:text-[#f9c1db] transition-colors">{song.title.split(' ')[0]}</span>
                                         
-                                        <div className="tooltip-box absolute -top-16 left-1/2 -translate-x-1/2 z-50">
+                                        <div 
+                                            className="tooltip-box absolute left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:-translate-y-2"
+                                            style={{ bottom: `calc(${maxHeight}% + 55px)` }}
+                                        >
                                             <div className="bg-[#1c172e]/95 backdrop-blur-md border border-[#d83bb6]/50 p-4 rounded-xl shadow-[0_10px_30px_rgba(155,45,150,0.5)] min-w-[150px] text-center">
                                                 <p className="text-[11px] font-classic font-bold text-white border-b border-[#b266c5]/30 pb-2 mb-2 truncate">{song.title}</p>
                                                 <div className="flex justify-between items-center text-[10px] font-sub tracking-widest font-bold">
@@ -68,17 +73,8 @@ export default function StatsSection({ songs }) {
                     </div>
                 </Reveal>
 
-                <Reveal delay={0.4} effect="fade-up">
-                    <div className="mt-32 pt-16 border-t border-[#30294e] flex flex-wrap justify-center items-center gap-8 md:gap-20">
-                        {['VOCALS', 'GUITAR', 'BASS', 'PRODUCER'].map((member, idx) => (
-                            <div key={idx} className="flex flex-col items-center gap-1 hover:-translate-y-2 transition-transform duration-500 cursor-default group">
-                                <span className="text-2xl md:text-4xl font-classic font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-b from-[#b266c5] to-[#30294e] opacity-70 select-none group-hover:opacity-100 group-hover:from-[#f9c1db] group-hover:to-[#d83bb6] group-hover:drop-shadow-[0_0_20px_rgba(216,59,182,0.4)] transition-all">
-                                    {member}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </Reveal>
+                {/* 🎯 FEATURED ARTISTS SECTION */}
+                <FeaturedArtists genre="classic" />
 
             </div>
         </section>

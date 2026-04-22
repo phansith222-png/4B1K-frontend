@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; 
+import FeaturedArtists from '../FeaturedArtists';
 
 export default function StatsSection({ songs }) {
     return (
@@ -13,7 +14,7 @@ export default function StatsSection({ songs }) {
                     </h3>
                 </Reveal>
 
-                <Reveal delay={0.2} effect="fade-up">
+                <Reveal delay={0.2} effect="fade-up" overflow="visible">
                     <div className="max-w-4xl mx-auto bg-[#111]/80 backdrop-blur-xl p-6 md:p-10 rounded-[3rem] border border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative">
                         <div className="flex justify-between items-end h-48 md:h-64 gap-2 md:gap-6 border-b border-gray-800 pb-2 relative">
                             {/* เส้น Grid */}
@@ -29,6 +30,8 @@ export default function StatsSection({ songs }) {
                                 const ytValue = (song.popularity / 1000000).toFixed(1);
                                 const spValue = (ytValue * (spotifyPop / youtubePop)).toFixed(1);
 
+                                const maxHeight = Math.max(spotifyPop, youtubePop);
+
                                 return (
                                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-crosshair z-10">
                                         <div className="flex w-full justify-center gap-1 md:gap-2 items-end h-full px-1 md:px-2">
@@ -38,7 +41,10 @@ export default function StatsSection({ songs }) {
                                         <span className="text-gray-500 text-[10px] md:text-xs font-black uppercase mt-4 truncate w-full text-center px-1 group-hover:text-[#CEFF67] transition-colors">{song.title.split(' ')[0]}</span>
                                         
                                         {/* 🎯 Hover Tooltip */}
-                                        <div className="tooltip-box absolute -top-16 left-1/2 -translate-x-1/2 z-50">
+                                        <div 
+                                            className="tooltip-box absolute left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:-translate-y-2"
+                                            style={{ bottom: `calc(${maxHeight}% + 50px)` }}
+                                        >
                                             <div className="bg-[#050505] border border-gray-700 p-3 rounded-xl shadow-2xl min-w-[140px] text-center">
                                                 <p className="text-[10px] font-bold text-white border-b border-gray-800 pb-1.5 mb-1.5 truncate">{song.title}</p>
                                                 <div className="flex justify-between items-center text-[10px] font-black">
@@ -68,25 +74,8 @@ export default function StatsSection({ songs }) {
                     </div>
                 </Reveal>
 
-                {/* Auto Sliding Marquee */}
-                <Reveal delay={0.4} effect="fade-up">
-                    <div className="mt-24 pt-10 border-t border-gray-900 w-full overflow-hidden">
-                        <div className="marquee-container">
-                            {[...Array(4)].map((_, index) => (
-                                <div key={index} className="flex justify-around items-center min-w-full">
-                                    {['HIP HOP', 'EDM', 'TRAP', 'ELECTRONIC'].map((genre, idx) => (
-                                        <span 
-                                            key={idx}
-                                            className="text-3xl md:text-5xl font-black tracking-tighter text-white opacity-20 hover:opacity-100 hover:text-[#2B5AE8] cursor-default transition-all duration-300 uppercase mx-8"
-                                        >
-                                            {genre}
-                                        </span>
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </Reveal>
+                {/* 🎯 FEATURED ARTISTS SECTION */}
+                <FeaturedArtists genre="etc" />
 
             </div>
         </section>
