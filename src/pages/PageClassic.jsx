@@ -15,7 +15,6 @@ import BioSection from '../components/PageClassicComponent/BioSection';
 import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSection';
 import ConcertSection from '../components/PageClassicComponent/ConcertSection';
 import StatsSection from '../components/PageClassicComponent/StatsSection';
-import BottomTextSection from '../components/PageClassicComponent/BottomTextSection';
 
 const PLAYER_ID = 'yt-player-hidden-classic';
 
@@ -112,12 +111,15 @@ export default function PageClassic() {
                     <motion.div
                         key={f.id}
                         className="absolute bg-[#f9c1db] rounded-full neon-glow"
-                        style={{ width: f.size, height: f.size, left: `${f.initialX}%`, top: `${f.initialY}%` }}
+                        style={{ 
+                            width: f.size, height: f.size, left: `${f.initialX}%`, top: `${f.initialY}%`,
+                            willChange: 'transform, opacity'
+                        }}
                         animate={{
-                            x: [0, Math.random() * 200 - 100, Math.random() * 200 - 100, 0],
-                            y: [0, Math.random() * 200 - 100, Math.random() * 200 - 100, 0],
-                            opacity: [0, 0.8, 0.2, 0.9, 0],
-                            scale: [1, 1.5, 1],
+                            x: [0, Math.random() * 150 - 75, 0],
+                            y: [0, Math.random() * 150 - 75, 0],
+                            opacity: [0, 0.7, 0],
+                            scale: [1, 1.3, 1],
                         }}
                         transition={{ duration: f.duration, delay: f.delay, repeat: Infinity, ease: 'easeInOut' }}
                     />
@@ -141,7 +143,6 @@ export default function PageClassic() {
             />
             <ConcertSection events={events} />
             <StatsSection songs={songs} />
-            <BottomTextSection artist={artist} />
         </div>
     );
 }

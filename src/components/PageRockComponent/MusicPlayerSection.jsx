@@ -11,7 +11,7 @@ export default function MusicPlayerSection({
     return (
         <section className="relative w-full py-24 px-6 overflow-hidden bg-[#050505]">
             <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[600px] bg-gradient-to-r from-[#D3131F] via-[#050505] to-gray-500 rounded-[100%] blur-[120px] animate-pulse"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[600px] bg-gradient-to-r from-[#D3131F] via-[#050505] to-gray-500 rounded-[100%] blur-[80px] animate-pulse" style={{ willChange: 'transform, opacity' }}></div>
             </div>
 
             <div className="relative z-10 max-w-6xl mx-auto">

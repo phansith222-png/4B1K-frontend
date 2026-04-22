@@ -15,7 +15,6 @@ import BioSection from '../components/PageEtcComponent/BioSection';
 import MusicPlayerSection from '../components/PageEtcComponent/MusicPlayerSection';
 import ConcertSection from '../components/PageEtcComponent/ConcertSection';
 import StatsSection from '../components/PageEtcComponent/StatsSection';
-import BottomTextSection from '../components/PageEtcComponent/BottomTextSection';
 
 const PLAYER_ID = 'yt-player-hidden-etc';
 
@@ -112,8 +111,11 @@ export default function PageEtc() {
                 {floatingBlobs.map(blob => (
                     <motion.div
                         key={blob.id}
-                        className="absolute opacity-[0.06] shape-blob mix-blend-screen z-0"
-                        style={{ width: blob.size, height: blob.size, left: `${blob.x}%`, top: `${blob.y}%`, backgroundColor: blob.color }}
+                        className="absolute opacity-[0.06] shape-blob z-0"
+                        style={{ 
+                            width: blob.size, height: blob.size, left: `${blob.x}%`, top: `${blob.y}%`, backgroundColor: blob.color,
+                            willChange: 'transform, opacity'
+                        }}
                         animate={{ x: [0, 40, -40, 0], y: [0, -60, 60, 0] }}
                         transition={{ duration: blob.duration, delay: blob.delay, repeat: Infinity, ease: 'easeInOut' }}
                     />
@@ -138,7 +140,6 @@ export default function PageEtc() {
             />
             <ConcertSection events={events} />
             <StatsSection songs={songs} />
-            <BottomTextSection artist={artist} />
         </div>
     );
 }

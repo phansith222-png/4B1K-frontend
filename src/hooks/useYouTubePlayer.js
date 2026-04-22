@@ -11,7 +11,13 @@ import { extractYouTubeID, formatTime } from '../utils/youtube';
  *
  * No key tricks, no destroy(), no DOM manipulation — just swap the video.
  */
-const useYouTubePlayer = (songs, playerId = 'yt-player-hidden') => {
+const useYouTubePlayer = (songs, playerId = 'yt-player-hidden', config = {}) => {
+    const { 
+        previewMode = false, 
+        startOffset = 60, 
+        previewDuration = 10 
+    } = config;
+
     const [isPlaying, setIsPlaying]               = useState(false);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
     const [progress, setProgress]                 = useState(0);
@@ -99,6 +105,14 @@ const useYouTubePlayer = (songs, playerId = 'yt-player-hidden') => {
             if (!playerRef.current?.getCurrentTime) return;
             const current = playerRef.current.getCurrentTime() || 0;
             const total   = playerRef.current.getDuration()   || 0;
+            
+            // Check for preview mode end
+            if (previewMode && current >= (startOffset + previewDuration)) {
+                playerRef.current.pauseVideo();
+                setIsPlaying(false);
+                return;
+            }
+
             if (total > 0) {
                 setProgress((current / total) * 100);
                 setCurrentTime(formatTime(current));
@@ -114,7 +128,15 @@ const useYouTubePlayer = (songs, playerId = 'yt-player-hidden') => {
         const s = songsRef.current;
         if (!playerRef.current || !isPlayerReady || index < 0 || index >= s.length) return;
         const videoId = extractYouTubeID(s[index]?.streamUrl) || 'dQw4w9WgXcQ';
-        playerRef.current.loadVideoById(videoId);
+        
+        if (previewMode) {
+            playerRef.current.loadVideoById({
+                videoId: videoId,
+                startSeconds: startOffset
+            });
+        } else {
+            playerRef.current.loadVideoById(videoId);
+        }
         idxRef.current = index;
         setCurrentSongIndex(index);
         setProgress(0);
@@ -143,7 +165,15 @@ const useYouTubePlayer = (songs, playerId = 'yt-player-hidden') => {
     };
 
     const handleSongSelect = (idx, e) => {
-        e.stopPropagation();
+        console.log("Song selected at index:", idx);
+        if (e) e.stopPropagation();
+        
+        // In preview mode, always reload to ensure we start at the chorus (restart)
+        if (previewMode) {
+            loadSong(idx);
+            return;
+        }
+
         if (idxRef.current === idx) {
             togglePlayPause(e);
         } else {

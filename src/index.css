@@ -18,3 +18,11 @@
   opacity: 1;
   transform: translateY(0);
 } */ 
+
+/* GLOBAL CURSOR POINTER */
+button, 
+[role="button"], 
+.cursor-pointer,
+a {
+  cursor: pointer !important;
+}
