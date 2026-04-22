@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useInView, useAnimation } from 'framer-motion';
 
-export default function Reveal({ children, delay = 0, yOffset = 50 }) {
+export default function Reveal({ children, delay = 0, yOffset = 50, overflow = "hidden" }) {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, amount: 0.3 }); // แอนิเมชันทำงานครั้งเดียวเมื่อเลื่อนมาเห็น 30%
     const mainControls = useAnimation();
@@ -13,28 +13,26 @@ export default function Reveal({ children, delay = 0, yOffset = 50 }) {
     }, [isInView, mainControls]);
 
     return (
-        <div ref={ref} style={{ position: "relative", overflow: "hidden" }}>
+        <div ref={ref} style={{ position: "relative", overflow }}>
             <motion.div
                 variants={{
                     hidden: { 
                         opacity: 0, 
                         y: yOffset, 
-                        scale: 0.95, 
-                        filter: "blur(10px)" 
+                        scale: 0.98,
                     },
                     visible: { 
                         opacity: 1, 
                         y: 0, 
-                        scale: 1, 
-                        filter: "blur(0px)",
+                        scale: 1,
                         transition: { 
-                            duration: 0.9, 
-                            // 📌 คีย์เวิร์ดความสวย: Easing แบบ Bezier Curve (Ease-Out นุ่มๆ)
+                            duration: 0.8, 
                             ease: [0.16, 1, 0.3, 1], 
                             delay: delay 
                         } 
                     },
                 }}
+                style={{ willChange: 'transform, opacity' }}
                 initial="hidden"
                 animate={mainControls}
             >

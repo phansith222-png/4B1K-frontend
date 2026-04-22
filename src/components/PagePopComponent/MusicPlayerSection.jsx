@@ -12,7 +12,7 @@ export default function MusicPlayerSection({
         <section className="relative w-full py-32 px-6 overflow-hidden z-10">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[800px] bg-gradient-to-r from-[#FF007F] via-transparent to-[#00F5D4] rounded-[100%] blur-[120px] animate-pulse"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[800px] bg-gradient-to-r from-[#FF007F] via-transparent to-[#00F5D4] rounded-[100%] blur-[80px] animate-pulse" style={{ willChange: 'transform, opacity' }}></div>
             </div>
 
             <div className="relative z-10 max-w-6xl mx-auto">

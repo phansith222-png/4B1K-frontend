@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; 
+import FeaturedArtists from '../FeaturedArtists';
 
 export default function StatsSection({ songs }) {
     return (
@@ -16,8 +17,8 @@ export default function StatsSection({ songs }) {
                     </div>
                 </Reveal>
 
-                <Reveal delay={0.2} effect="fade-up">
-                    <div className="max-w-4xl mx-auto bg-[#0a0a0a] rounded-2xl border border-white/5 shadow-2xl p-8 md:p-12 relative overflow-hidden">
+                <Reveal delay={0.2} effect="fade-up" overflow="visible">
+                    <div className="max-w-4xl mx-auto bg-[#0a0a0a] rounded-2xl border border-white/5 shadow-2xl p-8 md:p-12 relative">
                         <div className="relative z-10">
                             
                             <div className="flex justify-center gap-8 mb-12">
@@ -44,33 +45,38 @@ export default function StatsSection({ songs }) {
                                     const spValue = (song.popularity / 1000000).toFixed(1);
                                     const ytValue = (spValue * (youtubePop / spotifyPop)).toFixed(1);
 
-                                    return (
-                                        <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end relative z-10 group cursor-crosshair">
-                                            
-                                            <div className="flex w-full justify-center gap-1.5 md:gap-2.5 items-end h-full px-1">
-                                                {/* แท่ง Spotify */}
-                                                <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-[40%] md:w-8 bar-spotify-v3 relative group-hover:brightness-125" />
-                                                {/* แท่ง YouTube */}
-                                                <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-[40%] md:w-8 bar-youtube-v3 relative group-hover:brightness-125" />
-                                            </div>
-                                            
-                                            <div className="mt-4 text-center w-full">
-                                                <span className="text-gray-500 text-[10px] font-bold tracking-widest uppercase truncate w-full block group-hover:text-white transition-colors">{song.title.split(' ')[0]}</span>
-                                            </div>
+                                            const maxHeight = Math.max(spotifyPop, youtubePop);
 
-                                            <div className="tooltip-box absolute -top-16 left-1/2 -translate-x-1/2 z-50">
-                                                <div className="bg-black border border-[#D3131F]/30 p-3 rounded shadow-2xl min-w-[140px] text-center">
-                                                    <p className="text-[10px] font-bold text-white border-b border-white/10 pb-1.5 mb-1.5 truncate">{song.title}</p>
-                                                    <div className="flex justify-between items-center text-[10px] font-black">
-                                                        <span className="text-[#D3131F]">YT: {ytValue}M</span>
-                                                        <span className="text-gray-400">SP: {spValue}M</span>
+                                            return (
+                                                <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end relative z-10 group cursor-crosshair">
+                                                    
+                                                    <div className="flex w-full justify-center gap-1.5 md:gap-2.5 items-end h-full px-1">
+                                                        {/* แท่ง Spotify */}
+                                                        <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-[40%] md:w-8 bar-spotify-v3 relative group-hover:brightness-125" />
+                                                        {/* แท่ง YouTube */}
+                                                        <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-[40%] md:w-8 bar-youtube-v3 relative group-hover:brightness-125" />
                                                     </div>
-                                                </div>
-                                                <div className="w-3 h-3 bg-black border-b border-r border-[#D3131F]/30 rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
-                                            </div>
+                                                    
+                                                    <div className="mt-4 text-center w-full">
+                                                        <span className="text-gray-500 text-[10px] font-bold tracking-widest uppercase truncate w-full block group-hover:text-white transition-colors">{song.title.split(' ')[0]}</span>
+                                                    </div>
 
-                                        </div>
-                                    )
+                                                    <div 
+                                                        className="tooltip-box absolute left-1/2 -translate-x-1/2 z-50 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:-translate-y-2"
+                                                        style={{ bottom: `calc(${maxHeight}% + 60px)` }}
+                                                    >
+                                                        <div className="bg-black border border-[#D3131F]/30 p-3 rounded shadow-2xl min-w-[140px] text-center">
+                                                            <p className="text-[10px] font-bold text-white border-b border-white/10 pb-1.5 mb-1.5 truncate">{song.title}</p>
+                                                            <div className="flex justify-between items-center text-[10px] font-black">
+                                                                <span className="text-[#D3131F]">YT: {ytValue}M</span>
+                                                                <span className="text-gray-400">SP: {spValue}M</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-3 h-3 bg-black border-b border-r border-[#D3131F]/30 rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
+                                                    </div>
+
+                                                </div>
+                                            )
                                 }) : (
                                     <div className="w-full flex items-center justify-center h-full text-gray-600 font-bold uppercase z-10">No data available</div>
                                 )}
@@ -79,25 +85,8 @@ export default function StatsSection({ songs }) {
                     </div>
                 </Reveal>
 
-                <Reveal delay={0.4} effect="fade-up">
-                    <div className="mt-32 pt-16 border-t border-white/5 flex flex-wrap justify-center items-center gap-10 md:gap-20 transition-all duration-500">
-                        {[
-                            { name: 'VOCALS', role: 'MAIN' },
-                            { name: 'GUITAR', role: 'LEAD' },
-                            { name: 'BASS', role: 'RHYTHM' },
-                            { name: 'DRUMS', role: 'BEAT' },
-                        ].map((member, idx) => (
-                            <div key={idx} className="flex flex-col items-center gap-1 hover:-translate-y-2 transition-transform duration-300 cursor-default group">
-                                <span className="text-2xl md:text-4xl font-black tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-t from-gray-700 to-[#111111] opacity-90 select-none transition-all duration-500 group-hover:from-[#D3131F] group-hover:to-white group-hover:opacity-100">
-                                    {member.name}
-                                </span>
-                                <span className="text-[10px] md:text-xs font-bold tracking-widest text-gray-600 uppercase group-hover:text-white transition-colors">
-                                    {member.role}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </Reveal>
+                {/* 🎯 FEATURED ARTISTS SECTION */}
+                <FeaturedArtists genre="rock" />
 
             </div>
         </section>

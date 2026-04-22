@@ -10,8 +10,8 @@ export default function HeroSection({ artist, events }) {
     return (
         <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center py-20 px-6 overflow-hidden">
             {/* Background Ambient Glow */}
-            <div className="absolute top-10 left-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-[#00F5D4] opacity-20 blur-[100px] rounded-full pointer-events-none animate-pulse"></div>
-            <div className="absolute bottom-10 right-10 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-[#FF007F] opacity-20 blur-[120px] rounded-full pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-10 left-10 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-[#00F5D4] opacity-[0.12] blur-[80px] rounded-full pointer-events-none animate-pulse"></div>
+            <div className="absolute bottom-10 right-10 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-[#FF007F] opacity-[0.12] blur-[100px] rounded-full pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
 
             {/* 📌 ส่วนรูปภาพศิลปิน */}
             <div className="relative w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10 mt-10">
@@ -22,8 +22,8 @@ export default function HeroSection({ artist, events }) {
                     className="relative w-full md:w-3/4 h-[450px] md:h-[650px]"
                 >
                     {/* Blob Animations */}
-                    <div className="absolute -top-6 -left-6 md:-top-12 md:-left-12 w-64 h-64 md:w-96 md:h-96 bg-[#00F5D4] shape-blob-1 z-0 mix-blend-screen opacity-50"></div>
-                    <div className="absolute -bottom-6 -right-6 md:-bottom-12 md:-right-12 w-64 h-64 md:w-96 md:h-96 bg-[#FF007F] shape-blob-2 z-0 mix-blend-screen opacity-50"></div>
+                    <div className="absolute -top-6 -left-6 md:-top-12 md:-left-12 w-64 h-64 md:w-96 md:h-96 bg-[#00F5D4] shape-blob-1 z-0 rounded-full blur-[60px] opacity-20"></div>
+                    <div className="absolute -bottom-6 -right-6 md:-bottom-12 md:-right-12 w-64 h-64 md:w-96 md:h-96 bg-[#FF007F] shape-blob-2 z-0 rounded-full blur-[60px] opacity-20"></div>
 
                     {/* Main Image Card */}
                     <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden z-10 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] bg-[#110E1B] group flex items-center justify-center">
@@ -33,13 +33,13 @@ export default function HeroSection({ artist, events }) {
                                 <div className="w-10 h-10 border-4 border-white/10 border-t-[#00F5D4] rounded-full animate-spin"></div>
                             </div>
                         )}
-                        
+
                         <img
                             src={artist.profileImage || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=2000&auto=format&fit=crop"}
                             alt={artist.artistName}
                             onLoad={() => setImgLoaded(true)}
                             onError={() => setImgLoaded(true)}
-                            className={`absolute inset-0 w-full h-full object-cover mix-blend-screen transition-all duration-[15s] ease-out group-hover:scale-110 ${imgLoaded ? 'opacity-80' : 'opacity-0'}`}
+                            className={`absolute inset-0 w-full h-full object-cover transition-all duration-[15s] ease-out group-hover:scale-110 ${imgLoaded ? 'opacity-80' : 'opacity-0'}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/40 to-transparent opacity-90"></div>
 
@@ -89,7 +89,7 @@ export default function HeroSection({ artist, events }) {
                             whileTap={{ scale: 0.95 }}
                             className="bg-gradient-to-r from-[#FF007F] to-[#00F5D4] text-[#110E1B] px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(0,245,212,0.4)] border border-white/20 hover:border-white transition-all whitespace-nowrap"
                         >
-                            Get Tickets
+                            Join Event
                         </motion.button>
                     </motion.div>
                 </Reveal>

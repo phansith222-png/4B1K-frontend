@@ -26,7 +26,7 @@ export default function HeroSection({ navigate }) {
                     </h1>
                     
                     <p className="mt-8 text-gray-400 text-lg md:text-xl max-w-xl leading-relaxed mb-12">
-                        ศูนย์รวมค่ายเพลงและศิลปินไทยทุกแนวทาง ค้นพบศิลปินคนโปรดและสำรวจอุตสาหกรรมดนตรีไทยในที่เดียว
+                        The central hub for Thai music labels. Discover your favorite artists and explore the heartbeat of the music industry all in one place.
                     </p>
 
                     <div className="flex flex-wrap gap-6">

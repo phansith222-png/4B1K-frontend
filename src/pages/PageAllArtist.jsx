@@ -5,6 +5,7 @@ import { getAllArtists } from '../api/artist';
 import HeroSection from '../components/PageAllArtistComponent/HeroSection';
 import CategorySection from '../components/PageAllArtistComponent/CategorySection';
 import BottomTextSection from '../components/PageAllArtistComponent/BottomTextSection';
+import Reveal from '../components/Reveal';
 
 export default function PageAllArtist() {
     const navigate = useNavigate();
@@ -31,30 +32,30 @@ export default function PageAllArtist() {
     // 2. จัดหมวดหมู่ศิลปินแบบ "เจาะจงเป๊ะๆ" (ป้องกันการซ้ำ)
     const sections = useMemo(() => {
         const categories = [
-            { 
+            {
                 title: "POP & IDOLS", keyword: "pop", targetIds: [1, 2, 3, 4, 5],
-                primary: "#FF007F", secondary: "#00F5D4", 
-                desc: "The mainstream phenomenon shaping the sound of modern youth." 
+                primary: "#FF00FF", secondary: "#00E5FF",
+                desc: "The mainstream phenomenon shaping the sound of modern youth."
             },
-            { 
+            {
                 title: "ROCK ARENA", keyword: "rock", targetIds: [6, 7, 8, 9, 10],
-                primary: "#D3131F", secondary: "#8D99AE", 
-                desc: "Raw energy, distortion, and the voices that echo through stadiums." 
+                primary: "#D3131F", secondary: "#b91c1c",
+                desc: "Raw energy, distortion, and the voices that echo through stadiums."
             },
-            { 
+            {
                 title: "CLASSIC & R&B", keyword: "r&b", targetIds: [16, 17, 18, 19, 20],
-                primary: "#D4AF37", secondary: "#FFFFFF", 
-                desc: "Smooth soul, timeless melodies, and the golden heritage of R&B artistry." 
+                primary: "#d83bb6", secondary: "#f9c1db",
+                desc: "Smooth soul, timeless melodies, and the golden heritage of R&B artistry."
             },
-            { 
+            {
                 title: "HIP HOP CULTURE", keyword: "hip hop", targetIds: [11, 12, 13, 14, 15],
-                primary: "#00E5FF", secondary: "#7000FF", 
-                desc: "The rhythm of the streets, poetic flow, and heavy bass beats." 
+                primary: "#FF00FF", secondary: "#7000FF",
+                desc: "The rhythm of the streets, poetic flow, and heavy bass beats."
             },
-            { 
+            {
                 title: "EDM UNIVERSE", keyword: "edm", targetIds: [21, 22, 23, 24, 25],
-                primary: "#7000FF", secondary: "#FF00FF", 
-                desc: "Electronic energy, synthesizer waves, and the future of dance music." 
+                primary: "#7000FF", secondary: "#00E5FF",
+                desc: "Electronic energy, synthesizer waves, and the future of dance music."
             }
         ];
 
@@ -64,7 +65,7 @@ export default function PageAllArtist() {
         return categories.map(cat => {
             const filtered = artists.filter(artist => {
                 const aId = Number(artist.id);
-                
+
                 if (assignedArtistIds.has(aId)) return false;
 
                 const isMatchId = cat.targetIds.includes(aId);
@@ -81,8 +82,8 @@ export default function PageAllArtist() {
                 }
                 return false;
             });
-            
-            return { ...cat, artists: filtered }; 
+
+            return { ...cat, artists: filtered };
         });
     }, [artists]);
 
@@ -91,9 +92,9 @@ export default function PageAllArtist() {
         id: i,
         symbol: ['♪', '♫', '♬', '♩'][Math.floor(Math.random() * 4)],
         size: Math.random() * 20 + 15,
-        left: Math.random() * 100, 
-        delay: Math.random() * 5, 
-        duration: Math.random() * 4 + 4, 
+        left: Math.random() * 100,
+        delay: Math.random() * 5,
+        duration: Math.random() * 4 + 4,
     })), []);
 
 
@@ -109,11 +110,11 @@ export default function PageAllArtist() {
 
     return (
         <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden relative">
-            
+
             {/* ================= STYLE ================= */}
             <style>{`
                 .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); }
-                .mesh-gradient { position: absolute; inset: 0; z-index: 0; filter: blur(80px); animation: mesh-move 20s ease-in-out infinite alternate; background: radial-gradient(circle at var(--x1, 20%) var(--y1, 20%), rgba(255, 0, 127, 0.1) 0%, transparent 40%), radial-gradient(circle at var(--x2, 80%) var(--y2, 80%), rgba(43, 90, 232, 0.1) 0%, transparent 40%), radial-gradient(circle at var(--x3, 50%) var(--y3, 50%), rgba(212, 175, 55, 0.05) 0%, transparent 50%), radial-gradient(circle at var(--x4, 20%) var(--y4, 80%), rgba(211, 19, 31, 0.1) 0%, transparent 40%); }
+                .mesh-gradient { position: absolute; inset: 0; z-index: 0; filter: blur(80px); animation: mesh-move 20s ease-in-out infinite alternate; background: radial-gradient(circle at var(--x1, 20%) var(--y1, 20%), rgba(255, 0, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at var(--x2, 80%) var(--y2, 80%), rgba(0, 229, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at var(--x3, 50%) var(--y3, 50%), rgba(112, 0, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at var(--x4, 20%) var(--y4, 80%), rgba(255, 0, 255, 0.05) 0%, transparent 40%); }
                 @keyframes mesh-move { 0% { --x1: 20%; --y1: 20%; --x2: 80%; --y2: 80%; --x3: 50%; --y3: 50%; --x4: 20%; --y4: 80%; } 100% { --x1: 80%; --y1: 80%; --x2: 20%; --y2: 20%; --x3: 20%; --y3: 50%; --x4: 50%; --y4: 80%; } }
                 .dark-grain { position: fixed; inset: 0; opacity: 0.04; pointer-events: none; z-index: 100; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
                 
@@ -135,14 +136,20 @@ export default function PageAllArtist() {
 
             <div className="dark-grain" />
 
-            <HeroSection floatingNotes={floatingNotes} />
+            <Reveal>
+                <HeroSection floatingNotes={floatingNotes} />
+            </Reveal>
 
             {/* ================= ARTIST SECTIONS (CAROUSEL) ================= */}
             {sections.map((section, sIdx) => section.artists.length > 0 && (
-                <CategorySection key={sIdx} section={section} navigate={navigate} />
+                <Reveal key={sIdx}>
+                    <CategorySection section={section} navigate={navigate} />
+                </Reveal>
             ))}
 
-            <BottomTextSection />
+            <Reveal>
+                <BottomTextSection />
+            </Reveal>
 
         </div>
     );

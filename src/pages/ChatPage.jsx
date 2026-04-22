@@ -9,7 +9,7 @@ import mainapi from "../api/auth";
 import { useSocket } from "../contexts/SocketContext";
 import useUserStore from "../stores/userStore";
 import { formatRelative } from "date-fns";
-import { th } from "date-fns/locale";
+import { th } from "date-fns/locale/th";
 
 // Component แสดงสถานะการส่งข้อความ
 const MessageStatus = ({ isMe, isSent, isRead }) => {
