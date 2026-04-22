@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; 
+import Reveal from '../Reveal';
 
 export default function HeroSection({ artist, events }) {
-    console.log(events)
+    const navigate = useNavigate();
+    const [imgLoaded, setImgLoaded] = useState(false);
+    // console.log(events)
     return (
         <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center py-20 px-6 overflow-hidden">
             {/* Background Ambient Glow */}
@@ -12,7 +15,7 @@ export default function HeroSection({ artist, events }) {
 
             {/* 📌 ส่วนรูปภาพศิลปิน */}
             <div className="relative w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-10 mt-10">
-                <motion.div 
+                <motion.div
                     initial={{ y: 30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
@@ -23,17 +26,26 @@ export default function HeroSection({ artist, events }) {
                     <div className="absolute -bottom-6 -right-6 md:-bottom-12 md:-right-12 w-64 h-64 md:w-96 md:h-96 bg-[#FF007F] shape-blob-2 z-0 mix-blend-screen opacity-50"></div>
 
                     {/* Main Image Card */}
-                    <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden z-10 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] bg-[#110E1B] group">
+                    <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden z-10 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.8)] bg-[#110E1B] group flex items-center justify-center">
+                        {/* Placeholder / Skeleton ระหว่างรอโหลดรูป */}
+                        {!imgLoaded && (
+                            <div className="absolute inset-0 bg-[#1A1C23] animate-pulse flex items-center justify-center">
+                                <div className="w-10 h-10 border-4 border-white/10 border-t-[#00F5D4] rounded-full animate-spin"></div>
+                            </div>
+                        )}
+                        
                         <img
                             src={artist.profileImage || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=2000&auto=format&fit=crop"}
                             alt={artist.artistName}
-                            className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-screen transition-transform duration-[15s] ease-out group-hover:scale-110"
+                            onLoad={() => setImgLoaded(true)}
+                            onError={() => setImgLoaded(true)}
+                            className={`absolute inset-0 w-full h-full object-cover mix-blend-screen transition-all duration-[15s] ease-out group-hover:scale-110 ${imgLoaded ? 'opacity-80' : 'opacity-0'}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/40 to-transparent opacity-90"></div>
 
                         <div className="absolute bottom-12 left-8 md:left-16 z-20">
-                            
-                            <motion.h1 
+
+                            <motion.h1
                                 whileHover={{ skewX: -5 }}
                                 // 📌 แก้จาก leading-none เป็น leading-tight ป้องกันตัวหนังสือหางยาวโดนตัดขอบล่าง
                                 className="text-4xl md:text-6xl lg:text-[7rem] font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-[#00F5D4]/70 drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] cursor-default uppercase leading-tight"
@@ -48,7 +60,7 @@ export default function HeroSection({ artist, events }) {
             {/* 📌 แบนเนอร์ด้านล่าง (แก้ Layout ให้บังคับอยู่ตรงกลาง ไม่เบี้ยวซ้าย) */}
             <div className="w-full max-w-6xl mx-auto z-20 mt-16 md:mt-24">
                 <Reveal delay={0.2} effect="fade-up">
-                    <motion.div 
+                    <motion.div
                         whileHover={{ y: -5 }}
                         // เอา max-w-6xl ออกจากตรงนี้ เพราะเราบังคับกรอบจาก div ด้านบนแล้ว
                         className="relative flex flex-col md:flex-row items-center justify-between gap-8 w-full bg-[#1A1C23]/60 backdrop-blur-2xl p-8 md:px-12 rounded-[2rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
@@ -71,7 +83,8 @@ export default function HeroSection({ artist, events }) {
                                 )}
                             </div>
                         </div>
-                        <motion.button 
+                        <motion.button
+                            onClick={() => navigate('/new-event')}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="bg-gradient-to-r from-[#FF007F] to-[#00F5D4] text-[#110E1B] px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(0,245,212,0.4)] border border-white/20 hover:border-white transition-all whitespace-nowrap"

@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function ConcertSection({ events }) {
+    const navigate = useNavigate();
     return (
         <section className="relative w-full py-24 px-6 bg-[#0a0a0a] border-y border-gray-900">
             <div className="max-w-7xl mx-auto relative z-10">
@@ -14,7 +16,7 @@ export default function ConcertSection({ events }) {
                                 LIVE <span className="text-[#2B5AE8]">JOURNEY</span>
                             </h3>
                         </div>
-                        <button onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')} className="flex items-center gap-2 text-xs font-bold text-[#CEFF67] hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group">
+                        <button onClick={() => navigate('/new-event')} className="flex items-center gap-2 text-xs font-bold text-[#CEFF67] hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group">
                             VIEW ALL SHOWS
                             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                         </button>
@@ -27,7 +29,7 @@ export default function ConcertSection({ events }) {
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')}
+                                onClick={() => navigate('/new-event')}
                                 className="relative rounded-[2rem] overflow-hidden group bg-[#111] shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-gray-800 hover:border-[#2B5AE8]/50 h-[400px] cursor-pointer transition-colors duration-500"
                             >
                                 <img
