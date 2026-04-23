@@ -3,17 +3,21 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import PageTransition from '../components/PageTransition'; // 📌 1. Import ตัวใหม่เข้ามา
+import PageTransition from '../components/PageTransition';
+import MobileBottomNav from '../components/navbar/MobileBottomNav';
+import FloatingChat from '../components/chat/FloatingChat';
+import useSearchStore from '../stores/searchStore';
 
 export default function MainLayout() {
     const location = useLocation();
+    const { isSearchOpen } = useSearchStore();
 
     return (
         <div className="min-h-screen bg-[#0B0C10] flex flex-col relative">
             <Navbar />
 
             {/* 📌 2. ใส่ PageTransition ครอบ Outlet โดยห้ามลืมใส่ key={location.pathname} */}
-            <main className="flex-grow relative z-10 min-h-[80vh]">
+            <main className="flex-grow relative z-10">
                 <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
                     <PageTransition key={location.pathname}>
                         <Outlet />
@@ -21,7 +25,11 @@ export default function MainLayout() {
                 </AnimatePresence>
             </main>
 
-            <Footer />
+            {!['/nearby-events', '/chat'].includes(location.pathname) && <Footer />}
+
+            {/* Responsive Extras */}
+            <MobileBottomNav />
+            {!isSearchOpen && <FloatingChat />}
         </div>
     );
 }
