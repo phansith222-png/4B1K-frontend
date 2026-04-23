@@ -6,9 +6,11 @@ import PageTransition from '../components/PageTransition';
 import NavbarUser from '../components/NavbarUser';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
 import FloatingChat from '../components/chat/FloatingChat';
+import useSearchStore from '../stores/searchStore';
 
 export default function UserLayout() {
     const location = useLocation();
+    const { isSearchOpen } = useSearchStore();
     const isChat = location.pathname === '/chat';
 
     return (
@@ -24,11 +26,11 @@ export default function UserLayout() {
                 </AnimatePresence>
             </main>
 
-            {location.pathname !== '/nearby-events' && <Footer />}
+            {!['/nearby-events', '/chat'].includes(location.pathname) && <Footer />}
 
             {/* Responsive Extras */}
             <MobileBottomNav />
-            <FloatingChat />
+            {!isSearchOpen && <FloatingChat />}
         </div>
     );
 }

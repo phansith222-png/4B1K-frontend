@@ -8,14 +8,16 @@ import { useNavbarData } from '../hooks/useNavbarData';
 // Sub-components
 import NavSearchBar from './navbar/NavSearchBar';
 import NavArtistMenu from './navbar/NavArtistMenu';
+import useSearchStore from '../stores/searchStore';
 
 export default function Navbar() {
-    const navigate  = useNavigate();
-    const menuRef   = useRef(null);
+    const navigate = useNavigate();
+    const menuRef = useRef(null);
     const buttonRef = useRef(null);
 
     const [isArtistMenuOpen, setIsArtistMenuOpen] = useState(false);
-    const [language, setLanguage]                 = useState('EN');
+    const [language, setLanguage] = useState('EN');
+    const { isSearchOpen } = useSearchStore();
 
     const {
         mainSlides, topEvents,
@@ -28,7 +30,7 @@ export default function Navbar() {
     useEffect(() => {
         const handler = (e) => {
             if (
-                menuRef.current   && !menuRef.current.contains(e.target) &&
+                menuRef.current && !menuRef.current.contains(e.target) &&
                 buttonRef.current && !buttonRef.current.contains(e.target)
             ) setIsArtistMenuOpen(false);
         };
@@ -72,20 +74,30 @@ export default function Navbar() {
 
             <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
 
-                {/* Logo */}
-                <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/')}>
-                    <div className="flex items-end gap-[2px] h-6 w-5">
-                        <div className="w-1 rounded-full bar-1" />
-                        <div className="w-1 rounded-full bar-2" />
-                        <div className="w-1 rounded-full bar-3" />
-                        <div className="w-1 rounded-full bar-4" />
+                {/* Left: Logo (flex-1 to balance right side) */}
+                <div className="flex-1 flex justify-start">
+                    <div className="flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/')}>
+                        <div className="flex items-end gap-[2px] h-6 w-5">
+                            <div className="w-1 rounded-full bar-1" />
+                            <div className="w-1 rounded-full bar-2" />
+                            <div className="w-1 rounded-full bar-3" />
+                            <div className="w-1 rounded-full bar-4" />
+                        </div>
+                        <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                     </div>
-                    <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                 </div>
 
-                {/* Center nav */}
-                <div className="flex-1 flex justify-center items-center">
-                    <ul className="hidden xl:flex items-center gap-10 text-[15px] font-bold text-gray-300">
+                {/* Center: Navigation (Absolute Center) */}
+                <motion.nav
+                    animate={{
+                        opacity: isSearchOpen ? 0.2 : 1,
+                        x: isSearchOpen ? '-120%' : '-50%',
+                        pointerEvents: isSearchOpen ? 'none' : 'auto'
+                    }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute left-1/2 hidden xl:block z-[60]"
+                >
+                    <ul className="flex items-center gap-10 text-[15px] font-bold text-gray-300">
                         <li><Link to="/new-event" className="hover:text-[#00E5FF] transition-colors">Concert Event</Link></li>
                         <li>
                             <button
@@ -105,26 +117,22 @@ export default function Navbar() {
                         </li>
                         <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
                     </ul>
+                </motion.nav>
 
-                    {/* Search bar */}
-                    <NavSearchBar navigate={navigate} />
-                </div>
+                {/* Right: Search + Actions (flex-1) */}
+                <div className="flex-1 flex items-center justify-end gap-4 md:gap-6 z-50">
+                    {/* Desktop Search Bar (Placed here to be near Community but not affect centering) */}
+                    <div className="hidden xl:block mr-4">
+                        <NavSearchBar navigate={navigate} />
+                    </div>
 
-                {/* Right side */}
-                <div className="flex-shrink-0 flex items-center justify-end gap-2 md:gap-4 z-50">
-                    <div className="flex items-center gap-2 md:gap-4 whitespace-nowrap">
-                        <button onClick={() => navigate('/login')} className="hidden sm:block text-[14px] font-bold text-gray-400 hover:text-white transition-colors">
+                    <div className="flex items-center gap-4 whitespace-nowrap">
+                        <button onClick={() => navigate('/login')} className="text-[15px] font-bold text-gray-400 hover:text-white transition-colors">
                             Log In
                         </button>
-                        <button onClick={() => navigate('/register')} className="text-[13px] md:text-[15px] font-bold bg-[#00E5FF] text-black px-4 md:px-8 py-2 md:py-2.5 rounded-full transition-all duration-300 shadow-[0_4px_15px_rgba(0,229,255,0.2)]">
+                        <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300">
                             Join
                         </button>
-                    </div>
-                    <div
-                        onClick={() => setLanguage(l => l === 'EN' ? 'TH' : 'EN')}
-                        className="hidden sm:flex items-center gap-1.5 text-[12px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-3 py-1.5 rounded-full transition-colors border border-white/10 shrink-0"
-                    >
-                        <span className="w-5 text-center">{language}</span>
                     </div>
                 </div>
             </header>

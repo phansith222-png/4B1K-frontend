@@ -15,7 +15,7 @@ const ICONS = {
     ),
     event: (
         <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
     ),
     label: (
@@ -51,17 +51,10 @@ function Highlight({ text, query }) {
 /**
  * Autocomplete dropdown — uses `position: fixed` to escape any parent
  * overflow:hidden or stacking-context that would clip it.
- *
- * @param {object[]}            suggestions  - from useSearchData
- * @param {string}              query        - raw search string (for highlighting)
- * @param {function}            onSelect     - called with suggestion when clicked
- * @param {boolean}             isOpen       - controls visibility
- * @param {React.RefObject}     anchorRef    - ref of the pill/input wrapper to anchor below
  */
 export default function NavSearchDropdown({ suggestions, query, onSelect, isOpen, anchorRef }) {
     const [rect, setRect] = useState(null);
 
-    // Track the anchor element's bounding rect so we can position with `fixed`
     useEffect(() => {
         if (!isOpen) { setRect(null); return; }
         const update = () => {
@@ -85,16 +78,20 @@ export default function NavSearchDropdown({ suggestions, query, onSelect, isOpen
 
     if (!isOpen || grouped.length === 0) return null;
 
-    // When anchorRef is not provided, fall back to absolute positioning inside parent
+    const isNearBottom = rect && rect.bottom > window.innerHeight * 0.5;
+
     const posStyle = rect
         ? {
             position:        'fixed',
-            top:             rect.bottom + 8,
+            top:             !isNearBottom ? rect.bottom + 1 : undefined,
+            bottom:          isNearBottom ? (window.innerHeight - rect.top) + 1 : undefined,
             left:            rect.left,
             width:           Math.max(rect.width, 340),
             maxWidth:        420,
+            maxHeight:       '50vh',
+            overflowY:       'auto',
             zIndex:          99999,
-            transformOrigin: 'top left',
+            transformOrigin: isNearBottom ? 'bottom left' : 'top left',
           }
         : {
             position:        'absolute',
@@ -111,63 +108,60 @@ export default function NavSearchDropdown({ suggestions, query, onSelect, isOpen
         <AnimatePresence>
             <motion.div
                 key="search-dropdown"
-                initial={{ opacity: 0, y: -6, scaleY: 0.97 }}
+                initial={{ opacity: 0, y: isNearBottom ? 6 : -6, scaleY: 0.97 }}
                 animate={{ opacity: 1, y: 0,  scaleY: 1    }}
-                exit={{    opacity: 0, y: -6, scaleY: 0.97 }}
+                exit={{    opacity: 0, y: isNearBottom ? 6 : -6, scaleY: 0.97 }}
                 transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
                 style={posStyle}
-                className="bg-[#0f1117]/97 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.95)] overflow-hidden"
+                className="bg-[#0f1117]/97 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
             >
-                {grouped.map(({ type, items }) => {
-                    const cfg = TYPE_CONFIG[type];
-                    return (
-                        <div key={type}>
-                            {/* Section header */}
-                            <div className={`flex items-center gap-2 px-4 pt-3 pb-1.5 ${cfg.color}`}>
-                                {ICONS[type]}
-                                <span className="text-[10px] font-black tracking-[0.18em] uppercase">{cfg.label}</span>
-                            </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    {grouped.map(({ type, items }) => {
+                        const cfg = TYPE_CONFIG[type];
+                        return (
+                            <div key={type}>
+                                <div className={`flex items-center gap-2 px-4 pt-3 pb-1.5 ${cfg.color}`}>
+                                    {ICONS[type]}
+                                    <span className="text-[10px] font-black tracking-[0.18em] uppercase">{cfg.label}</span>
+                                </div>
 
-                            {items.map(item => (
-                                <button
-                                    key={item.id}
-                                    type="button"
-                                    onMouseDown={(e) => { e.preventDefault(); onSelect(item); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors group text-left focus:outline-none"
-                                >
-                                    {/* Thumbnail / fallback icon */}
-                                    <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-white/5 ${cfg.bg} flex items-center justify-center`}>
-                                        {item.image
-                                            ? <img src={item.image} alt="" className="w-full h-full object-cover" />
-                                            : <span className={`${cfg.color} opacity-60`}>{ICONS[type]}</span>
-                                        }
-                                    </div>
-
-                                    {/* Text */}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[13px] font-semibold text-gray-300 group-hover:text-white transition-colors truncate leading-tight">
-                                            <Highlight text={item.label} query={query} />
-                                        </p>
-                                        <p className="text-[11px] text-gray-600 group-hover:text-gray-400 transition-colors truncate mt-0.5">
-                                            {item.sublabel}
-                                        </p>
-                                    </div>
-
-                                    {/* Arrow chevron */}
-                                    <svg
-                                        className={`w-3.5 h-3.5 ${cfg.color} opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0`}
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"
+                                {items.map(item => (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        onMouseDown={(e) => { e.preventDefault(); onSelect(item); }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors group text-left focus:outline-none"
                                     >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            ))}
-                        </div>
-                    );
-                })}
+                                        <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-white/5 ${cfg.bg} flex items-center justify-center`}>
+                                            {item.image
+                                                ? <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                                : <span className={`${cfg.color} opacity-60`}>{ICONS[type]}</span>
+                                            }
+                                        </div>
 
-                {/* Footer hint */}
-                <div className="border-t border-white/5 px-4 py-2.5 flex items-center justify-between">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[13px] font-semibold text-gray-300 group-hover:text-white transition-colors truncate leading-tight">
+                                                <Highlight text={item.label} query={query} />
+                                            </p>
+                                            <p className="text-[11px] text-gray-600 group-hover:text-gray-400 transition-colors truncate mt-0.5">
+                                                {item.sublabel}
+                                            </p>
+                                        </div>
+
+                                        <svg
+                                            className={`w-3.5 h-3.5 ${cfg.color} opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all flex-shrink-0`}
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                ))}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="border-t border-white/5 px-4 py-2.5 flex items-center justify-between bg-black/20 flex-shrink-0">
                     <span className="text-[10px] text-gray-600">
                         <kbd className="bg-white/5 rounded px-1 py-0.5 font-mono text-gray-500 mr-1">Enter</kbd>
                         to search

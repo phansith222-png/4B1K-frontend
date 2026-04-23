@@ -135,8 +135,8 @@ export default function PageNearbyEvents() {
           mapboxAccessToken={MAPBOX_TOKEN}
           style={{ width: '100%', height: '100%' }}
         >
-          {/* 🎮 Zoom Controls (Top Right - Theme Colored) */}
-          <div className="absolute top-32 right-6 flex flex-col gap-2 z-20 custom-nav-control">
+          {/* 🎮 Zoom Controls (Hidden on Mobile, Visible on Desktop) */}
+          <div className="hidden md:flex absolute top-32 right-6 flex-col gap-2 z-20 custom-nav-control">
             <NavigationControl showCompass={false} />
           </div>
 
@@ -182,9 +182,17 @@ export default function PageNearbyEvents() {
           )}
         </Map>
 
-        {/* 🌘 VIGNETTE OVERLAY (ขอบดำเฟดๆ) */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(0,0,0,0.9)_100%)] z-[5]" />
-        <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_120px_60px_rgba(0,0,0,1)] z-[5]" />
+        {/* 🌘 VIGNETTE OVERLAY (ขอบดำเฟดๆ - ปรับให้จางลงในมือถือตามคำขอ) */}
+        <div className="absolute inset-0 pointer-events-none 
+          bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(0,0,0,0.4)_100%)] 
+          md:bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(0,0,0,0.9)_100%)] 
+          z-[5]" 
+        />
+        <div className="absolute inset-0 pointer-events-none 
+          shadow-[inset_0_0_70px_30px_rgba(0,0,0,0.5)] 
+          md:shadow-[inset_0_0_120px_60px_rgba(0,0,0,1)] 
+          z-[5]" 
+        />
       </div>
 
       {/* 🎛️ OVERLAY UI (Header & Filters) */}
@@ -252,6 +260,13 @@ export default function PageNearbyEvents() {
         }
         .custom-nav-control .mapboxgl-ctrl-group button:hover .mapboxgl-ctrl-icon {
           filter: invert(0) !important;
+        }
+
+        /* 📱 Hide Zoom Controls on Mobile */
+        @media (max-width: 768px) {
+          .custom-nav-control {
+            display: none !important;
+          }
         }
 
         /* 🚫 Hide scrollbars but keep functionality */
