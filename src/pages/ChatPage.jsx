@@ -1,33 +1,16 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import mainapi from "../api/auth";
 import { useSocket } from "../contexts/SocketContext";
 import useUserStore from "../stores/userStore";
-import { formatRelative } from "date-fns";
-import { th } from "date-fns/locale/th";
+import { avatarUrl } from "../utils/chatUtils";
 
-// Component แสดงสถานะการส่งข้อความ
-const MessageStatus = ({ isMe, isSent, isRead }) => {
-  if (!isMe) return null;
-  return (
-    <div className="text-[10px] font-bold mt-1 tracking-tighter transition-all duration-300">
-      {!isSent && (
-        <span className="text-zinc-500 animate-pulse">กำลังส่ง...</span>
-      )}
-      {isSent && !isRead && <span className="text-blue-400/80">ส่งแล้ว</span>}
-      {isSent && isRead && <span className="text-cyan-400">อ่านแล้ว</span>}
-    </div>
-  );
-};
+// Import new modular components
+import ChatSidebar from "../components/chat/ChatSidebar";
+import ChatArea from "../components/chat/ChatArea";
 
 export default function ChatPage() {
   const socket = useSocket();
-  const user = useUserStore((state) => state.user);
+  const user = useUserStore((s) => s.user);
   const myUserId = user?.id;
 
   const [activeChat, setActiveChat] = useState(null);
@@ -35,280 +18,329 @@ export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [inputText, setInputText] = useState("");
-  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [connected, setConnected] = useState(false);
   const [typingText, setTypingText] = useState("");
+  const [tab, setTab] = useState("community");
+  const [search, setSearch] = useState("");
+  const [showSidebar, setShowSidebar] = useState(true); // mobile toggle
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const scrollRef = useRef(null);
-  const prevMessagesLengthRef = useRef(0);
-  const typingTimeoutRef = useRef(null);
+  const prevLenRef = useRef(0);
+  const typingTimer = useRef(null);
+  const emojiRef = useRef(null);
+  const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // 1. ระบบ Scroll ไปล่างสุด
-  const scrollToBottom = useCallback((behavior = "auto") => {
-    setTimeout(() => {
-      scrollRef.current?.scrollIntoView({ behavior, block: "end" });
-    }, 100);
+  const activeRoom = contacts.find((r) => r.id === activeChat);
+  const isGroup = activeRoom?.type === "community" || activeRoom?.name || (activeRoom?.participants?.length ?? 0) > 2;
+  const other = !isGroup ? activeRoom?.participants?.find((p) => p.id !== myUserId) : null;
+  const roomName = activeRoom?.name || other?.username || other?.firstName || (activeRoom ? `ห้อง ${activeRoom.id}` : "");
+  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.profileImage : other?.profileImage);
+  const myName = user?.username || user?.firstName || "U";
+  const myAvatar = avatarUrl(myName, user?.profileImage);
+
+  const handleAvatarClick = () => {
+    if (isGroup) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeChat) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      await mainapi.patch(`/chats/rooms/${activeChat}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const res = await mainapi.get("/chats/rooms");
+      setContacts(res.data);
+    } catch (err) {
+      console.error("Failed to update avatar:", err);
+      alert("ไม่สามารถเปลี่ยนรูปโปรไฟล์ได้ในขณะนี้");
+    }
+  };
+
+  const handleCreateRoom = async (e) => {
+    e.preventDefault();
+    if (!newRoomName.trim() || isCreating) return;
+
+    setIsCreating(true);
+    try {
+      const res = await mainapi.post("/chats/rooms", {
+        name: newRoomName.trim(),
+        type: "community",
+      });
+      setContacts((prev) => [res.data, ...prev]);
+      setIsCreateModalOpen(false);
+      setNewRoomName("");
+      setActiveChat(res.data.id);
+    } catch (err) {
+      console.error("Failed to create room:", err);
+      alert("ไม่สามารถสร้างห้องแชทได้ในขณะนี้");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const startPrivateChat = async (friendId) => {
+    if (!friendId || friendId === myUserId) return;
+    try {
+      const res = await mainapi.post("/chats/personal", { friendId });
+      const listRes = await mainapi.get("/chats/rooms");
+      setContacts(listRes.data);
+      setActiveChat(res.data.id);
+      setTab("personal");
+      if (window.innerWidth < 768) setShowSidebar(false);
+    } catch (err) {
+      console.error("Failed to start private chat:", err);
+    }
+  };
+
+  const handleDeleteGroup = () => {
+    if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบกลุ่มนี้? ข้อมูลทั้งหมดจะสูญหาย")) {
+      socket.emit("delete_group", { roomId: activeChat, userId: myUserId });
+    }
+  };
+
+  // close emoji picker on outside click
+  useEffect(() => {
+    if (!showEmoji) return;
+    const handler = (e) => {
+      if (emojiRef.current && !emojiRef.current.contains(e.target)) setShowEmoji(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showEmoji]);
+
+  const scrollToBottom = useCallback((b = "auto") => {
+    setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: b, block: "end" }), 80);
   }, []);
 
-  // 2. Logic เมื่อได้รับข้อความใหม่ (Handle Receive)
-  const handleReceive = useCallback((newMessage) => {
-    const msgRoomId = String(newMessage.chatRoomId);
-    
-    setActiveChat((prevActive) => {
-      if (msgRoomId === String(prevActive)) {
-        setMessages((prevMsgs) => {
-          if (prevMsgs.some((m) => m.id === newMessage.id)) return prevMsgs;
-          const filtered = prevMsgs.filter(
-            (m) => !(m.isOptimistic && m.content === newMessage.content)
-          );
-          return [...filtered, { ...newMessage, isSent: true, isOptimistic: false }];
+  const handleReceive = useCallback((msg) => {
+    const rid = String(msg.chatRoomId);
+    setActiveChat((prev) => {
+      if (rid === String(prev)) {
+        setMessages((ms) => {
+          if (ms.some((m) => m.id === msg.id)) return ms;
+          return [...ms.filter((m) => !(m.isOptimistic && m.content === msg.content)),
+            { ...msg, isSent: true, isOptimistic: false }];
         });
-        // ถ้าเปิดห้องอยู่ ให้ส่งบอก Server ว่าอ่านแล้วทันที
-        socket.emit("mark_read", { chatRoomId: msgRoomId, userId: myUserId });
+        socket?.emit("mark_read", { chatRoomId: rid, userId: myUserId });
       } else {
-        // ถ้าอยู่ห้องอื่น ให้เพิ่ม Unread Count
-        setUnreadCounts((prev) => ({
-          ...prev,
-          [msgRoomId]: (prev[msgRoomId] || 0) + 1,
-        }));
+        setUnreadCounts((u) => ({ ...u, [rid]: (u[rid] || 0) + 1 }));
       }
-      return prevActive;
+      return prev;
     });
   }, [socket, myUserId]);
 
-  // 3. Logic เมื่อเพื่อนอ่านข้อความของเราแล้ว
-  const handleMessageRead = useCallback(({ chatRoomId, readByUserId }) => {
-    if (String(chatRoomId) === String(activeChat) && readByUserId !== myUserId) {
-      setMessages((prev) => prev.map((msg) => ({ ...msg, isRead: true })));
-    }
-  }, [activeChat, myUserId]);
+  const handleRead = useCallback(({ chatRoomId, readByUserId }) => {
+    setActiveChat((prev) => {
+      if (String(chatRoomId) === String(prev) && readByUserId !== myUserId)
+        setMessages((ms) => ms.map((m) => ({ ...m, isRead: true })));
+      return prev;
+    });
+  }, [myUserId]);
 
-  // 4. ตั้งค่า Socket Listeners (Global)
   useEffect(() => {
     if (!socket) return;
-
-    const handleDisplayTyping = (data) => {
-      setActiveChat((prevActive) => {
-        if (String(data.roomId) === String(prevActive)) {
-          setTypingText(`${data.user} กำลังพิมพ์...`);
-        }
-        return prevActive;
+    const onTyping = (d) => setActiveChat((p) => {
+      if (String(d.roomId) === String(p)) setTypingText(`${d.user} กำลังพิมพ์...`);
+      return p;
+    });
+    const onGroupDeleted = (data) => {
+      alert("กลุ่มนี้ถูกลบโดยผู้สร้างแล้ว");
+      setActiveChat((prev) => {
+        if (String(data.roomId) === String(prev)) return null;
+        return prev;
       });
+      mainapi.get("/chats/rooms").then((r) => setContacts(r.data)).catch(console.error);
     };
 
-    const handleHideTyping = () => setTypingText("");
-
-    socket.on("connect", () => setIsSocketConnected(true));
-    socket.on("disconnect", () => setIsSocketConnected(false));
+    socket.on("connect", () => setConnected(true));
+    socket.on("disconnect", () => setConnected(false));
     socket.on("receive_message", handleReceive);
-    socket.on("message_read", handleMessageRead);
-    socket.on("display_typing", handleDisplayTyping);
-    socket.on("hide_typing", handleHideTyping);
-
-    setIsSocketConnected(socket.connected);
-
+    socket.on("message_read", handleRead);
+    socket.on("display_typing", onTyping);
+    socket.on("hide_typing", () => setTypingText(""));
+    socket.on("group_deleted", onGroupDeleted);
+    setConnected(socket.connected);
     return () => {
-      socket.off("connect");
-      socket.off("disconnect");
+      socket.off("connect"); socket.off("disconnect");
       socket.off("receive_message", handleReceive);
-      socket.off("message_read", handleMessageRead);
-      socket.off("display_typing", handleDisplayTyping);
-      socket.off("hide_typing", handleHideTyping);
+      socket.off("message_read", handleRead);
+      socket.off("display_typing", onTyping);
+      socket.off("hide_typing");
+      socket.off("group_deleted", onGroupDeleted);
     };
-  }, [socket, handleReceive, handleMessageRead]);
+  }, [socket, handleReceive, handleRead]);
 
-  // 5. โหลดรายชื่อห้อง (Initial Load)
   useEffect(() => {
-    mainapi.get("/chats/rooms")
-      .then((res) => setContacts(res.data))
-      .catch((err) => console.error("Error loading rooms:", err));
+    mainapi.get("/chats/rooms").then((r) => setContacts(r.data)).catch(console.error);
   }, []);
 
-  // 6. เมื่อเปลี่ยนห้อง (Room Change & Mark Read)
   useEffect(() => {
     if (!socket || !activeChat) return;
-
-    prevMessagesLengthRef.current = 0;
-    setUnreadCounts((prev) => ({ ...prev, [activeChat]: 0 }));
-
+    prevLenRef.current = 0;
+    setTypingText("");
+    setUnreadCounts((u) => ({ ...u, [activeChat]: 0 }));
     mainapi.get(`/chats/${activeChat}/messages`)
-      .then((res) => {
-        setMessages(res.data.map((msg) => ({ ...msg, isSent: true })));
-        scrollToBottom("auto"); // เข้าห้องปุ๊บ เลื่อนลงล่างทันที
-      })
-      .catch((err) => console.error("Error loading messages:", err));
-
+      .then((r) => { setMessages(r.data.map((m) => ({ ...m, isSent: true }))); scrollToBottom(); })
+      .catch(console.error);
     socket.emit("join_room", String(activeChat));
     socket.emit("mark_read", { chatRoomId: activeChat, userId: myUserId });
   }, [socket, activeChat, myUserId, scrollToBottom]);
 
-  // 7. เลื่อนลงล่างเมื่อมีข้อความใหม่พิมพ์เข้ามา
   useEffect(() => {
-    if (messages.length > prevMessagesLengthRef.current && prevMessagesLengthRef.current !== 0) {
-      scrollToBottom("smooth");
-    }
-    prevMessagesLengthRef.current = messages.length;
+    if (messages.length > prevLenRef.current && prevLenRef.current !== 0) scrollToBottom("smooth");
+    prevLenRef.current = messages.length;
   }, [messages, scrollToBottom]);
 
-  // 8. ส่งข้อความ
-  const handleSendMessage = (e) => {
+  const send = (e) => {
     e.preventDefault();
     const text = inputText.trim();
-    if (!text || !isSocketConnected || !activeChat) return;
-
-    // หยุด typing ทันทีเมื่อกดส่ง
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (!text || !connected || !activeChat) return;
+    clearTimeout(typingTimer.current);
     socket.emit("stop_typing", { chatRoomId: activeChat });
-
-    const messagePayload = {
-      id: `temp-${Date.now()}`,
-      chatRoomId: activeChat,
-      senderId: myUserId,
-      content: text,
-      createdAt: new Date().toISOString(),
-      isOptimistic: true,
-      isSent: false,
-      isRead: false,
-      sender: {
-        username: user?.username || user?.firstName,
-        profileImage: user?.profileImage,
-      },
+    const payload = {
+      id: `tmp-${Date.now()}`, chatRoomId: activeChat, senderId: myUserId,
+      content: text, createdAt: new Date().toISOString(),
+      isOptimistic: true, isSent: false, isRead: false,
+      sender: { username: user?.username || user?.firstName, profileImage: user?.profileImage },
     };
-
-    setMessages((prev) => [...prev, messagePayload]);
+    setMessages((ms) => [...ms, payload]);
     setInputText("");
     scrollToBottom("smooth");
-    socket.emit("send_message", messagePayload);
+    socket.emit("send_message", payload);
   };
 
-  // 8.1 จัดการ Typing Indicator ขณะพิมพ์
-  const handleInputChange = (e) => {
+  const onInput = (e) => {
     setInputText(e.target.value);
-    if (!socket || !activeChat || !isSocketConnected) return;
-
-    socket.emit("typing", {
-      chatRoomId: String(activeChat),
-      userName: user?.username || user?.firstName || "User",
-    });
-
-    // Debounce: หยุดพิมพ์ 1.5 วินาทีค่อยส่ง stop_typing
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit("stop_typing", { chatRoomId: activeChat });
-    }, 1500);
+    if (!socket || !activeChat || !connected) return;
+    socket.emit("typing", { chatRoomId: String(activeChat), userName: user?.username || "User" });
+    clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => socket.emit("stop_typing", { chatRoomId: activeChat }), 1500);
   };
 
-  // 9. จัดกลุ่มข้อความ
-  const groupedMessages = useMemo(() => {
-    return messages.map((msg, index) => {
-      const prevMsg = messages[index - 1];
-      const isMe = msg.senderId === myUserId;
-      const isSameSender = prevMsg && prevMsg.senderId === msg.senderId;
-      const isTimeClose = prevMsg && new Date(msg.createdAt) - new Date(prevMsg.createdAt) < 5 * 60 * 1000;
+  const grouped = useMemo(() => messages.map((m, i) => {
+    const prev = messages[i - 1];
+    const isMe = m.senderId === myUserId;
+    const same = prev?.senderId === m.senderId;
+    const close = prev && new Date(m.createdAt) - new Date(prev.createdAt) < 300000;
+    return { ...m, isMe, isGrouped: same && close, showAvatar: !same || !close };
+  }), [messages, myUserId]);
 
-      return {
-        ...msg,
-        isMe,
-        isGrouped: isSameSender && isTimeClose,
-        showTime: !isSameSender || !isTimeClose,
-      };
+  const filtered = useMemo(() => {
+    const byTab = contacts.filter((r) => {
+      const isCommunity = r.type === "community" || r.name || (r.participants?.length ?? 0) > 2;
+      return tab === "community" ? isCommunity : !isCommunity;
     });
-  }, [messages, myUserId]);
+    if (!search.trim()) return byTab;
+    const q = search.toLowerCase();
+    return byTab.filter((r) => {
+      const n = r.name || r.participants?.find((p) => p.id !== myUserId)?.username || "";
+      return n.toLowerCase().includes(q);
+    });
+  }, [contacts, tab, search, myUserId]);
+
+  const openChat = (id) => { setActiveChat(id); setShowSidebar(false); };
+  const goBack = () => { setActiveChat(null); setShowSidebar(true); };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] w-full bg-[#0a0a0a] text-zinc-200 p-4 gap-4 overflow-hidden font-sans">
-      {/* Sidebar */}
-      <div className="w-80 shrink-0 bg-[#141414] rounded-2xl border border-white/5 flex flex-col overflow-hidden shadow-2xl">
-        <div className="p-6 font-bold text-xl border-b border-white/5 flex justify-between items-center bg-[#1a1a1a]">
-          <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">4B1K Chats</span>
-          <div className={`w-3 h-3 rounded-full shadow-[0_0_10px] ${isSocketConnected ? "bg-green-500 shadow-green-500/50" : "bg-red-500 shadow-red-500/50"}`} />
-        </div>
-        <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-          {contacts.map((room) => (
-            <button
-              key={room.id}
-              onClick={() => setActiveChat(room.id)}
-              className={`w-full p-4 rounded-2xl flex items-center justify-between transition-all duration-300 ${activeChat === room.id ? "bg-blue-600 shadow-lg text-white scale-[1.02]" : "hover:bg-white/5 text-zinc-400"}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-zinc-800 to-zinc-700 flex items-center justify-center font-bold text-lg border border-white/10">{room.id}</div>
-                <div className="text-left font-bold text-sm tracking-wide">Room {room.id}</div>
+    <div className="flex h-full w-full overflow-hidden bg-[#13141a] text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <ChatSidebar
+        showSidebar={showSidebar}
+        connected={connected}
+        search={search}
+        setSearch={setSearch}
+        tab={tab}
+        setTab={setTab}
+        filteredContacts={filtered}
+        activeChat={activeChat}
+        unreadCounts={unreadCounts}
+        openChat={openChat}
+        myUserId={myUserId}
+        myName={myName}
+        myAvatar={myAvatar}
+        user={user}
+        setIsCreateModalOpen={setIsCreateModalOpen}
+      />
+
+      <ChatArea
+        activeChat={activeChat}
+        showSidebar={showSidebar}
+        isGroup={isGroup}
+        roomName={roomName}
+        roomAvatar={roomAvatar}
+        activeRoom={activeRoom}
+        myUserId={myUserId}
+        myAvatar={myAvatar}
+        typingText={typingText}
+        connected={connected}
+        messagesGrouped={grouped}
+        inputText={inputText}
+        showEmoji={showEmoji}
+        setShowEmoji={setShowEmoji}
+        setInputText={setInputText}
+        onInput={onInput}
+        send={send}
+        goBack={goBack}
+        handleAvatarClick={handleAvatarClick}
+        fileInputRef={fileInputRef}
+        handleFileChange={handleFileChange}
+        handleDeleteGroup={handleDeleteGroup}
+        startPrivateChat={startPrivateChat}
+        scrollRef={scrollRef}
+        emojiRef={emojiRef}
+        inputRef={inputRef}
+      />
+
+      {/* ── Create Room Modal ── */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-[#1c1e26] border border-white/10 rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold text-gray-100 mb-1">สร้างห้องชุมชนใหม่</h3>
+            <p className="text-sm text-gray-500 mb-6">สร้างพื้นที่สำหรับพูดคุยกับสมาชิกคนอื่นๆ</p>
+
+            <form onSubmit={handleCreateRoom}>
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">ชื่อห้อง</label>
+                <input
+                  autoFocus
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  placeholder="เช่น คนรักเสียงเพลง, กิจกรรมวันหยุด..."
+                  className="w-full bg-[#2a2d35] border border-white/5 rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                />
               </div>
-              {unreadCounts[room.id] > 0 && activeChat !== room.id && (
-                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full animate-bounce">{unreadCounts[room.id]}</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 min-w-0 bg-[#141414] rounded-3xl border border-white/5 flex flex-col overflow-hidden relative">
-        {activeChat ? (
-          <>
-            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-              <div className="space-y-1 flex flex-col">
-                {groupedMessages.map((msg, index) => {
-                  const isMe = msg.isMe;
-                  const senderName = msg.sender?.username || "Member";
-                  const avatar = msg.sender?.profileImage || `https://ui-avatars.com/api/?name=${senderName}&background=random`;
-                  const formattedTime = formatRelative(new Date(msg.createdAt), new Date(), { locale: th });
-
-                  return (
-                    <div key={msg.id || index} className={`flex flex-col ${isMe ? "items-end" : "items-start"} mt-4 w-full`}>
-                      <div className={`flex items-center gap-2 mb-1.5 ${isMe ? "flex-row-reverse pr-12" : "pl-12"}`}>
-                        <span className="text-[11px] font-bold text-zinc-400">{isMe ? "คุณ" : senderName}</span>
-                        <span className="text-[9px] text-zinc-600 font-medium uppercase">{formattedTime}</span>
-                      </div>
-                      <div className={`flex gap-3 max-w-[85%] ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-                        <div className="shrink-0 self-end">
-                          <img src={avatar} className="w-9 h-9 rounded-full border-2 object-cover" alt="profile" />
-                        </div>
-                        <div className="flex flex-col">
-                          <div className={`px-4 py-2.5 text-sm leading-relaxed shadow-lg ${isMe ? "bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl rounded-tr-none" : "bg-[#242424] text-zinc-100 rounded-2xl rounded-tl-none border border-white/5"}`}>
-                            <div className="whitespace-pre-wrap">{msg.content}</div>
-                          </div>
-                          <MessageStatus isMe={isMe} isSent={msg.isSent} isRead={msg.isRead} />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div ref={scrollRef} className="h-2" />
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setIsCreateModalOpen(false); setNewRoomName(""); }}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold text-gray-400 hover:bg-white/5 transition-all"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  disabled={!newRoomName.trim() || isCreating}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:shadow-none transition-all"
+                >
+                  {isCreating ? "กำลังสร้าง..." : "สร้างห้อง"}
+                </button>
               </div>
-            </div>
-
-            {/* Typing Indicator */}
-            <div className="px-6 h-6 flex items-center">
-              {typingText && (
-                <div className="flex items-center gap-2 text-[11px] text-cyan-400/80 font-medium animate-pulse">
-                  <span className="flex gap-0.5">
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                  </span>
-                  <span>{typingText}</span>
-                </div>
-              )}
-            </div>
-
-            <form onSubmit={handleSendMessage} className="px-5 pb-5 bg-[#1a1a1a]/80 backdrop-blur-xl flex gap-3 border-t border-white/5 items-center pt-3">
-              <input
-                value={inputText}
-                onChange={handleInputChange}
-                placeholder="พิมพ์ข้อความของคุณ..."
-                className="flex-1 bg-zinc-900 border border-white/5 rounded-2xl px-6 py-3.5 outline-none text-sm text-white focus:ring-2 focus:ring-blue-600/50"
-              />
-              <button type="submit" disabled={!inputText.trim() || !isSocketConnected} className="bg-blue-600 p-3.5 rounded-2xl text-white disabled:opacity-50">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              </button>
             </form>
-          </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-zinc-600">
-            <p className="text-sm font-medium tracking-widest uppercase">เลือกห้องเพื่อเริ่มพูดคุย</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

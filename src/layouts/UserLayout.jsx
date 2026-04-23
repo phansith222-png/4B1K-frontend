@@ -7,11 +7,12 @@ import NavbarUser from '../components/NavbarUser';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
 import FloatingChat from '../components/chat/FloatingChat';
 
-export default function MainLayout() {
+export default function UserLayout() {
     const location = useLocation();
+    const isChat = location.pathname === '/chat';
 
     return (
-        <div className="min-h-screen bg-[#0B0C10] flex flex-col relative">
+        <div className={`bg-[#0B0C10] flex flex-col relative ${isChat ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
             <NavbarUser />
 
             {/* 📌 2. ใส่ PageTransition ครอบ Outlet โดยห้ามลืมใส่ key={location.pathname} */}
