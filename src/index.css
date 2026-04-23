@@ -1,20 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
-
 
 @plugin "daisyui";
 
-/* src/index.css */
+/* ── Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-/* คลาสเริ่มต้นสำหรับเนื้อหาที่จะถูกซ่อนไว้ก่อน */
-/* .reveal-hidden {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* คลาสที่จะถูกเติมเข้าไปเมื่อเลื่อนจอมาถึง */
-/* .reveal-visible {
-  opacity: 1;
-  transform: translateY(0);
-} */ 
+/* ── Thin scrollbar ───────────────────────────────── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.08); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Chat bounce dots ─────────────────────────────── */
+@keyframes chat-bounce {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(-5px); }
+}

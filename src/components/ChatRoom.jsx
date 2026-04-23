@@ -9,12 +9,11 @@ export default function ChatRoom({
   const socket = useSocket();
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [typingUser, setTypingUser] = useState("");
 
-  // เลื่อนจอลงล่างสุด (ใช้ ScrollIntoView)
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
@@ -23,176 +22,138 @@ export default function ChatRoom({
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // จัดการ Socket Events
   useEffect(() => {
     if (!socket || !roomId) return;
 
-    // เข้าห้องแชท
     socket.emit("join_room", roomId);
 
-    // รับข้อความ
     socket.on("receive_message", (newMessage) => {
       setMessages((prev) => [...prev, newMessage]);
     });
 
-    // รับสัญญาณ Typing
     socket.on("display_typing", (data) => {
-      // เช็กให้แน่ใจว่าเป็น roomId เดียวกัน (ป้องกันสัญญาณข้ามห้อง)
       if (String(data.roomId) === String(roomId)) {
         setTypingUser(`${data.user} กำลังพิมพ์...`);
       }
     });
 
-    // รับสัญญาณหยุด Typing
-    socket.on("hide_typing", () => {
-      setTypingUser("");
-    });
+    socket.on("hide_typing", () => setTypingUser(""));
 
-    // Clean up function: สำคัญมากเพื่อไม่ให้ Event ซ้ำซ้อน
     return () => {
       socket.off("receive_message");
       socket.off("display_typing");
       socket.off("hide_typing");
     };
-  }, [socket, roomId]); // ต้องมี roomId ตรงนี้เพื่อให้เริ่มใหม่เมื่อเปลี่ยนห้อง
+  }, [socket, roomId]);
 
   const handleTyping = (e) => {
-    const value = e.target.value;
-    setInput(value);
-
+    setInput(e.target.value);
     if (!socket || !roomId) return;
 
-    // ส่งสัญญาณ Typing
     socket.emit("typing", {
       chatRoomId: String(roomId),
-      userName: currentUserName || "Guest User"
+      userName: currentUserName || "Guest",
     });
 
-    // Debounce: ถ้าหยุดพิมพ์ 2 วินาทีค่อยส่ง stop_typing
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    
     typingTimeoutRef.current = setTimeout(() => {
       socket.emit("stop_typing", { chatRoomId: roomId });
     }, 1500);
   };
 
-  const handleSendMessage = (e) => {
+  const handleSend = (e) => {
     e.preventDefault();
     const text = input.trim();
-
     if (!text || !socket) return;
 
-    const messagePayload = {
+    socket.emit("send_message", {
       chatRoomId: roomId,
       senderId: currentUserId,
       content: text,
-    };
+    });
 
-    // ส่งข้อความ
-    socket.emit("send_message", messagePayload);
-
-    // ล้างค่าและหยุด Typing ทันที
     setInput("");
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     socket.emit("stop_typing", { chatRoomId: roomId });
   };
 
   return (
-    <div className="chat-container" style={styles.container}>
-      <div className="message-list" style={styles.messageList}>
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            style={{
-              textAlign: msg.senderId === currentUserId ? "right" : "left",
-            }}
-          >
-            <span
-              style={{
-                ...styles.messageBubble,
-                background: msg.senderId === currentUserId ? "#dcf8c6" : "#fff",
-              }}
+    <div
+      data-theme="night"
+      className="flex flex-col h-full w-full bg-base-100 rounded-2xl overflow-hidden border border-base-content/5 shadow-xl"
+    >
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-base-content/10">
+        {messages.map((msg, idx) => {
+          const isMe = msg.senderId === currentUserId;
+          return (
+            <div
+              key={idx}
+              className={`chat ${isMe ? "chat-end" : "chat-start"}`}
             >
-              {msg.content}
-            </span>
-          </div>
-        ))}
+              <div
+                className={`chat-bubble text-sm ${
+                  isMe
+                    ? "chat-bubble-primary"
+                    : "bg-base-300 text-base-content"
+                }`}
+              >
+                {msg.content}
+              </div>
+            </div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Typing Indicator */}
-      <div style={styles.typingArea}>
-        {typingUser && <span style={styles.typingText}>{typingUser}</span>}
+      <div className="px-4 h-7 flex items-center">
+        {typingUser && (
+          <div className="flex items-center gap-2 text-[11px] text-primary/80 font-medium">
+            <span className="flex gap-0.5">
+              {[0, 150, 300].map((d) => (
+                <span
+                  key={d}
+                  className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"
+                  style={{ animationDelay: `${d}ms` }}
+                />
+              ))}
+            </span>
+            <span>{typingUser}</span>
+          </div>
+        )}
       </div>
 
-      <form onSubmit={handleSendMessage} style={styles.form}>
+      {/* Input */}
+      <form
+        onSubmit={handleSend}
+        className="px-4 pb-4 pt-2 flex gap-3 items-center border-t border-base-content/5 bg-base-200/40"
+      >
         <input
           type="text"
           value={input}
           onChange={handleTyping}
-          style={styles.input}
           placeholder="พิมพ์ข้อความ..."
+          className="input input-bordered flex-1 bg-base-300 border-base-content/10 focus:border-primary focus:outline-none text-sm h-10 rounded-2xl"
         />
-        <button type="submit" style={styles.button}>ส่ง</button>
+        <button
+          type="submit"
+          disabled={!input.trim()}
+          className="btn btn-primary btn-sm h-10 w-10 rounded-2xl p-0 shadow-lg shadow-primary/20 disabled:opacity-40"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
       </form>
     </div>
   );
 }
-
-// แยก Styles ออกมาให้ดูสะอาดตามสไตล์ Pro
-// const styles = {
-//   container: {
-//     border: "1px solid #ccc",
-//     padding: "10px",
-//     height: "450px",
-//     display: "flex",
-//     flexDirection: "column",
-//     backgroundColor: "#f9f9f9",
-//     borderRadius: "8px"
-//   },
-//   messageList: {
-//     flex: 1,
-//     overflowY: "auto",
-//     marginBottom: "5px",
-//     padding: "10px"
-//   },
-//   messageBubble: {
-//     padding: "8px 12px",
-//     borderRadius: "15px",
-//     display: "inline-block",
-//     margin: "4px",
-//     maxWidth: "80%",
-//     boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-//     fontSize: "14px"
-//   },
-//   typingArea: {
-//     height: "20px",
-//     paddingLeft: "10px",
-//     marginBottom: "5px"
-//   },
-//   typingText: {
-//     fontSize: "12px",
-//     color: "#06b6d4",
-//     fontStyle: "italic",
-//     animation: "pulse 1.5s infinite"
-//   },
-//   form: {
-//     display: "flex",
-//     gap: "8px"
-//   },
-//   input: {
-//     flex: 1,
-//     padding: "10px",
-//     borderRadius: "20px",
-//     border: "1px solid #ddd",
-//     outline: "none"
-//   },
-//   button: {
-//     padding: "10px 20px",
-//     borderRadius: "20px",
-//     backgroundColor: "#06b6d4",
-//     color: "white",
-//     border: "none",
-//     cursor: "pointer"
-//   }
-// };
