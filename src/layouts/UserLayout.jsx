@@ -6,9 +6,11 @@ import PageTransition from '../components/PageTransition';
 import NavbarUser from '../components/NavbarUser';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
 import FloatingChat from '../components/chat/FloatingChat';
+import useSearchStore from '../stores/searchStore';
 
 export default function MainLayout() {
     const location = useLocation();
+    const { isSearchOpen } = useSearchStore();
 
     return (
         <div className="min-h-screen bg-[#0B0C10] flex flex-col relative">
@@ -23,11 +25,11 @@ export default function MainLayout() {
                 </AnimatePresence>
             </main>
 
-            {location.pathname !== '/nearby-events' && <Footer />}
+            {!['/nearby-events', '/chat'].includes(location.pathname) && <Footer />}
 
             {/* Responsive Extras */}
             <MobileBottomNav />
-            <FloatingChat />
+            {!isSearchOpen && <FloatingChat />}
         </div>
     );
 }
