@@ -1,6 +1,6 @@
 import axios from 'axios';
 import useUserStore from '../stores/userStore';
-import { id } from 'zod/v4/locales';
+
 
 const mainapi = axios.create({
   baseURL: 'http://localhost:5000', // ตรวจสอบว่าตรงกับ Backend port 5000
@@ -55,6 +55,15 @@ export const createPostApi = (body) => mainapi.post(`/posts`,body)
 export const editPostApi = (postId,body) => mainapi.patch(`/posts/${postId}`,body)
 // user delete post
 export const deletePostApi = (postId) => mainapi.delete(`/posts/${postId}`) 
+
+// create comment
+export const createCommentApi = (postId, body) => mainapi.post(`/posts/${postId}/comments`, body)
+
+// edit comment
+export const editCommentApi = (postId, commentId, body) => mainapi.patch(`/posts/${postId}/comments/${commentId}`, body)
+
+// delete comment
+export const deleteCommentApi = (postId, commentId) => mainapi.delete(`/posts/${postId}/comments/${commentId}`)
 
 // User store
 export const getProfile = () => mainapi.get('/users/me')

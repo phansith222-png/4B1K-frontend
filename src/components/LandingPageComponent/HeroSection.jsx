@@ -2,6 +2,7 @@ import React from 'react';
 import HeroHeadline from './hero/HeroHeadline';
 import HeroCtaButtons from './hero/HeroCtaButtons';
 import HeroVideoShowcase from './hero/HeroVideoShowcase';
+import MiniMap from './hero/MiniMap';
 
 export default function HeroSection() {
     return (
@@ -14,7 +15,13 @@ export default function HeroSection() {
             {/* ข้อความและปุ่ม ซ้อนทับขึ้นไปใต้ส่วนโค้งของรูปภาพให้เป็นหนึ่งเดียวกัน */}
             <div className="w-full flex flex-col items-center relative z-20 px-4">
                 <HeroHeadline />
-                <div className="mt-8 md:mt-10">
+                
+                {/* 🗺️ Mini Map Section (Playable from Landing) */}
+                <div className="w-full max-w-5xl mt-12 mb-8 relative z-30">
+                    <MiniMap />
+                </div>
+
+                <div className="mt-4 md:mt-6">
                     <HeroCtaButtons />
                 </div>
             </div>

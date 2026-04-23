@@ -1,14 +1,80 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { X, Send } from "lucide-react";
+import { X, Send, ImageIcon, Loader2 } from "lucide-react";
+import usePostStore from "../stores/postStore";
+import useUserStore from "../stores/userStore";
+import { uploadToCloudinary } from "../utils/uploadCloud";
+import CommentItem from "./CommentItem";
 
+// ── PostModal ──
 function PostModal({ post, onClose }) {
+  // ดึง post แบบ live จาก store เพื่อให้ comments อัปเดตทันที
+  const livePost = usePostStore(
+    (state) => state.posts.find((p) => p.id === post.id) || post
+  );
+  const createComment = usePostStore((state) => state.createComment);
+  const currentUser = useUserStore((state) => state.user);
 
-    
+  const [commentText, setCommentText] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Cleanup ObjectURL เมื่อปิด Modal
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("ขนาดรูปภาพต้องไม่เกิน 5MB");
+        return;
+      }
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+    e.target.value = null;
+  };
+
+  const handleRemoveImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setSelectedFile(null);
+    setImagePreview(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!commentText.trim() && !selectedFile) return;
+    try {
+      setIsSubmitting(true);
+      let uploadedImageUrl = null;
+      if (selectedFile) {
+        uploadedImageUrl = await uploadToCloudinary(selectedFile);
+        if (!uploadedImageUrl) throw new Error("อัปโหลดรูปภาพไม่สำเร็จ");
+      }
+      await createComment(livePost.id, {
+        content: commentText.trim(),
+        image: uploadedImageUrl,
+      });
+      setCommentText("");
+      handleRemoveImage();
+    } catch (error) {
+      console.error("Comment failed:", error);
+      alert("เกิดข้อผิดพลาดในการส่งคอมเมนต์");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       {/* พื้นหลังสำหรับกดปิดเมื่อคลิกข้างนอก */}
-      <div className="absolute inset-0" onClick={onClose}></div>
+      <div className="absolute inset-0" onClick={!isSubmitting ? onClose : undefined} />
 
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -16,82 +82,146 @@ function PostModal({ post, onClose }) {
         exit={{ scale: 0.9, opacity: 0 }}
         className="relative bg-[#1a1a1a] border border-white/10 w-full max-w-2xl max-h-[90vh] rounded-[32px] overflow-hidden flex flex-col shadow-2xl"
       >
-        {/* Header Modal */}
-        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+        {/* Header */}
+        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02] shrink-0">
           <h3 className="font-bold text-white px-2">Post</h3>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors"
+            disabled={isSubmitting}
+            className="p-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors disabled:opacity-40"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* เนื้อหาโพสต์ย่อๆ และรายการคอมเมนต์ */}
+        {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+
           {/* ต้นฉบับโพสต์ */}
           <div className="flex gap-4 border-b border-white/5 pb-6">
             <img
               src={
-                post.user?.avatar ||
-                `https://ui-avatars.com/api/?name=${post.user?.username || "User"}&background=random&color=fff`
+                livePost.user?.avatar ||
+                `https://ui-avatars.com/api/?name=${livePost.user?.username || "User"}&background=random&color=fff`
               }
               className="w-8 h-8 rounded-full border border-white/10 object-cover shrink-0"
-              alt={post.user?.username || "User Avatar"}
+              alt={livePost.user?.username || "User Avatar"}
             />
             <div>
               <span className="font-bold text-sm text-[#c6ff00]">
-                {post.user?.username}
+                {livePost.user?.username}
               </span>
-              <p className="text-gray-300 text-sm mt-1">{post.content}</p>
+              <p className="text-gray-300 text-sm mt-1 whitespace-pre-wrap break-words">
+                {livePost.content}
+              </p>
             </div>
           </div>
 
-          {/* รายการคอมเมนต์ (วนลูปตรงนี้) */}
-          <h3 className="font-bold text-white px-2">Comments</h3>
-          <div className="space-y-4">
-            {post.comments?.length > 0 ? (
-              post.comments.map((comment, id) => (
-                <div key={id} className="flex gap-3 items-start animate-fadeIn">
-                  {/* 1. ใส่รูปสำรองในกรณีที่ avatar เป็น null */}
-                  <img
-                    src={
-                      comment.user?.avatar ||
-                      `https://ui-avatars.com/api/?name=${comment.user?.username || "User"}&background=random&color=fff`
-                    }
-                    className="w-8 h-8 rounded-full border border-white/10 object-cover shrink-0"
-                    alt={comment.user?.username || "User Avatar"}
-                  />
+          {/* รูปภาพของโพสต์ */}
+          {livePost.postImages && livePost.postImages.length > 0 && (
+            <div
+              className={`grid gap-2 ${
+                livePost.postImages.length === 1 ? "grid-cols-1" : "grid-cols-2"
+              }`}
+            >
+              {livePost.postImages.map((el, idx) => (
+                <img
+                  key={el.id || idx}
+                  src={el.url}
+                  className={`w-full object-cover rounded-2xl border border-white/10 shadow-inner ${
+                    livePost.postImages.length === 1
+                      ? "h-[250px] sm:h-[400px]"
+                      : "h-[150px] sm:h-[200px]"
+                  }`}
+                  alt={`Post content ${idx}`}
+                />
+              ))}
+            </div>
+          )}
 
-                  <div className="bg-white/5 rounded-2xl p-3 flex-1">
-                    {/* 2. ดัก username สำรองไว้ด้วยเผื่อ backend ไม่ส่งมา */}
-                    <span className="font-bold text-xs text-pink-300">
-                      {comment.user?.username || "Anonymous"}
-                    </span>
-                    <p className="text-gray-200 text-sm mt-0.5">
-                      {comment.content}
-                    </p>
-                  </div>
-                </div>
+          {/* รายการ Comments */}
+          <h3 className="font-bold text-white px-2">
+            Comments{" "}
+            {livePost.comments?.length > 0 && (
+              <span className="text-gray-500 font-normal text-sm">
+                ({livePost.comments.length})
+              </span>
+            )}
+          </h3>
+          <div className="space-y-4">
+            {livePost.comments?.length > 0 ? (
+              livePost.comments.map((comment, idx) => (
+                <CommentItem
+                  key={comment.id || idx}
+                  comment={comment}
+                  postId={livePost.id}
+                />
               ))
             ) : (
               <div className="text-center text-gray-500 py-10">
-                ยังไม่มีความคิดเห็น มาเริ่มกันเลย!
+                ยังไม่มีความคิดเห็น มาเริ่มกันเลย! 💬
               </div>
             )}
           </div>
         </div>
 
-        {/* ช่องกรอกคอมเมนต์ด้านล่าง */}
-        <div className="p-4 border-t border-white/5 bg-white/[0.01]">
-          <div className="relative flex items-center">
+        {/* ช่องกรอกคอมเมนต์ */}
+        <div className="p-4 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 shrink-0">
+
+          {/* Preview รูปที่แนบ */}
+          {imagePreview && (
+            <div className="relative w-20 h-20 ml-2">
+              <img src={imagePreview} className="w-full h-full object-cover rounded-xl border border-white/10" alt="preview" />
+              <button
+                onClick={handleRemoveImage}
+                disabled={isSubmitting}
+                className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors shadow-md z-10 disabled:opacity-50"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+
+          <div className="relative flex items-center gap-2">
+            {/* ปุ่มเลือกรูปภาพ */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSubmitting}
+              className={`p-2.5 rounded-full transition-colors shrink-0 ${
+                imagePreview
+                  ? "text-[#c6ff00] bg-[#c6ff00]/10"
+                  : "text-gray-400 hover:text-[#c6ff00] hover:bg-white/5"
+              } disabled:opacity-50`}
+              title="แนบรูปภาพ (สูงสุด 5MB)"
+            >
+              <ImageIcon size={20} />
+            </button>
+
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+
             <input
               type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              disabled={isSubmitting}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
               placeholder="เขียนความคิดเห็นของคุณ..."
-              className="w-full bg-white/5 border border-white/10 rounded-full py-3 px-5 pr-12 text-sm text-white focus:outline-none focus:border-pink-500/50 transition-all"
+              className="flex-1 bg-white/5 border border-white/10 rounded-full py-3 px-5 pr-12 text-sm text-white focus:outline-none focus:border-pink-500/50 transition-all disabled:opacity-50"
             />
-            <button className="absolute right-2 p-2 text-pink-500 hover:text-pink-400 transition-colors">
-              <Send size={18} />
+
+            {/* ปุ่มส่ง */}
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || (!commentText.trim() && !selectedFile)}
+              className="absolute right-2 p-2 text-pink-500 hover:text-pink-400 transition-colors disabled:opacity-50 disabled:hover:text-pink-500"
+            >
+              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
             </button>
           </div>
         </div>

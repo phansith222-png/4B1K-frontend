@@ -15,7 +15,6 @@ import LineupSection from '../components/PageRockComponent/LineupSection';
 import MusicPlayerSection from '../components/PageRockComponent/MusicPlayerSection';
 import ConcertSection from '../components/PageRockComponent/ConcertSection';
 import StatsSection from '../components/PageRockComponent/StatsSection';
-import BottomTextSection from '../components/PageRockComponent/BottomTextSection';
 
 const PLAYER_ID = 'yt-player-hidden-rock';
 
@@ -98,12 +97,12 @@ export default function PageRock() {
                     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
                 }
 
-                .shape-blob-1 { border-radius: 30% 70% 50% 50% / 30% 40% 60% 70%; animation: morphRock 10s ease-in-out infinite; }
-                .shape-blob-2 { border-radius: 50% 50% 30% 70% / 50% 60% 40% 50%; animation: morphRock 10s ease-in-out infinite reverse; }
-                @keyframes morphRock {
-                    0%, 100% { border-radius: 30% 70% 50% 50% / 30% 40% 60% 70%; }
-                    34% { border-radius: 60% 40% 70% 30% / 60% 30% 70% 40%; }
-                    67% { border-radius: 40% 60% 30% 70% / 40% 70% 30% 60%; }
+                .shape-blob-1 { animation: floatRock 15s ease-in-out infinite; will-change: transform, opacity; }
+                .shape-blob-2 { animation: floatRock 15s ease-in-out infinite reverse; will-change: transform, opacity; }
+                @keyframes floatRock {
+                    0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+                    33% { transform: translate(40px, -60px) scale(1.1) rotate(5deg); }
+                    66% { transform: translate(-30px, 30px) scale(0.9) rotate(-5deg); }
                 }
 
                 .bar-spotify-v3 {
@@ -145,7 +144,6 @@ export default function PageRock() {
             />
             <ConcertSection events={events} />
             <StatsSection songs={songs} />
-            <BottomTextSection artist={artist} />
         </div>
     );
 }

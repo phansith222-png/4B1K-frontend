@@ -97,6 +97,7 @@ export default function ChatPage() {
       const listRes = await mainapi.get("/chats/rooms");
       setContacts(listRes.data);
       setActiveChat(res.data.id);
+      setTab("personal");
       if (window.innerWidth < 768) setShowSidebar(false);
     } catch (err) {
       console.error("Failed to start private chat:", err);

@@ -78,7 +78,7 @@ export default function HeroSection({ artist, events }) {
                         whileTap={{ scale: 0.95 }}
                         className="ml-50 bg-gradient-to-r from-[#2B5AE8] to-[#CEFF67] text-black px-12 py-4 rounded-full font-black tracking-widest uppercase text-sm md:text-base shadow-[0_10px_30px_rgba(206,255,103,0.3)] border border-white/20 hover:border-black transition-all whitespace-nowrap"
                     >
-                        Book Now
+                        Join Event
                     </motion.button>
                 </motion.div>
             </Reveal>

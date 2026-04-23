@@ -96,14 +96,14 @@ export default function NavbarUser({ isLanding = false }) {
             <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
 
                 {/* Logo */}
-                <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer z-50 w-auto md:w-[240px]" onClick={() => navigate('/')}>
-                    <div className="flex items-end gap-[3px] h-7 w-6">
-                        <div className="w-1.5 rounded-full bar-1" />
-                        <div className="w-1.5 rounded-full bar-2" />
-                        <div className="w-1.5 rounded-full bar-3" />
-                        <div className="w-1.5 rounded-full bar-4" />
+                <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/')}>
+                    <div className="flex items-end gap-[2px] h-6 w-5">
+                        <div className="w-1 rounded-full bar-1" />
+                        <div className="w-1 rounded-full bar-2" />
+                        <div className="w-1 rounded-full bar-3" />
+                        <div className="w-1 rounded-full bar-4" />
                     </div>
-                    <div className="text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
+                    <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                 </div>
 
                 {/* Center nav + search */}
@@ -126,7 +126,7 @@ export default function NavbarUser({ isLanding = false }) {
                                 </motion.svg>
                             </button>
                         </li>
-                        <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
+                        <li><Link to="/home" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
                     </ul>
 
                     <NavSearchBar navigate={navigate} />
@@ -140,23 +140,9 @@ export default function NavbarUser({ isLanding = false }) {
                             <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300 hover:scale-105">Register</button>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
-                            {/* Chat button */}
-                            <button
-                                onClick={() => navigate('/chat')}
-                                className="group relative hidden sm:flex items-center gap-2 text-[14px] font-bold cursor-pointer text-gray-300 bg-[#1A1C23] hover:bg-[#252830] hover:text-white px-5 py-2 rounded-full transition-all duration-300 border border-white/5 hover:border-white/20 shrink-0 shadow-sm"
-                            >
-                                <span className="tracking-wide">Chat</span>
-                                <div className="relative flex items-center justify-center">
-                                    <svg className="h-4 w-4 text-[#00E5FF] group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00E5FF] opacity-75" />
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00E5FF]" />
-                                    </span>
-                                </div>
-                            </button>
+                        <div className="flex items-center gap-3 md:gap-4 lg:gap-6 whitespace-nowrap">
+                            {/* Chat button removed from here, now in FloatingChat */}
+                             
 
                             {/* Profile dropdown */}
                             <div className="relative" ref={profileRef}>
@@ -205,12 +191,9 @@ export default function NavbarUser({ isLanding = false }) {
                     {/* Language toggle */}
                     <div
                         onClick={() => setLanguage(l => l === 'EN' ? 'TH' : 'EN')}
-                        className="flex items-center gap-1.5 text-[14px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-4 py-2 rounded-full transition-colors border border-white/10 shrink-0"
+                        className="hidden sm:flex items-center gap-1.5 text-[12px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-4 py-2 rounded-full transition-colors border border-white/10 shrink-0"
                     >
-                        <svg className="w-4 h-4 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                        <span className="w-6 text-center">{language}</span>
+                        <span className="w-5 text-center">{language}</span>
                     </div>
                 </div>
             </header>
