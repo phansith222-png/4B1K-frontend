@@ -1,8 +1,19 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 
-export default function BackgroundEffects({ mousePos }) {
+export default function BackgroundEffects() {
+  const glowRef = useRef(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (glowRef.current) {
+        glowRef.current.style.background = `radial-gradient(600px at ${e.clientX}px ${e.clientY}px, rgba(198, 255, 0, 0.03), transparent 80%)`;
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
   const particlesInit = useCallback(async engine => {
     await loadSlim(engine);
   }, []);
@@ -55,10 +66,11 @@ export default function BackgroundEffects({ mousePos }) {
         <div className="laser-beam" style={{ left: '35%', animation: 'laser-swing 14s infinite alternate-reverse ease-in-out', background: 'linear-gradient(to bottom, transparent, rgba(255,0,127,0.6) 50%, transparent)' }}></div>
       </div>
 
-      {/* Mouse Glow (คงเดิม) */}
+      {/* Mouse Glow (Zero Re-render DOM Mutation) */}
       <div 
+        ref={glowRef}
         className="fixed inset-0 z-10 pointer-events-none transition-opacity duration-700 ease-out"
-        style={{ background: `radial-gradient(600px at ${mousePos.x}px ${mousePos.y}px, rgba(198, 255, 0, 0.03), transparent 80%)` }}
+        style={{ background: `radial-gradient(600px at -100px -100px, rgba(198, 255, 0, 0.03), transparent 80%)` }}
       />
     </>
   );

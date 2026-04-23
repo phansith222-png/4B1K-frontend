@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Bell, Users, Calendar, MapPin, 
@@ -50,6 +51,7 @@ const trendingTags = [
 
 export default function CommunityHomePage() {
   const [activeTab, setActiveTab] = useState('Feed');
+  const navigate = useNavigate();
 
   return (
     // ครอบด้วย ID เฉพาะ เพื่อจำกัด Scope ของสไตล์ (กันรั่วไปหน้าอื่น)
@@ -81,7 +83,7 @@ export default function CommunityHomePage() {
               <SidebarItem icon={<Users size={20} />} label="My Squads" badge="3" />
               <SidebarItem icon={<Calendar size={20} />} label="Upcoming Gigs" />
               <SidebarItem icon={<Music4 size={20} />} label="Favorite Artists" />
-              <SidebarItem icon={<MapPin size={20} />} label="Nearby Events" />
+              <SidebarItem icon={<MapPin size={20} />} label="Nearby Events" onClick={() => navigate('/nearby-events')} />
             </ul>
           </div>
 
