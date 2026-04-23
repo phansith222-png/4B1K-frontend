@@ -32,6 +32,8 @@ function CommentItem({ comment, postId }) {
   const myId = currentUser?.id ?? currentUser?._id;
   const isOwner = Boolean(myId && commentUserId && String(commentUserId) === String(myId));
 
+  const isEdited = comment.createdAt !== comment.updatedAt;
+
   // ปิด dropdown เมื่อคลิกข้างนอก
   useEffect(() => {
     if (!menuOpen) return;
@@ -113,6 +115,8 @@ function CommentItem({ comment, postId }) {
     try {
       setIsDeleting(true);
       await deleteComment(postId, comment.id);
+      console.log(postId,comment.id)
+
       setShowDeleteModal(false);
     } catch (err) {
       console.error('Delete comment failed:', err);
@@ -125,6 +129,21 @@ function CommentItem({ comment, postId }) {
     editText.trim() !== (comment.content || '') ||
     editImageFile !== null ||
     (comment.image && !keepExistingImage);
+
+
+    //เอาเวลาออกมา
+  const formatDateTime = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }); 
+  // ผลลัพธ์: "22 Apr 2026, 17:35"
+};
 
   return (
     <>
@@ -269,6 +288,22 @@ function CommentItem({ comment, postId }) {
                 <span className="font-bold text-xs text-pink-300">
                   {comment.user?.username || 'Anonymous'}
                 </span>
+
+                {/* 👇 2. นำโค้ดเวลามาวางตรงนี้ (แทรกระหว่าง ชื่อ กับ ข้อความ) 👇 */}
+              <span className="text-[10px] text-gray-500 flex items-center gap-1 mb-1.5 mt-0.5">
+                {isEdited ? (
+                  // ถ้าถูก Edit ให้โชว์ updatedAt เป็นวันและเวลา
+                  <span className="italic">
+                    Edited : {formatDateTime(comment.updatedAt)}
+                  </span>
+                ) : (
+                  // ถ้ายังไม่ถูก Edit ให้โชว์ createdAt เป็น TimeAgo หรือ วันและเวลา
+                  <span className="italic">
+                    {formatDateTime(comment.createdAt)}
+                  </span>
+                )}
+              </span>
+
                 {comment.content && (
                   <p className="text-gray-200 text-sm mt-0.5 whitespace-pre-wrap break-words">
                     {comment.content}

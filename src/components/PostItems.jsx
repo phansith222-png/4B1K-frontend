@@ -13,6 +13,7 @@ import useUserStore from "../stores/userStore";
 import { useState } from "react";
 import PostModal from "./PostModal";
 import EditPostModal from "./EditPostModal";
+import TimeAgo from 'react-timeago'
 
 function PostItem({ post, index }) {
   const user = useUserStore((state) => state.user);
@@ -31,6 +32,7 @@ function PostItem({ post, index }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditPostOpen, setIsEditPostOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const isEdited = post.createdAt !== post.updatedAt;
 
   const hdlLikeClick = async () => {
     // console.log('Post Id',post.id)
@@ -45,6 +47,19 @@ function PostItem({ post, index }) {
   const hdlDeletePost = async () => {
     await deletePost(post.id);
   };
+
+  const formatDateTime = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }); 
+  // ผลลัพธ์: "22 Apr 2026, 17:35"
+};
 
   return (
     <>
@@ -80,7 +95,22 @@ function PostItem({ post, index }) {
                     <Verified size={16} className="text-[#c6ff00]" />
                   )}
                 </div>
-                <span className="text-xs text-gray-500">{post.time}</span>
+
+          {/* 👇 ปรับส่วนแสดงเวลาตรงนี้ 👇 */}
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  {isEdited ? (
+                    // ถ้าถูก Edit ให้โชว์ updatedAt เป็นวันและเวลา
+                    <span className="italic">
+                      Edited : {formatDateTime(post.updatedAt)}
+                    </span>
+                  ) : (
+                    // ถ้ายังไม่ถูก Edit ให้โชว์ createdAt เป็น TimeAgo เหมือนเดิม
+                    <span className="italic">
+                      {formatDateTime(post.createdAt)}
+                    </span>
+                  )}
+                </span>
+
               </div>
             </div>
 

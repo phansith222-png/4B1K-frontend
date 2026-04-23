@@ -20,6 +20,20 @@ function PostModal({ post, onClose }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+  const isEdited = post.createdAt !== post.updatedAt;
+
+    const formatDateTime = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }); 
+  // ผลลัพธ์: "22 Apr 2026, 17:35"
+};
 
   // Cleanup ObjectURL เมื่อปิด Modal
   useEffect(() => {
@@ -94,6 +108,7 @@ function PostModal({ post, onClose }) {
           </button>
         </div>
 
+
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
 
@@ -111,11 +126,27 @@ function PostModal({ post, onClose }) {
               <span className="font-bold text-sm text-[#c6ff00]">
                 {livePost.user?.username}
               </span>
+              <span className="text-xs text-gray-500 flex items-center gap-1">
+                  {isEdited ? (
+                    // ถ้าถูก Edit ให้โชว์ updatedAt เป็นวันและเวลา
+                    <span className="italic">
+                      Edited : {formatDateTime(post.updatedAt)}
+                    </span>
+                  ) : (
+                    // ถ้ายังไม่ถูก Edit ให้โชว์ createdAt เป็น TimeAgo เหมือนเดิม
+                    <span className="italic">
+                      {formatDateTime(post.createdAt)}
+                    </span>
+                  )}
+                </span>
               <p className="text-gray-300 text-sm mt-1 whitespace-pre-wrap break-words">
                 {livePost.content}
               </p>
             </div>
+
+          
           </div>
+
 
           {/* รูปภาพของโพสต์ */}
           {livePost.postImages && livePost.postImages.length > 0 && (
@@ -136,6 +167,7 @@ function PostModal({ post, onClose }) {
                   alt={`Post content ${idx}`}
                 />
               ))}
+
             </div>
           )}
 
