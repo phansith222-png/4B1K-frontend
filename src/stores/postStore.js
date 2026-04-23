@@ -129,6 +129,7 @@ const usePostStore = create(
     deleteComment : async (postId, commentId) => {
         try {
             const resp = await deleteCommentApi(postId, commentId)
+            console.log(resp)
             get().getAllPosts()
             return resp
         }catch(error) {
