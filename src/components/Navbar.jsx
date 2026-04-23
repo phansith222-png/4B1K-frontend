@@ -73,14 +73,14 @@ export default function Navbar() {
             <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
 
                 {/* Logo */}
-                <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer z-50 w-auto md:w-[240px]" onClick={() => navigate('/')}>
-                    <div className="flex items-end gap-[3px] h-7 w-6">
-                        <div className="w-1.5 rounded-full bar-1" />
-                        <div className="w-1.5 rounded-full bar-2" />
-                        <div className="w-1.5 rounded-full bar-3" />
-                        <div className="w-1.5 rounded-full bar-4" />
+                <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/')}>
+                    <div className="flex items-end gap-[2px] h-6 w-5">
+                        <div className="w-1 rounded-full bar-1" />
+                        <div className="w-1 rounded-full bar-2" />
+                        <div className="w-1 rounded-full bar-3" />
+                        <div className="w-1 rounded-full bar-4" />
                     </div>
-                    <div className="text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
+                    <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                 </div>
 
                 {/* Center nav */}
@@ -111,23 +111,20 @@ export default function Navbar() {
                 </div>
 
                 {/* Right side */}
-                <div className="flex-shrink-0 flex items-center justify-end gap-4 lg:gap-6 z-50 w-auto">
-                    <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
-                        <button onClick={() => navigate('/login')} className="text-[15px] font-bold text-gray-400 hover:text-white transition-colors">
+                <div className="flex-shrink-0 flex items-center justify-end gap-2 md:gap-4 z-50">
+                    <div className="flex items-center gap-2 md:gap-4 whitespace-nowrap">
+                        <button onClick={() => navigate('/login')} className="hidden sm:block text-[14px] font-bold text-gray-400 hover:text-white transition-colors">
                             Log In
                         </button>
-                        <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300 hover:scale-105 shadow-[0_4px_15px_rgba(255,255,255,0.1)] hover:shadow-[0_4px_20px_rgba(0,229,255,0.4)]">
-                            Register
+                        <button onClick={() => navigate('/register')} className="text-[13px] md:text-[15px] font-bold bg-[#00E5FF] text-black px-4 md:px-8 py-2 md:py-2.5 rounded-full transition-all duration-300 shadow-[0_4px_15px_rgba(0,229,255,0.2)]">
+                            Join
                         </button>
                     </div>
                     <div
                         onClick={() => setLanguage(l => l === 'EN' ? 'TH' : 'EN')}
-                        className="flex items-center gap-1.5 text-[14px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-4 py-2 rounded-full transition-colors border border-white/10 shrink-0"
+                        className="hidden sm:flex items-center gap-1.5 text-[12px] font-bold cursor-pointer text-white bg-[#1A1C23] hover:bg-[#252830] px-3 py-1.5 rounded-full transition-colors border border-white/10 shrink-0"
                     >
-                        <svg className="w-4 h-4 text-[#00E5FF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                        <span className="w-6 text-center">{language}</span>
+                        <span className="w-5 text-center">{language}</span>
                     </div>
                 </div>
             </header>

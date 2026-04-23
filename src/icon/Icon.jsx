@@ -2,9 +2,12 @@ import { Plus } from 'lucide-react'
 
 // --- 🧩 SUB-COMPONENTS (เพื่อความคลีนของโค้ด) ---
 
-export const SidebarItem = ({ icon, label, active = false, badge }) =>{
+export const SidebarItem = ({ icon, label, active = false, badge, onClick }) =>{
   return (
-    <li className={`flex items-center justify-between gap-4 cursor-pointer p-3 rounded-xl transition-all ${active ? 'bg-[#c6ff00]/10 text-[#c6ff00]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+    <li 
+      onClick={onClick}
+      className={`flex items-center justify-between gap-4 cursor-pointer p-3 rounded-xl transition-all ${active ? 'bg-[#c6ff00]/10 text-[#c6ff00]' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
+    >
       <div className="flex items-center gap-4">
         {icon}
         <span className="font-bold text-sm">{label}</span>

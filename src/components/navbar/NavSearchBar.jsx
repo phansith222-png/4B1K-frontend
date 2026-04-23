@@ -2,15 +2,22 @@ import React, { useState, useRef } from 'react';
 import { useSearchData } from '../../hooks/useSearchData';
 import NavSearchDropdown from './NavSearchDropdown';
 
+/**
+ * [NavSearchBar Component]
+ * ส่วนประกอบของแถบค้นหาบน Navbar ที่สามารถขยายออกได้ (Expanding Search Bar)
+ * ทำงานร่วมกับ useSearchData Hook เพื่อจัดการข้อมูลและการนำทาง
+ */
 export default function NavSearchBar({ navigate }) {
-    const [isOpen, setIsOpen]     = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [showDrop, setShowDrop] = useState(false);
-    const inputRef                = useRef(null);
-    const wrapRef                 = useRef(null);
+    const inputRef = useRef(null);
+    const wrapRef = useRef(null);
 
+    // query: ข้อความที่พิมพ์, suggestions: ผลลัพธ์ที่ได้, executeSearch: ค้นหาเมื่อกด Enter
     const { query, setQuery, suggestions, executeSearch, selectSuggestion, clearSearch } =
         useSearchData(navigate);
 
+    // เปิดแถบค้นหา และทำการ Focus ทันทีหลังจาก Animation จบ
     const openSearch = () => {
         setIsOpen(true);
         setTimeout(() => inputRef.current?.focus(), 60);
@@ -25,8 +32,8 @@ export default function NavSearchBar({ navigate }) {
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             setShowDrop(false);
-            executeSearch();
-            // Only close if there was a query — keeps bar open on empty Enter
+            executeSearch(); // เรียกฟังก์ชันค้นหาหลัก (ไปหน้าศิลปินหรือเปิดหน้าดีเทล)
+            // ปิดแถบค้นหาก็ต่อเมื่อมีการพิมพ์ข้อความทิ้งไว้
             if (query.trim()) setTimeout(closeSearch, 50);
         }
         if (e.key === 'Escape') closeSearch();
@@ -37,14 +44,20 @@ export default function NavSearchBar({ navigate }) {
         closeSearch();
     };
 
-    // Dropdown is visible when: bar is open + user typed something + results exist
+    /**
+     * เงื่อนไขการแสดง Dropdown:
+     * 1. แถบค้นหาถูกเปิดอยู่ (isOpen)
+     * 2. กำลังต้องการให้แสดง (showDrop)
+     * 3. มีการพิมพ์ข้อความมากกว่า 0 ตัวอักษร
+     * 4. มีข้อมูลผลลัพธ์ (suggestions) ที่ตรงกับคำค้นหา
+     */
     const dropVisible = isOpen && showDrop && query.trim().length > 0 && suggestions.length > 0;
 
     return (
         // Wrapper must NOT have overflow:hidden so dropdown can escape
         <div ref={wrapRef} className="flex items-center ml-2 lg:ml-8 relative z-[100]">
 
-            {/* Expanding pill */}
+            {/* 💊 แถบค้นหาแบบ Pill Shape ที่ขยายออกได้เมื่อกดเปิด */}
             <div
                 className={[
                     'transition-all duration-500 ease-in-out flex items-center',
@@ -79,9 +92,8 @@ export default function NavSearchBar({ navigate }) {
             </div>
 
             {/*
-              * Dropdown is placed AFTER the pill but INSIDE the same relative
-              * container — it will extend below the navbar (position:absolute,
-              * top:100%) without being clipped by any parent overflow:hidden.
+              * Dropdown แสดงผลลัพธ์:
+              * วางไว้นอก Pill แต่อยู่ใน Wrapper เดียวกันเพื่อให้ลอยทับเนื้อหาด้านล่างได้ (z-index สูง)
               */}
             <NavSearchDropdown
                 suggestions={suggestions}

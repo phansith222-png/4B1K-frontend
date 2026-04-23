@@ -26,6 +26,7 @@ const PageClassic = lazy(() => import("../pages/PageClassic"));
 const PageEtc = lazy(() => import("../pages/PageEtc"));
 const PageEntertainment = lazy(() => import("../pages/PageEntertainment"));
 const AllArtist = lazy(() => import("../pages/PageAllArtist"));
+const PageNearbyEvents = lazy(() => import("../pages/PageNearbyEvents"));
 
 const guestRouter = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ const guestRouter = createBrowserRouter([
       { path: "etc", element: <PageEtc /> },
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
+      { path: "nearby-events", element: <PageNearbyEvents /> },
       { path: "oauth/callback", element: <OAuthCallback /> },
 
       { path: "*", element: <Navigate to="/" replace /> },
@@ -57,7 +59,7 @@ const userRouter = createBrowserRouter([
     path: "/",
     element: <UserLayout />,
     children: [
-      { path: "/", element: <HomePage /> },
+      { path: "/", element: <LandingPage /> },
       { path: "home", element: <HomePage /> },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
@@ -72,6 +74,7 @@ const userRouter = createBrowserRouter([
       { path: "etc", element: <PageEtc /> },
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
+      { path: "nearby-events", element: <PageNearbyEvents /> },
       { path: "oauth/callback", element: <OAuthCallback /> },
 
       { path: "*", element: <Navigate to="/" replace /> },
