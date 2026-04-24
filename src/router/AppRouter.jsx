@@ -1,15 +1,13 @@
-import { lazy, Suspense, useEffect } from "react"; // 📌 นำเข้า useEffect
+import { lazy, Suspense } from "react"; 
 import {
   createBrowserRouter,
   Navigate,
-  RouterProvider,
-  useLocation // 📌 นำเข้า useLocation
+  RouterProvider
 } from "react-router-dom";
 import useUserStore from "../stores/userStore";
 import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
 import OAuthCallback from "../pages/OAuthCallback";
-import CommunityHomePage from "../pages/HomePage";
 
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import("../pages/LandingPage"));
@@ -64,8 +62,6 @@ const userRouter = createBrowserRouter([
       { path: "/", element: <HomePage /> },
       { path: "landing", element: <LandingPage /> },
       { path: "home", element: <HomePage /> },
-      { path: "login", Component: Login },
-      { path: "register", Component: Register },
       { path: "editprofile", Component: EditProfile },
       { path: "new-event", element: <NewEvent /> },
       { path: "chat", element: <Chat /> },
