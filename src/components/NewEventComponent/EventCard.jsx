@@ -4,7 +4,7 @@ import { getCategoryStyle } from '../../utils/eventStyles';
 
 export default function EventCard({ event, index }) {
     
-    // Curated high-quality music/concert images
+    // Curated high-quality music/concert images ไม่ได้ใช้ แต่เก็บไว้ก่อน
     const FALLBACK_IMAGES = [
         "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
