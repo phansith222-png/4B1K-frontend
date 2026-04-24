@@ -7,13 +7,13 @@ export default function EventCard({ event, index }) {
     const FALLBACK_IMAGES = [
         "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1533174000228-4f1b802a433a?q=80&w=800&auto=format&fit=crop",
+        "https://as1.ftcdn.net/v2/jpg/06/46/40/40/1000_F_646404057_dZp9m50EsdwskSbfLRz0g2TbyiDo6IUy.jpg",//nopic
         "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1493225457124-a1a2a5bb001b?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=800&auto=format&fit=crop",//no pic
         "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1520095972714-909e91b05382?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",//no pic
         "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop"
     ];
