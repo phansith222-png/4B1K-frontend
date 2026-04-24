@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback } from "react";
 import { Plus, Music4, X, Loader2 } from "lucide-react";
-import { PostToolButton } from "../icon/icon";
+import { PostToolButton } from "../icon/SidebarIcons";
 import useUserStore from "../stores/userStore";
 import usePostStore from "../stores/postStore";
 import { uploadToCloudinary } from "../utils/uploadCloud";
@@ -86,7 +86,7 @@ export default function PostCreator() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
-      <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl relative z-10">
+      <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl relative z-20">
         {/* Hidden file input */}
         <input
           type="file"
@@ -97,16 +97,18 @@ export default function PostCreator() {
           onChange={hdlFileChange}
         />
 
+
         <div className="flex gap-4">
           {/* Avatar */}
           <img
             src={
-              user?.avatar ||
+              user?.profileImage || user?.avatar ||
               `https://ui-avatars.com/api/?name=${user?.username || "User"}&background=random&color=fff`
             }
-            className="w-12 h-12 rounded-full border border-white/10 object-cover shrink-0"
+            className="w-12 h-12 rounded-full border border-white/10 object-cover shrink-0 shadow-lg"
             alt="User Avatar"
           />
+
 
           <div className="flex-1">
             {/* Textarea */}
@@ -123,7 +125,7 @@ export default function PostCreator() {
                 {selectedArtists.map((artist) => (
                   <span
                     key={artist.id}
-                    className="flex items-center gap-1.5 text-sm font-bold bg-[#c6ff00]/10 text-[#c6ff00] px-3 py-1.5 rounded-full border border-[#c6ff00]/20"
+                    className="flex items-center gap-1.5 text-sm font-bold bg-[#7C4DFF]/10 text-[#00E5FF] px-3 py-1.5 rounded-full border border-[#7C4DFF]/20"
                   >
                     🎤 {artist.artistName || artist.name}
                     <button
@@ -200,7 +202,7 @@ export default function PostCreator() {
             type="button"
             onClick={hdlSubmitPost}
             disabled={!canPost || isUploading}
-            className="bg-[#c6ff00] text-black px-8 py-3 rounded-full font-black text-sm hover:bg-white transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white px-10 py-3 rounded-full font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(124,77,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
               <span className="flex items-center gap-2">
@@ -208,9 +210,10 @@ export default function PostCreator() {
                 Posting…
               </span>
             ) : (
-              "Post"
+              "POST VIBE"
             )}
           </button>
+
         </div>
       </div>
 

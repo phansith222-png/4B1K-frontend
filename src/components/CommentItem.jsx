@@ -161,6 +161,7 @@ function CommentItem({ comment, postId }) {
       <div className="flex gap-3 items-start group">
         <img
           src={
+            comment.user?.profileImage ||
             comment.user?.avatar ||
             `https://ui-avatars.com/api/?name=${comment.user?.username || 'User'}&background=random&color=fff`
           }
@@ -174,7 +175,7 @@ function CommentItem({ comment, postId }) {
             <motion.div
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white/5 border border-[#c6ff00]/20 rounded-2xl px-4 py-3"
+              className="bg-white/5 border border-[#00E5FF]/20 rounded-2xl px-4 py-3"
             >
               <span className="font-bold text-xs text-pink-300 block mb-2">
                 {comment.user?.username || 'Anonymous'}
@@ -191,7 +192,7 @@ function CommentItem({ comment, postId }) {
                   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleEdit(); }
                   if (e.key === 'Escape') { setIsEditing(false); }
                 }}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#c6ff00]/50 resize-none disabled:opacity-50 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5FF]/50 resize-none disabled:opacity-50 transition-all"
                 placeholder="แก้ไขความคิดเห็น..."
               />
 
@@ -221,7 +222,7 @@ function CommentItem({ comment, postId }) {
                   <img
                     src={editImagePreview}
                     alt="new preview"
-                    className="w-full h-full object-cover rounded-xl border border-[#c6ff00]/40"
+                    className="w-full h-full object-cover rounded-xl border border-[#00E5FF]/40"
                   />
                   {!isSaving && (
                     <button
@@ -254,8 +255,8 @@ function CommentItem({ comment, postId }) {
                   title="แนบรูปภาพ (สูงสุด 5MB)"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors disabled:opacity-40 ${
                     editImageFile
-                      ? 'text-[#c6ff00] bg-[#c6ff00]/10'
-                      : 'text-gray-400 hover:text-[#c6ff00] hover:bg-white/5'
+                      ? 'text-[#00E5FF] bg-[#00E5FF]/10'
+                      : 'text-gray-400 hover:text-[#00E5FF] hover:bg-white/5'
                   }`}
                 >
                   <ImageIcon size={14} />
@@ -273,7 +274,7 @@ function CommentItem({ comment, postId }) {
                   <button
                     onClick={handleEdit}
                     disabled={isSaving || !hasChanges}
-                    className="px-4 py-1.5 text-xs bg-[#c6ff00] text-black font-bold rounded-full hover:bg-white transition-colors disabled:opacity-40 flex items-center gap-1.5"
+                    className="px-4 py-1.5 text-xs bg-[#00E5FF] text-black font-bold rounded-full hover:bg-white transition-colors disabled:opacity-40 flex items-center gap-1.5"
                   >
                     {isSaving && <Loader2 size={12} className="animate-spin" />}
                     Save
@@ -313,7 +314,7 @@ function CommentItem({ comment, postId }) {
                   <img
                     src={comment.image}
                     alt="comment attachment"
-                    className="mt-2 rounded-xl border border-white/10 max-h-48 object-cover w-full"
+                    className="mt-2 rounded-xl border border-white/10 max-h-96 object-contain bg-black/10 w-full"
                   />
                 )}
               </div>
@@ -346,7 +347,7 @@ function CommentItem({ comment, postId }) {
                         {/* Edit */}
                         <button
                           onClick={openEditMode}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-200 hover:bg-white/5 hover:text-[#c6ff00] transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-200 hover:bg-white/5 hover:text-[#00E5FF] transition-colors"
                         >
                           <div className="p-1 bg-white/5 rounded-lg">
                             <Pencil size={13} />

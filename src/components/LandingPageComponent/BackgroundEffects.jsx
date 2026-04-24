@@ -45,7 +45,7 @@ export default function BackgroundEffects() {
           fullScreen: { enable: true, zIndex: 0 },
           particles: {
             number: { value: 80, density: { enable: true, area: 1000 } },
-            color: { value: ["#c6ff00", "#00E5FF", "#d000ff", "#ffffff"] },
+            color: { value: ["#00E5FF", "#00E5FF", "#d000ff", "#ffffff"] },
             opacity: { value: { min: 0.05, max: 0.3 }, animation: { enable: true, speed: 0.5 } },
             size: { value: { min: 1, max: 3 } },
             move: { enable: true, speed: 0.5, direction: "top", random: true, straight: false },

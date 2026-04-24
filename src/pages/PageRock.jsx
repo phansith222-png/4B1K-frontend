@@ -10,6 +10,7 @@ import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
 // Components
+import CategoryBackground from '../components/PageAllArtistComponent/CategoryBackground';
 import HeroSection from '../components/PageRockComponent/HeroSection';
 import LineupSection from '../components/PageRockComponent/LineupSection';
 import MusicPlayerSection from '../components/PageRockComponent/MusicPlayerSection';
@@ -59,9 +60,10 @@ export default function PageRock() {
     // ── States ────────────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="bg-[#0a0a0a] min-h-screen flex flex-col items-center justify-center text-[#D3131F]">
-                <div className="w-16 h-16 border-4 border-[#222] border-t-[#D3131F] rounded-full animate-spin shadow-[0_0_15px_#D3131F]" />
-                <p className="mt-4 font-black tracking-[0.3em] animate-pulse text-white uppercase text-sm">Loading Rock...</p>
+            <div className="bg-[#0B0C10] min-h-screen flex flex-col items-center justify-center text-[#D3131F] relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#D3131F] opacity-20 blur-[80px] rounded-full animate-pulse" />
+                <div className="w-16 h-16 border-4 border-white/5 border-t-[#D3131F] rounded-full animate-spin z-10" />
+                <p className="mt-4 font-black tracking-[0.3em] animate-pulse text-white z-10 uppercase text-xs">Summoning Rock Legends...</p>
             </div>
         );
     }
@@ -81,6 +83,21 @@ export default function PageRock() {
 
             {/* Stable hidden player container — DO NOT add key or conditional render */}
             <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
+
+            {/* Animated background */}
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 bg-[#0B0C10]" />
+                <CategoryBackground keyword="rock" isPlaying={isPlaying} />
+                
+                {/* Digital Grid Overlay */}
+                <div 
+                    className="absolute inset-0 opacity-[0.05]" 
+                    style={{ 
+                        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+                        backgroundSize: '100px 100px'
+                    }}
+                />
+            </div>
 
             <style>{`
                 @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

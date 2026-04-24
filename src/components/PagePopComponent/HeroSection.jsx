@@ -35,12 +35,15 @@ export default function HeroSection({ artist, events }) {
                         )}
 
                         <img
-                            src={artist.profileImage || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=2000&auto=format&fit=crop"}
+                            src={(artist.profileImage && typeof artist.profileImage === 'string' && artist.profileImage.startsWith('http')) 
+                                ? artist.profileImage 
+                                : "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=2000&auto=format&fit=crop"}
                             alt={artist.artistName}
                             onLoad={() => setImgLoaded(true)}
                             onError={() => setImgLoaded(true)}
                             className={`absolute inset-0 w-full h-full object-cover transition-all duration-[15s] ease-out group-hover:scale-110 ${imgLoaded ? 'opacity-80' : 'opacity-0'}`}
                         />
+
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/40 to-transparent opacity-90"></div>
 
                         <div className="absolute bottom-12 left-8 md:left-16 z-20">
