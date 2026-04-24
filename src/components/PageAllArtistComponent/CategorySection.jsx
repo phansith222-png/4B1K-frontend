@@ -7,8 +7,8 @@ export default function CategorySection({ section, navigate }) {
     const [isDragging, setIsDragging] = useState(false);
 
     return (
-        <section className="relative w-full py-24 border-t border-white/5 overflow-hidden">
-            <CategoryBackground keyword={section.keyword} />
+        <section className="relative w-full py-24 overflow-hidden">
+            <CategoryBackground keyword={section.keyword} artist={section.artists[0]} />
 
             <div className="relative z-10 w-full max-w-[100rem] mx-auto pl-6 md:pl-12">
 
@@ -47,7 +47,7 @@ export default function CategorySection({ section, navigate }) {
                                 transition={{ delay: aIdx * 0.05 }}
                                 whileHover={{ y: -15 }}
                                 onClick={() => {
-                                    window.scrollTo(-1, -1);
+                                    window.scrollTo(0, 0);
                                     // พาไปที่ Path ของหมวดหมู่นั้นๆ (เช่น /pop, /rock) พร้อมแนบ ?artistId=
                                     const targetPath =
                                         section.keyword === 'pop' ? '/pop' :

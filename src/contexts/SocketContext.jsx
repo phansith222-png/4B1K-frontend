@@ -34,8 +34,9 @@ export const SocketProvider = ({ children }) => {
     console.log("🚀 [SocketDebug] กำลังพยายามเชื่อมต่อกับ http://localhost:5000 ...");
     const newSocket = io('http://localhost:5000', {
       auth: { token },
-      transports: ["websocket"],
+      // transports: ["websocket"],
       reconnection: true,
+      reconnectionAttempts: 5,
     });
 
     newSocket.on("connect", () => {

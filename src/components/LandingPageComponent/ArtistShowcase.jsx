@@ -12,7 +12,6 @@ export default function ArtistShowcase() {
       try {
         const res = await getAllArtists();
         let data = res?.artists || res?.data || res || [];
-        // สุ่มศิลปิน 6 คน
         const shuffled = [...data].sort(() => 0.5 - Math.random()).slice(0, 6);
         setArtists(shuffled);
       } catch (err) {
@@ -22,7 +21,6 @@ export default function ArtistShowcase() {
     fetchRandomArtists();
   }, []);
 
-  // ฟังก์ชันหาว่าศิลปินอยู่หน้าไหน (เหมือนใน Navbar)
   const getArtistPath = (artist) => {
     const aId = Number(artist.id);
     const popIds = [1, 2, 3, 4, 5];
@@ -42,16 +40,19 @@ export default function ArtistShowcase() {
   return (
     <section className="relative z-20 py-24 px-6 max-w-7xl mx-auto mb-20">
       <motion.div 
-        initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+        initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }}
         className="text-center mb-16"
       >
         <span className="text-[#d000ff] font-black text-[10px] tracking-[0.3em] uppercase mb-2 block">Discover Music</span>
-        <h2 className="text-4xl md:text-5xl font-black uppercase text-white tracking-tighter">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d000ff] to-[#FF007F]">Artists</span></h2>
+        <h2 className="text-4xl md:text-5xl font-black uppercase text-white tracking-tighter mb-4">Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d000ff] to-[#FF007F]">Artists</span></h2>
+        <p className="text-gray-400 text-sm md:text-base font-medium max-w-xl mx-auto">
+          Explore profiles of trending artists, stream their top tracks, and learn their journey. Click on any artist to dive into their world.
+        </p>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12">
         {artists.map((artist, idx) => {
-          // สุ่มเพลงมา 1 เพลง ถ้ามี
           const randomSong = artist.songs && artist.songs.length > 0 
             ? artist.songs[Math.floor(Math.random() * artist.songs.length)] 
             : null;
@@ -59,14 +60,15 @@ export default function ArtistShowcase() {
           return (
           <motion.div
             key={artist.id}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            // 📌 เอฟเฟกต์ Pop-up เด้งดึ๋ง
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, delay: idx * 0.1 }}
-            onClick={() => { window.scrollTo(0,0); navigate(`${getArtistPath(artist)}?artistId=${artist.id}`); }}
+            transition={{ type: "spring", stiffness: 120, damping: 15, delay: idx * 0.1 }}
+            onClick={() => { window.scrollTo(0,0); navigate(`${getArtistPath(artist)}?artistId=${artist.id}&autoplay=true`); }}
             className="flex flex-col items-center group cursor-pointer"
           >
-            <div className="w-32 h-32 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-tr from-white/5 to-white/20 group-hover:from-[#d000ff] group-hover:to-[#00E5FF] transition-all duration-500 shadow-xl mb-6 relative">
+            <div className="w-32 h-32 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-tr from-white/5 to-white/20 group-hover:from-[#d000ff] group-hover:to-[#00E5FF] transition-all duration-500 shadow-xl mb-6 relative group-hover:-translate-y-2">
               <img 
                 src={artist.profileImage || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400&auto=format&fit=crop"} 
                 alt={artist.artistName} 
@@ -82,9 +84,12 @@ export default function ArtistShowcase() {
             </h3>
             
             {randomSong && (
-              <p className="mt-2 text-[10px] md:text-xs font-bold text-gray-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 text-center line-clamp-1 max-w-[90%]">
+              <motion.p 
+                initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: (idx * 0.1) + 0.3 }}
+                className="mt-2 text-[10px] md:text-xs font-bold text-gray-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 text-center line-clamp-1 max-w-[90%]"
+              >
                 🎵 {randomSong.title}
-              </p>
+              </motion.p>
             )}
           </motion.div>
         )})}

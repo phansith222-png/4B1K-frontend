@@ -1,92 +1,118 @@
 import React, { useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, aspectRatio } from 'framer-motion';
 import usePostStore from '../stores/postStore';
 import { Heart, MessageCircle, MoreHorizontal, Share2, Verified } from 'lucide-react';
-import { ActionButton } from '../icon/icon';
+import { ActionButton } from '../icon/SidebarIcons';
+import PostItem from './PostItems';
 
 
-function PostContainer() {
-
-    const getAllPosts = usePostStore(state => state.getAllPosts) || null
-    const posts = usePostStore(state => state.posts)
-
-    console.log('postcontainer',posts)
+function PostContainer({ activeTab, selectedArtistIds }) {
+    const getAllPosts = usePostStore(state => state.getAllPosts);
+    const posts = usePostStore(state => state.posts);
+    const [visibleCount, setVisibleCount] = React.useState(5);
+    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
 
     useEffect(() => {
-        getAllPosts()
-    },[])
+        getAllPosts();
+    }, [getAllPosts]);
+
+    // Reset count when tab or artist changes
+    useEffect(() => {
+        setVisibleCount(5);
+    }, [activeTab, selectedArtistIds]);
+
+    const handleLoadMore = () => {
+        setIsLoadingMore(true);
+        // Simulate a small network delay for premium feel
+        setTimeout(() => {
+            setVisibleCount(prev => prev + 5);
+            setIsLoadingMore(false);
+        }, 800);
+    };
+
+    const filteredPosts = React.useMemo(() => {
+        if (!posts) return [];
+
+        let result = posts;
+
+        // Filter by selected artist tags if active
+        if (selectedArtistIds && selectedArtistIds.length > 0) {
+            result = result.filter(post =>
+                post.postArtists?.some(pa => selectedArtistIds.includes(pa.artistId))
+            );
+        }
+
+        switch (activeTab) {
+            case 'Reviews':
+                result = result.filter(post => post.postArtists && post.postArtists.length > 0);
+                break;
+            case 'Photos':
+                result = result.filter(post => post.postImages && post.postImages.length > 0);
+                break;
+            case 'All':
+            default:
+                break;
+        }
+        return result;
+    }, [posts, activeTab, selectedArtistIds]);
+
+    const visiblePosts = filteredPosts.slice(0, visibleCount);
 
     if (!posts || posts.length === 0) {
-        return <div className="text-gray-500 text-center py-10">กำลังโหลดข้อมูล...</div>;
+        return <div className="text-gray-500 text-center py-10 italic">Loading community vibes...</div>;
     }
 
-  return (
-    <>
-<div className="flex flex-col gap-6">
-            <AnimatePresence>
-                {/* วนลูป posts.map ตรงนี้ 
-                  และ return หน้าตาการ์ด <motion.div> ออกมาทันที 
-                */}
-                {posts.map((post, index) => (
-                    <motion.div 
-                        key={post.id || index} // อย่าลืมใส่ key ให้ element ตัวแรกสุดในลูปเสมอ
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                        className="bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
+    return (
+        <div className="flex flex-col gap-6">
+            <AnimatePresence mode="popLayout">
+                {visiblePosts.map((post, index) => (
+                    <PostItem
+                        key={post.id || index}
+                        post={post}
+                        index={index}
+                    />
+                ))}
+            </AnimatePresence>
+
+            {filteredPosts.length > visibleCount && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pt-4 pb-8 flex justify-center"
+                >
+                    <button
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore}
+                        className="group relative px-10 py-3 rounded-full bg-white/[0.03] border border-white/10 text-gray-400 hover:text-white transition-all hover:bg-white/[0.08] hover:border-[#00E5FF]/40 disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] flex items-center justify-center overflow-hidden"
                     >
-                        {/* Post Header */}
-                        <div className="p-6 pb-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-4">
-                                    <img src={post.user?.avatar} className="w-12 h-12 rounded-full border-2 border-white/10 shadow-md" alt={post.user?.name} />
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-black text-base group-hover:text-[#c6ff00] transition-colors">{post.user?.name}</span>
-                                            {post.user?.verified && <Verified size={16} className="text-[#c6ff00]" />}
-                                        </div>
-                                        <span className="text-xs text-gray-500">{post.time}</span>
-                                    </div>
-                                </div>
-                                <button className="text-gray-600 hover:text-white p-2 rounded-full hover:bg-white/5">
-                                    <MoreHorizontal size={20} />
-                                </button>
-                            </div>
-                            
-                            {/* Post Content */}
-                            <p className="text-gray-200 mb-4 leading-relaxed font-light text-[15px]">
-                                {post.content?.split('*').map((part, i) => i % 2 === 1 ? <b key={i} className="font-bold text-white">{part}</b> : part)}
-                            </p>
-                            
-                            {post.tag && (
-                                <span className="text-[#d000ff] text-xs font-bold bg-[#d000ff]/10 px-3 py-1 rounded-full border border-[#d000ff]/20">
-                                    #{post.tag}
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#00E5FF]/10 to-[#7C4DFF]/10 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+
+                        <div className="relative z-10 flex items-center gap-3">
+                            {isLoadingMore ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-[#00E5FF]/30 border-t-[#00E5FF] rounded-full animate-spin" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Vibes are Loading...</span>
+                                </>
+                            ) : (
+                                <span className="text-[11px] font-black uppercase tracking-[0.2em]">
+                                    Load More Vibes
                                 </span>
                             )}
                         </div>
+                    </button>
+                </motion.div>
+            )}
 
-                        {/* Post Image */}
-                        {post.image && (
-                            <div className="px-6 mb-4">
-                                <img src={post.image} className="w-full h-[350px] object-cover rounded-2xl border border-white/10 shadow-inner" alt="Post content" />
-                            </div>
-                        )}
-
-                        {/* Post Actions */}
-                        <div className="px-6 py-4 flex justify-between items-center text-gray-400 border-t border-white/5 bg-white/[0.01]">
-                            <div className="flex gap-6">
-                                <ActionButton icon={<Heart size={18} />} label={post.likes?.toLocaleString()} hoverColor="hover:text-red-500" />
-                                <ActionButton icon={<MessageCircle size={18} />} label={post.comments?.toLocaleString()} hoverColor="hover:text-[#c6ff00]" />
-                            </div>
-                            <ActionButton icon={<Share2 size={18} />} hoverColor="hover:text-blue-400" />
-                        </div>
-                    </motion.div>
-                ))}
-            </AnimatePresence>
+            {filteredPosts.length === 0 && (
+                <div className="text-gray-500 text-center py-20 bg-white/[0.02] rounded-[32px] border border-white/5 border-dashed">
+                    No posts found in this category.
+                </div>
+            )}
         </div>
-     
-    </>
-  )
+    );
 }
 
-export default PostContainer
+
+
+
+export default PostContainer;

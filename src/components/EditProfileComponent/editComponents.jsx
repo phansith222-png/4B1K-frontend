@@ -26,7 +26,7 @@ export const ErrorMessage = ({ error }) => (
                 <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">
+                <span className="text-xs md:text-sm font-bold uppercase tracking-wide">
                     {error.message}
                 </span>
             </motion.div>
@@ -58,7 +58,7 @@ export const AvatarUpload = ({ previewImage, fileInputRef, handleImageChange }) 
 );
 
 // 3. Component: ช่องกรอกข้อมูลทั่วไป
-export const ProfileInput = ({ label, id, type = "text", placeholder, register, error, focusedInput, setFocusedInput }) => (
+export const ProfileInput = ({ label, id, type = "text", placeholder, register, error, focusedInput, setFocusedInput, ...props }) => (
     <div className={inputContainer}>
         <label className="text-[10px] font-black text-gray-400 uppercase ml-6 tracking-[0.2em] mb-1">{label}</label>
         <div className={`animated-border-box ${focusedInput === id && !error ? 'active' : ''}`}>
@@ -69,6 +69,7 @@ export const ProfileInput = ({ label, id, type = "text", placeholder, register, 
                 onBlur={() => setFocusedInput(null)}
                 className={inputClass(error)} 
                 placeholder={placeholder} 
+                {...props}
             />
         </div>
         <ErrorMessage error={error} />

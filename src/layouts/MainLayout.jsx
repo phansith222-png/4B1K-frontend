@@ -1,25 +1,33 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Navbar from '../components/Navbar'; 
+import { Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import NavbarUser from '../components/NavbarUser';
+import PageTransition from '../components/PageTransition';
+import MobileBottomNav from '../components/navbar/MobileBottomNav';
+import useSearchStore from '../stores/searchStore';
 
+export default function MainLayout() {
+    const location = useLocation();
+    const { isSearchOpen } = useSearchStore();
 
-function MainLayout() {
     return (
-        
-        <div className="min-h-screen bg-[#fcfdf7] flex flex-col">
-            
+        <div className="min-h-screen bg-[#0B0C10] flex flex-col relative">
             <Navbar />
-            
-            
-            <div className="flex-grow">
-                <Outlet />
-            </div>
 
-            <Footer />
+            {/* 📌 2. ใส่ PageTransition ครอบ Outlet โดยห้ามลืมใส่ key={location.pathname} */}
+            <main className="flex-grow relative z-10">
+                <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+                    <PageTransition key={location.pathname}>
+                        <Outlet />
+                    </PageTransition>
+                </AnimatePresence>
+            </main>
+
+            {!['/nearby-events', '/chat'].includes(location.pathname) && <Footer />}
+
+            {/* Responsive Extras */}
+            <MobileBottomNav />
         </div>
-    )
+    );
 }
-
-export default MainLayout;

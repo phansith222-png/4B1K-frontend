@@ -1,13 +1,15 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react"; // 📌 นำเข้า useEffect
 import {
   createBrowserRouter,
   Navigate,
   RouterProvider,
+  useLocation // 📌 นำเข้า useLocation
 } from "react-router-dom";
 import useUserStore from "../stores/userStore";
-import MainLayout from "../layouts/MainLayout"; // 1. Import MainLayout เข้ามา
+import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
 import OAuthCallback from "../pages/OAuthCallback";
+import CommunityHomePage from "../pages/HomePage";
 
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import("../pages/LandingPage"));
@@ -25,6 +27,7 @@ const PageClassic = lazy(() => import("../pages/PageClassic"));
 const PageEtc = lazy(() => import("../pages/PageEtc"));
 const PageEntertainment = lazy(() => import("../pages/PageEntertainment"));
 const AllArtist = lazy(() => import("../pages/PageAllArtist"));
+const PageNearbyEvents = lazy(() => import("../pages/PageNearbyEvents"));
 
 const guestRouter = createBrowserRouter([
   {
@@ -32,6 +35,7 @@ const guestRouter = createBrowserRouter([
     element: <MainLayout />, // ให้ MainLayout เป็นหน้าหลัก
     children: [
       { path: "/", element: <LandingPage /> },
+      { path: "landing", element: <LandingPage /> },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
       { path: "new-event", Component: NewEvent },
@@ -44,6 +48,7 @@ const guestRouter = createBrowserRouter([
       { path: "etc", element: <PageEtc /> },
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
+      { path: "nearby-events", element: <PageNearbyEvents /> },
       { path: "oauth/callback", element: <OAuthCallback /> },
 
       { path: "*", element: <Navigate to="/" replace /> },
@@ -57,6 +62,7 @@ const userRouter = createBrowserRouter([
     element: <UserLayout />,
     children: [
       { path: "/", element: <HomePage /> },
+      { path: "landing", element: <LandingPage /> },
       { path: "home", element: <HomePage /> },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
@@ -71,6 +77,7 @@ const userRouter = createBrowserRouter([
       { path: "etc", element: <PageEtc /> },
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
+      { path: "nearby-events", element: <PageNearbyEvents /> },
       { path: "oauth/callback", element: <OAuthCallback /> },
 
       { path: "*", element: <Navigate to="/" replace /> },

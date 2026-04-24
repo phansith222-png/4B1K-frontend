@@ -1,4 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700;900&display=swap');
 @import "tailwindcss";
 
-
 @plugin "daisyui";
+
+/* ── Fonts Helper ──────────────────────────────────── */
+.font-heading { font-family: 'Space Grotesk', sans-serif; }
+.font-body { font-family: 'Plus Jakarta Sans', sans-serif; }
+.font-thai { font-family: 'IBM Plex Sans Thai', sans-serif; }
+
+/* ── Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* คลาสที่จะถูกเติมเข้าไปเมื่อเลื่อนจอมาถึง */
+/* .reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+} */ 
+
+/* GLOBAL CURSOR POINTER */
+button, 
+[role="button"], 
+.cursor-pointer,
+a {
+  cursor: pointer !important;
+}

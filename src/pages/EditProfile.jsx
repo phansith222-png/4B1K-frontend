@@ -6,14 +6,16 @@ import { profileSchema } from '../validations/profileSchema';
 import { motion } from 'framer-motion';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { uploadToCloudinary } from '../utils/uploadCloud';
-import { toast } from 'react-toastify';
+import { useCyberToast } from '../components/CyberToast';
 // 📌 Import Components ที่แยกไว้
 import { AvatarUpload, ProfileInput, ProfileSelect } from '../components/EditProfileComponent/editComponents';
+import BackButton from '../components/BackButton';
 
 export default function EditProfile() {
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
     const { user, editProfile, getProfile } = useUserStore();
+    const { showToast } = useCyberToast();
 
     useEffect(() => {
         getProfile()
@@ -25,10 +27,11 @@ export default function EditProfile() {
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(profileSchema),
+        mode: 'onTouched',
         defaultValues: {
             firstName: user?.firstName || '',
             lastName: user?.lastName || '',
-            Gender: user?.gender || '',
+            gender: user?.gender || '',
             nationalId: user?.nationalId || '',
             username: user?.username || '',
             telephone: user?.telephone || '',
@@ -60,18 +63,25 @@ export default function EditProfile() {
             }
 
             const finalData = { ...data, profileImage: imageUrl };
-            const success = await editProfile(finalData);
-
-            if (success) {
+            const result = await editProfile(finalData);
+            
+            if (result.success) {
                 await getProfile(); 
-                toast.success('Profile updated successfully!');
-                setTimeout(() => {
-                    navigate(-1);
-                }, 500);
+                showToast("Edit Success", "success");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                showToast(result.error, "error");
             }
         } catch (error) {
             console.error("Update profile failed:", error);
-            toast.error('Failed to update profile.');
+            showToast('Failed to update profile.', 'error');
+        }
+    };
+
+    const onInvalid = (errors) => {
+        const firstError = Object.values(errors)[0];
+        if (firstError) {
+            showToast(firstError.message, 'error');
         }
     };
 
@@ -98,7 +108,7 @@ export default function EditProfile() {
                     transition: opacity 0.3s ease;
                     z-index: 0;
                 }
-                .animated-border-box.active::before { opacity: 1; }
+                .animated-border-box.active::before { opacity: 0.15; }
                 @property --angle {
                     syntax: '<angle>';
                     initial-value: 0deg;
@@ -133,17 +143,9 @@ export default function EditProfile() {
                 
                 {/* Header Section */}
                 <div className="relative flex items-center justify-between mb-20">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="group flex items-center gap-3 text-gray-400 hover:text-[#00E5FF] transition-colors z-20"
-                    >
-                        <div className="p-3 rounded-full bg-[#1A1C23]/80 backdrop-blur-md group-hover:bg-[#00E5FF]/10 transition-all border border-white/5 group-hover:border-[#00E5FF]/50 shadow-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </div>
-                        <span className="font-bold uppercase text-xs tracking-widest hidden sm:inline">Back</span>
-                    </button>
+                    <div className="absolute top-0 left-0 -translate-y-12">
+                        <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
+                    </div>
 
                     <div className="absolute left-1/2 -translate-x-1/2 text-center">
                         <span className="text-[#00E5FF] font-black text-[10px] uppercase tracking-[0.3em] block mb-1">Configuration</span>
@@ -153,7 +155,7 @@ export default function EditProfile() {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+                <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-12">
                     
                     {/* 1. Avatar Update (รูปโปรไฟล์) */}
                     <AvatarUpload 
@@ -174,10 +176,22 @@ export default function EditProfile() {
                             
                             <ProfileInput id="lastName" label="Last Name" placeholder="Your surname" register={register} error={errors.lastName} focusedInput={focusedInput} setFocusedInput={setFocusedInput} />
                             
-                            <ProfileInput id="nationalId" label="National ID" placeholder="13 digits" register={register} error={errors.nationalId} focusedInput={focusedInput} setFocusedInput={setFocusedInput} />
+                            <ProfileInput 
+                                id="nationalId" 
+                                label="National ID" 
+                                placeholder="13 digits" 
+                                register={register} 
+                                error={errors.nationalId} 
+                                focusedInput={focusedInput} 
+                                setFocusedInput={setFocusedInput} 
+                                maxLength={13}
+                                onInput={(e) => {
+                                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                                }}
+                            />
                             
                             <ProfileSelect 
-                                id="Gender" label="Gender" register={register} error={errors.gender} focusedInput={focusedInput} setFocusedInput={setFocusedInput}
+                                id="gender" label="Gender" register={register} error={errors.gender} focusedInput={focusedInput} setFocusedInput={setFocusedInput}
                                 options={[
                                     { value: "MALE", label: "Male" },
                                     { value: "FEMALE", label: "Female" },
@@ -189,7 +203,19 @@ export default function EditProfile() {
                                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                             </div>
 
-                            <ProfileInput id="telephone" label="Phone Number" placeholder="08x-xxx-xxxx" register={register} error={errors.telephone} focusedInput={focusedInput} setFocusedInput={setFocusedInput} />
+                            <ProfileInput 
+                                id="telephone" 
+                                label="Phone Number" 
+                                placeholder="08xxxxxxxx" 
+                                register={register} 
+                                error={errors.telephone} 
+                                focusedInput={focusedInput} 
+                                setFocusedInput={setFocusedInput} 
+                                maxLength={10}
+                                onInput={(e) => {
+                                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                                }}
+                            />
                             
                             <ProfileInput id="email" type="email" label="Email Address" placeholder="example@mail.com" register={register} error={errors.email} focusedInput={focusedInput} setFocusedInput={setFocusedInput} />
                         </div>
