@@ -42,8 +42,11 @@ export function RegisterForm({ onSwitch }) {
         profileImage: values.profileImage || null,
         nationalId: values.nationalId || null,
       })
-      showToast('Register Success', 'success')
-      setTimeout(() => navigate('/home'), 2000)
+      showToast('Account created successfully! Redirecting to login...', 'success')
+      setTimeout(() => {
+        if (onSwitch) onSwitch();
+        navigate('/login');
+      }, 1500)
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Registration failed. Please try again.'
       setApiError(msg)

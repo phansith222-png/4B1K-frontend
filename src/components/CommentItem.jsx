@@ -6,8 +6,11 @@ import useUserStore from '../stores/userStore';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { uploadToCloudinary } from '../utils/uploadCloud';
 
+import { useCyberToast } from './CyberToast';
+
 // ── CommentItem ──
 function CommentItem({ comment, postId }) {
+  const { showToast } = useCyberToast();
   const editComment = usePostStore((state) => state.editComment);
   const deleteComment = usePostStore((state) => state.deleteComment);
   const currentUser = useUserStore((state) => state.user);
@@ -20,21 +23,21 @@ function CommentItem({ comment, postId }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // image state สำหรับ edit mode
-  const [editImageFile, setEditImageFile] = useState(null);       // ไฟล์ใหม่ที่เลือก
-  const [editImagePreview, setEditImagePreview] = useState(null); // preview URL
-  const [keepExistingImage, setKeepExistingImage] = useState(true); // เก็บรูปเดิมไว้ไหม
+  const [editImageFile, setEditImageFile] = useState(null);       // New file selected
+  const [editImagePreview, setEditImagePreview] = useState(null); // Preview URL
+  const [keepExistingImage, setKeepExistingImage] = useState(true); // Keep existing image?
 
   const menuRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // เปรียบเทียบเป็น String เพื่อแก้ปัญหา type mismatch (number vs string)
+  // Compare as String to avoid type mismatch (number vs string)
   const commentUserId = comment.user?.id ?? comment.user?._id ?? comment.userId;
   const myId = currentUser?.id ?? currentUser?._id;
   const isOwner = Boolean(myId && commentUserId && String(commentUserId) === String(myId));
 
   const isEdited = comment.createdAt !== comment.updatedAt;
 
-  // ปิด dropdown เมื่อคลิกข้างนอก
+  // Close dropdown on outside click
   useEffect(() => {
     if (!menuOpen) return;
     const handleClickOutside = (e) => {
@@ -53,7 +56,7 @@ function CommentItem({ comment, postId }) {
     };
   }, [editImagePreview]);
 
-  // เปิด edit mode → reset state ให้ตรงกับค่าเดิมของ comment
+  // Open edit mode → reset state to original values
   const openEditMode = () => {
     setEditText(comment.content || '');
     setEditImageFile(null);
@@ -67,7 +70,7 @@ function CommentItem({ comment, postId }) {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      alert('ขนาดรูปภาพต้องไม่เกิน 5MB');
+      showToast('Image size must be less than 5MB', 'error');
       return;
     }
     if (editImagePreview) URL.revokeObjectURL(editImagePreview);
@@ -90,14 +93,14 @@ function CommentItem({ comment, postId }) {
       let finalImageUrl = null;
 
       if (editImageFile) {
-        // อัปโหลดรูปใหม่ไป Cloudinary
+        // Upload new image to Cloudinary
         finalImageUrl = await uploadToCloudinary(editImageFile);
-        if (!finalImageUrl) throw new Error('อัปโหลดรูปภาพไม่สำเร็จ');
+        if (!finalImageUrl) throw new Error('Upload failed');
       } else if (keepExistingImage && comment.image) {
-        // คงรูปเดิมไว้
+        // Keep existing image
         finalImageUrl = comment.image;
       }
-      // ถ้า keepExistingImage = false และไม่มีรูปใหม่ → finalImageUrl = null (ลบรูปออก)
+      // If keepExistingImage = false and no new image → finalImageUrl = null (remove image)
 
       await editComment(postId, comment.id, {
         content: editText.trim(),
@@ -106,6 +109,7 @@ function CommentItem({ comment, postId }) {
       setIsEditing(false);
     } catch (err) {
       console.error('Edit comment failed:', err);
+      showToast('Failed to edit comment.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -120,18 +124,19 @@ function CommentItem({ comment, postId }) {
       setShowDeleteModal(false);
     } catch (err) {
       console.error('Delete comment failed:', err);
+      showToast('Failed to delete comment.', 'error');
       setIsDeleting(false);
     }
   };
 
-  // ตรวจว่ามีการเปลี่ยนแปลงจริง เพื่อ enable ปุ่ม Save
+  // Check for changes to enable Save button
   const hasChanges =
     editText.trim() !== (comment.content || '') ||
     editImageFile !== null ||
     (comment.image && !keepExistingImage);
 
 
-    //เอาเวลาออกมา
+    // Time formatting
   const formatDateTime = (dateString) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -142,7 +147,7 @@ function CommentItem({ comment, postId }) {
     hour: '2-digit',
     minute: '2-digit',
   }); 
-  // ผลลัพธ์: "22 Apr 2026, 17:35"
+  // Result: "22 Apr 2026, 17:35"
 };
 
   return (
@@ -193,7 +198,7 @@ function CommentItem({ comment, postId }) {
                   if (e.key === 'Escape') { setIsEditing(false); }
                 }}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5FF]/50 resize-none disabled:opacity-50 transition-all"
-                placeholder="แก้ไขความคิดเห็น..."
+                placeholder="Edit your comment..."
               />
 
               {/* รูปเดิม (ถ้ามี) */}
@@ -290,15 +295,15 @@ function CommentItem({ comment, postId }) {
                   {comment.user?.username || 'Anonymous'}
                 </span>
 
-                {/* 👇 2. นำโค้ดเวลามาวางตรงนี้ (แทรกระหว่าง ชื่อ กับ ข้อความ) 👇 */}
+                {/* Insert timestamp here */}
               <span className="text-[10px] text-gray-500 flex items-center gap-1 mb-1.5 mt-0.5">
                 {isEdited ? (
-                  // ถ้าถูก Edit ให้โชว์ updatedAt เป็นวันและเวลา
+                  // Show updatedAt as date and time if edited
                   <span className="italic">
                     Edited : {formatDateTime(comment.updatedAt)}
                   </span>
                 ) : (
-                  // ถ้ายังไม่ถูก Edit ให้โชว์ createdAt เป็น TimeAgo หรือ วันและเวลา
+                  // Show createdAt as date and time if not edited
                   <span className="italic">
                     {formatDateTime(comment.createdAt)}
                   </span>

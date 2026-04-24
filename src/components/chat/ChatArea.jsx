@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import ChatBubble from "./ChatBubble";
 import EmojiPicker from "./EmojiPicker";
 
 const TypingDots = () => (
-  <span className="flex gap-[3px] items-center">
+  <span className="flex gap-[4px] items-center">
     {[0, 160, 320].map((d) => (
-      <span key={d} style={{ animationDelay: `${d}ms` }}
-        className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" />
+      <motion.span
+        key={d}
+        animate={{
+          y: [0, -4, 0],
+          opacity: [0.3, 1, 0.3]
+        }}
+        transition={{
+          duration: 0.8,
+          repeat: Infinity,
+          delay: d / 1000
+        }}
+        className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] shadow-[0_0_8px_#00E5FF]"
+      />
     ))}
   </span>
 );
@@ -37,140 +49,384 @@ export default function ChatArea({
   startPrivateChat,
   scrollRef,
   emojiRef,
-  inputRef
+  inputRef,
+  isLoading,
+  onImageClick,
+  chatContainerRef,
+  onAvatarClick,
+  onRenameGroup
 }) {
+  const [showGroupMenu, setShowGroupMenu] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
   return (
-    <main className={`flex-1 flex flex-col min-w-0 bg-[#0B0C10] ${!showSidebar || activeChat ? "flex" : "hidden"} md:flex h-full relative overflow-hidden`}>
-      {activeChat ? (
-        <div className="flex flex-col h-full w-full min-h-0">
-          {/* ── Fixed Header ── */}
-          <header className="shrink-0 z-30 border-b border-white/5 bg-[#13141a]/95 backdrop-blur-xl">
-            <div className="flex items-center gap-4 px-6 py-4">
-              <button onClick={goBack} className="md:hidden p-2 -ml-2 rounded-xl hover:bg-white/10 text-gray-400 transition-colors">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M15 19l-7-7 7-7"/></svg>
-              </button>
+    <motion.main
+      initial={false}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="flex-1 flex flex-col min-w-0 bg-[#0B0C10] h-full relative overflow-hidden"
+    >
+      <AnimatePresence mode="wait">
+        {activeChat ? (
+          <motion.div
+            key="active-chat"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="flex flex-col h-full w-full min-h-0"
+          >
+            {/* ── Fixed Header ── */}
+            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10] relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/10 to-[#00E5FF]/10 opacity-20" />
+              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent" />
 
-              <div className="relative group cursor-pointer shrink-0" onClick={handleAvatarClick}>
-                <div className={`w-11 h-11 rounded-2xl overflow-hidden ring-2 ring-white/5 group-hover:ring-blue-500/50 transition-all shadow-lg ${isGroup ? "bg-gradient-to-br from-indigo-600 to-purple-600" : ""}`}>
-                  <img src={roomAvatar} className="w-full h-full object-cover" alt="" />
+              <div className="flex items-center gap-4 px-4 md:px-6 py-3 md:py-4 relative z-10">
+                {/* Back Arrow (LINE Style) */}
+                <motion.button
+                  whileHover={{ scale: 1.1, x: -2 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={goBack}
+                  className="p-2.5 -ml-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
+                  title="Go Back"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                </motion.button>
+
+                <motion.div
+                  layoutId={`avatar-${activeChat}`}
+                  className="relative group cursor-pointer shrink-0"
+                  onClick={handleAvatarClick}
+                >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#7000FF] to-[#00E5FF] rounded-2xl blur opacity-0 group-hover:opacity-40 transition duration-500" />
+                  <div className={`relative w-12 h-12 rounded-2xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[#00E5FF]/50 transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
+                    <img src={roomAvatar} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                </motion.div>
+
+                <div className="flex-1 min-w-0 group/title relative">
+                  <div className="flex items-center gap-2">
+                    {isEditingName ? (
+                      <input
+                        autoFocus
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onBlur={() => {
+                          if (editName.trim() !== "" && editName !== roomName) {
+                            onRenameGroup?.(editName.trim());
+                          }
+                          setIsEditingName(false);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            if (editName.trim() !== "" && editName !== roomName) {
+                              onRenameGroup?.(editName.trim());
+                            }
+                            setIsEditingName(false);
+                          }
+                          if (e.key === "Escape") {
+                            setEditName(roomName);
+                            setIsEditingName(false);
+                          }
+                        }}
+                        className="bg-white/5 border border-[#00E5FF]/30 rounded-lg px-2 py-1 text-lg font-black text-white outline-none focus:ring-1 focus:ring-[#00E5FF] w-full max-w-[300px]"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2 group/title">
+                        <h2 className="font-black text-lg text-white truncate tracking-tight transition-colors">{roomName}</h2>
+                      </div>
+                    )}
+                    {!isGroup && !isEditingName && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-[#00E5FF]/10 border border-[#00E5FF]/20 text-[9px] font-black text-[#00E5FF] uppercase tracking-widest">
+                        Personal
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-gray-600"}`} />
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">
+                        {isGroup ? "Community Hub" : "Direct Link"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-              </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-extrabold text-base text-gray-100 truncate tracking-tight">{roomName}</h2>
-                  {!isGroup && (
-                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-[9px] font-black text-blue-400 uppercase tracking-tighter">
-                      Personal
-                    </span>
+                <div className="flex items-center gap-2 shrink-0 relative">
+                  {(isGroup ? activeRoom?.creatorId === myUserId : true) && (
+                    <div className="relative">
+                      <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: "rgba(255, 255, 255, 0.05)" }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowGroupMenu(!showGroupMenu)}
+                        className="p-3 rounded-2xl text-[#00E5FF] transition-all border border-[#00E5FF]/20 shadow-[0_0_15px_rgba(0,229,255,0.2)] hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:bg-[#00E5FF]/5"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </motion.button>
+
+                      {/* ── Group/Personal Settings Dropdown ── */}
+                      <AnimatePresence>
+                        {showGroupMenu && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowGroupMenu(false)} />
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              className="absolute top-full right-0 mt-2 w-64 bg-[#1A1C23] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden py-1.5"
+                            >
+                              {isGroup && activeRoom?.creatorId === myUserId && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setShowGroupMenu(false);
+                                      fileInputRef.current?.click();
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:text-white hover:bg-white/5 transition-all text-left"
+                                  >
+                                    <svg className="w-4 h-4 text-[#00E5FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Change Group Photo
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setShowGroupMenu(false);
+                                      setEditName(roomName);
+                                      setIsEditingName(true);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-300 hover:text-white hover:bg-white/5 transition-all text-left"
+                                  >
+                                    <svg className="w-4 h-4 text-[#7000FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Rename Group
+                                  </button>
+                                  <div className="my-1 border-t border-white/5" />
+                                </>
+                              )}
+
+                              <button
+                                onClick={() => {
+                                  setShowGroupMenu(false);
+                                  handleDeleteRoom();
+                                }}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500/80 hover:text-red-500 hover:bg-red-500/5 transition-all text-left"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                  <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                {isGroup ? "Delete Group" : "Delete Conversation"}
+                              </button>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`w-2 h-2 rounded-full ${connected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-gray-600"}`} />
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest opacity-80">
-                    {isGroup ? "Community Room" : "Encrypted Direct Message"}
-                  </p>
-                </div>
+              </div>
+            </header>
+
+            {/* ── Scrollable Messages ── */}
+            <div 
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto px-2 md:px-4 py-8 min-h-0 relative chat-no-scrollbar"
+            >
+              <style>{`
+                .chat-no-scrollbar::-webkit-scrollbar { display: none; }
+                .chat-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+              `}</style>
+
+              {/* Top Fade Gradient Overlay */}
+              <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0B0C10] via-[#0B0C10]/80 to-transparent z-20 pointer-events-none" />
+              {/* Background Effects */}
+              <div className="absolute inset-0 pointer-events-none z-0">
+                <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-[#7000FF] rounded-full blur-[150px] opacity-[0.07]" />
+                <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-[#00E5FF] rounded-full blur-[150px] opacity-[0.07]" />
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                {/* ปุ่มลบแชท: โชว์ถ้าเป็นกลุ่มและเราเป็นคนสร้าง OR โชว์ถ้าเป็นแชทส่วนตัว */}
-                {(isGroup ? activeRoom?.creatorId === myUserId : true) && (
-                  <button onClick={handleDeleteRoom} 
-                    title={isGroup ? "Delete Group" : "Delete Conversation"}
-                    className="p-2.5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all group/del">
-                    <svg className="w-5 h-5 group-hover/del:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
-                )}
-              </div>
-            </div>
-          </header>
-
-          {/* ── Scrollable Messages ── */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 scroll-smooth min-h-0" style={{ scrollbarWidth: "thin", scrollbarColor: "#ffffff10 transparent" }}>
-            <div className="max-w-4xl mx-auto flex flex-col gap-4 min-h-full">
-              <div className="flex-1" />
-              <div className="flex flex-col gap-3">
-                {messagesGrouped.map((msg, i) => (
-                  <ChatBubble 
-                    key={msg.id || i} 
-                    msg={msg} 
-                    isMe={msg.isMe}
-                    showAvatar={msg.showAvatar}
-                    senderName={msg.sender?.username || msg.sender?.firstName || "Member"}
-                    onAvatarClick={startPrivateChat} 
-                  />
-                ))}
-              </div>
-              <div ref={scrollRef} className="h-4 w-full shrink-0" />
-            </div>
-          </div>
-
-          {/* ── Fixed Footer/Input ── */}
-          <footer className="shrink-0 z-30 px-4 pb-[90px] md:pb-[90px] pt-2 bg-gradient-to-t from-[#0B0C10] to-transparent">
-            <div className="px-8 h-8 flex items-center mb-1">
-              {typingText && (
-                <div className="flex items-center gap-3 text-[11px] text-blue-400 font-bold bg-blue-500/10 px-3 py-1 rounded-full animate-pulse">
-                  <TypingDots />
-                  <span className="italic uppercase tracking-wider">{typingText}</span>
-                </div>
-              )}
-            </div>
-            
-            <form onSubmit={send} className="max-w-4xl mx-auto flex items-end gap-3 bg-[#1c1e26]/90 backdrop-blur-xl border border-white/10 p-2 rounded-[24px] shadow-2xl focus-within:border-blue-500/40 transition-all">
-              <div className="flex-1 relative flex items-center" ref={emojiRef}>
-                {showEmoji && (
-                  <div className="absolute bottom-full mb-4 right-0">
-                    <EmojiPicker onSelect={(em) => {
-                      const el = inputRef.current;
-                      if (!el) { setInputText((p) => p + em); setShowEmoji(false); return; }
-                      const start = el.selectionStart ?? inputText.length;
-                      const end   = el.selectionEnd   ?? inputText.length;
-                      const next  = inputText.slice(0, start) + em + inputText.slice(end);
-                      setInputText(next);
-                      setShowEmoji(false);
-                      setTimeout(() => { el.focus(); el.setSelectionRange(start + em.length, start + em.length); }, 0);
-                    }} />
-                  </div>
-                )}
-                <textarea
-                  ref={inputRef}
-                  rows="1"
-                  value={inputText}
-                  onChange={(e) => {
-                    onInput(e);
-                    e.target.style.height = 'auto';
-                    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              <motion.div
+                initial="hidden"
+                animate="show"
+                className="w-full flex flex-col gap-6 min-h-full relative z-10"
+              >
+                <motion.div
+                  variants={{
+                    show: { transition: { staggerChildren: 0.08, delayChildren: 0.4, staggerDirection: -1 } }
                   }}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); e.target.style.height = 'auto'; } }}
-                  placeholder="Message..."
-                  className="w-full bg-transparent px-4 py-2.5 pr-12 text-sm text-gray-100 placeholder-gray-600 outline-none resize-none"
-                />
-                <button type="button" onClick={() => setShowEmoji((v) => !v)} 
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all ${
-                    showEmoji ? "text-yellow-400 bg-yellow-400/10 scale-110" : "text-gray-500 hover:text-gray-300 hover:scale-110"
-                  }`}>
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </button>
+                  className="flex flex-col gap-4"
+                >
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
+                      // Skeleton for Messages
+                      [...Array(4)].map((_, i) => (
+                        <motion.div
+                          key={`msg-skeleton-${i}`}
+                          initial={{ opacity: 0, x: i % 2 === 0 ? -10 : 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
+                        >
+                          <div className={`flex gap-3 max-w-[70%] ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
+                            <div className="w-10 h-10 rounded-2xl bg-white/5 animate-pulse shrink-0" />
+                            <div className={`space-y-2 ${i % 2 === 0 ? "items-start" : "items-end"}`}>
+                              <div className="h-12 w-48 bg-white/5 rounded-2xl animate-pulse" />
+                              <div className="h-3 w-16 bg-white/5 rounded-lg animate-pulse" />
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      messagesGrouped.map((msg, i) => (
+                        <ChatBubble
+                          key={msg.id || i}
+                          msg={msg}
+                          isMe={msg.isMe}
+                          showAvatar={msg.showAvatar && !msg.isMe}
+                          senderName={msg.sender?.username || msg.sender?.firstName || "Member"}
+                          onAvatarClick={onAvatarClick}
+                          onImageClick={onImageClick}
+                          showDateDivider={msg.showDateDivider}
+                        />
+                      ))
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+                <div ref={scrollRef} className="h-4 w-full shrink-0" />
+              </motion.div>
+            </div>
+
+            {/* ── Locked Footer/Input (Solid Style) ── */}
+            <footer className="shrink-0 z-40 bg-[#0B0C10] border-t border-white/5 px-4 pb-32 pt-6 md:px-8 md:pb-24 md:pt-8">
+              <div className="max-w-5xl mx-auto">
+                <AnimatePresence>
+                  {typingText && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                      className="flex items-center gap-3 text-[10px] text-[#00E5FF] font-black bg-[#0B0C10]/80 backdrop-blur-md border border-[#00E5FF]/30 px-4 py-1.5 rounded-full w-fit mb-3 shadow-[0_0_20px_rgba(0,229,255,0.15)] ml-2"
+                    >
+                      <TypingDots />
+                      <span className="uppercase tracking-[0.2em]">{typingText}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="relative bg-[#1A1C23]/95 backdrop-blur-2xl border border-white/20 p-2 rounded-[28px] shadow-[0_25px_60px_rgba(0,0,0,0.8)] focus-within:border-[#00E5FF]/50 focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] transition-all duration-500 ring-1 ring-white/5">
+                  <div className="flex items-end gap-2 pr-2" ref={emojiRef}>
+                    <div className="flex-1 relative flex items-center">
+                      <AnimatePresence>
+                        {showEmoji && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: -10, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            className="absolute bottom-full mb-4 right-0 z-[60]"
+                          >
+                            <EmojiPicker onSelect={(em) => {
+                              const el = inputRef.current;
+                              if (!el) { setInputText((p) => p + em); setShowEmoji(false); return; }
+                              const start = el.selectionStart ?? inputText.length;
+                              const end = el.selectionEnd ?? inputText.length;
+                              const next = inputText.slice(0, start) + em + inputText.slice(end);
+                              setInputText(next);
+                              setShowEmoji(false);
+                              setTimeout(() => { el.focus(); el.setSelectionRange(start + em.length, start + em.length); }, 0);
+                            }} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <textarea
+                        ref={inputRef}
+                        rows="1"
+                        value={inputText}
+                        onChange={(e) => {
+                          onInput(e);
+                          e.target.style.height = 'auto';
+                          e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
+                        }}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); e.target.style.height = 'auto'; } }}
+                        placeholder="Type your message here..."
+                        className="w-full bg-transparent px-5 py-4 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setShowEmoji((v) => !v)}
+                        className={`p-2.5 rounded-2xl transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 scale-110 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:scale-110"
+                          }`}
+                      >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </button>
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(112,0,255,0.4)" }}
+                      whileTap={{ scale: 0.95 }}
+                      type="submit"
+                      disabled={!inputText.trim() || !connected}
+                      className={`w-12 h-12 rounded-[20px] flex items-center justify-center shrink-0 transition-all duration-500
+                        ${inputText.trim() && connected ? "bg-gradient-to-br from-[#7000FF] to-[#8220FF] text-white shadow-lg" : "bg-white/5 text-gray-700"}`}
+                    >
+                      <svg className="w-6 h-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                    </motion.button>
+                  </div>
+                </div>
               </div>
-              <button type="submit" disabled={!inputText.trim() || !connected}
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all
-                  ${inputText.trim() && connected ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30" : "bg-white/5 text-gray-700"}`}>
-                <svg className="w-6 h-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-              </button>
-            </form>
-          </footer>
-        </div>
-      ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 text-gray-700 select-none bg-gradient-to-b from-[#13141a] to-[#0B0C10]">
-          <div className="w-32 h-32 rounded-[40px] bg-[#1c1e26] border border-white/5 flex items-center justify-center text-6xl shadow-2xl">💬</div>
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-extrabold text-gray-300">Welcome to Chat</h3>
-            <p className="text-sm text-gray-600">Select a room to start messaging.</p>
-          </div>
-        </div>
-      )}
-    </main>
+            </footer>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="empty-state"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex-1 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden"
+          >
+            {/* Background Tech Decor */}
+            <div className="absolute inset-0 z-0">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#7000FF]/5 rounded-full blur-[120px]" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/5 rounded-full" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#00E5FF]/10 rounded-full animate-pulse" />
+            </div>
+
+            <div className="relative z-10">
+              <div className="relative w-32 h-32 mx-auto mb-8">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#7000FF] to-[#00E5FF] rounded-[40px] blur-2xl opacity-20 animate-pulse" />
+                <div className="relative w-full h-full bg-[#1A1C23] border border-white/10 rounded-[40px] flex items-center justify-center text-5xl shadow-2xl overflow-hidden">
+                  <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
+                  💬
+                </div>
+              </div>
+
+              <h2 className="text-2xl font-black text-white uppercase tracking-[0.2em] mb-4">
+                Encryption <span className="text-[#00E5FF]">Active</span>
+              </h2>
+              <p className="text-gray-400 font-bold max-w-sm mx-auto leading-relaxed uppercase tracking-widest text-[10px]">
+                Select a frequency from the sidebar to establish a secure connection with the community.
+              </p>
+
+              <div className="mt-12 flex flex-wrap justify-center gap-4">
+                <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Network Secure</span>
+                </div>
+                <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-2xl flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">P2P Ready</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.main>
   );
 }

@@ -176,25 +176,19 @@ export default function PostCreator() {
         <div className="flex justify-between items-center mt-5 pt-5 border-t border-white/5">
           <div className="flex gap-2">
             {/* Media button */}
-            <button
-              type="button"
-              disabled={isUploading}
+            <PostToolButton
               onClick={() => fileInputRef.current?.click()}
-              className="disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <PostToolButton
-                icon={<Plus size={18} />}
-                label={imageItems.length > 0 ? `Images (${imageItems.length})` : "Media"}
-              />
-            </button>
+              disabled={isUploading}
+              icon={<Plus size={18} />}
+              label={imageItems.length > 0 ? `Images (${imageItems.length})` : "Media"}
+            />
 
             {/* Artist picker button */}
-            <button
-              type="button"
+            <PostToolButton 
               onClick={() => setIsArtistModalOpen(true)}
-            >
-              <PostToolButton icon={<Music4 size={18} />} label="Artist" />
-            </button>
+              icon={<Music4 size={18} />} 
+              label="Artist" 
+            />
           </div>
 
           {/* Post button */}

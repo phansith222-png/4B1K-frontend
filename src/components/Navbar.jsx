@@ -9,8 +9,10 @@ import { useNavbarData } from '../hooks/useNavbarData';
 import NavSearchBar from './navbar/NavSearchBar';
 import NavArtistMenu from './navbar/NavArtistMenu';
 import useSearchStore from '../stores/searchStore';
+import useUserStore from '../stores/userStore';
 
 export default function Navbar() {
+    const { user, logout } = useUserStore();
     const navigate = useNavigate();
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
@@ -145,12 +147,46 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-4 whitespace-nowrap">
-                        <button onClick={() => navigate('/login')} className="text-[15px] font-bold text-gray-400 hover:text-white transition-colors">
-                            Log In
-                        </button>
-                        <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300">
-                            Join
-                        </button>
+                        {user ? (
+                            <div className="flex items-center gap-5">
+                                {/* Chat Button for Desktop */}
+                                <Link to="/chat" className={`p-2 rounded-xl transition-all ${isChatActive ? 'bg-[#00E5FF]/10 text-[#00E5FF]' : 'text-gray-400 hover:text-white'}`}>
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </Link>
+
+                                <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                                    <div className="flex flex-col items-end hidden md:flex">
+                                        <span className="text-[14px] font-black text-white leading-none">{user.username}</span>
+                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Verified Fan</span>
+                                    </div>
+                                    <Link to="/editprofile" className="relative group">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00E5FF] to-[#7000FF] rounded-xl blur opacity-0 group-hover:opacity-40 transition duration-300" />
+                                        <img 
+                                            src={user.profileImage || `https://ui-avatars.com/api/?name=${user.username}&background=random`} 
+                                            className="relative w-10 h-10 rounded-xl object-cover border border-white/10"
+                                            alt="" 
+                                        />
+                                    </Link>
+                                    <button 
+                                        onClick={() => { logout(); navigate('/landing'); }} 
+                                        className="text-[13px] font-bold text-gray-500 hover:text-red-400 transition-colors ml-2"
+                                    >
+                                        Log Out
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <button onClick={() => navigate('/login')} className="text-[15px] font-bold text-gray-400 hover:text-white transition-colors">
+                                    Log In
+                                </button>
+                                <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300">
+                                    Join
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>
