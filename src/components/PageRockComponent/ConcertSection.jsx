@@ -33,7 +33,7 @@ export default function ConcertSection({ events, artist }) {
                             >
                                 <div className="aspect-[4/5] relative rounded-xl overflow-hidden border border-white/5 group-hover:border-[#D3131F]/50 transition-colors duration-500 shadow-xl mb-4 bg-[#111]">
                                     <img
-                                        src={evt.posterImage || "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=600&auto=format&fit=crop"}
+                                        src={evt.posterImage || "https://as1.ftcdn.net/v2/jpg/06/46/40/40/1000_F_646404057_dZp9m50EsdwskSbfLRz0g2TbyiDo6IUy.jpg"}
                                         alt={evt.eventName}
                                         className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out opacity-60 grayscale-[50%] group-hover:grayscale-0"
                                     />

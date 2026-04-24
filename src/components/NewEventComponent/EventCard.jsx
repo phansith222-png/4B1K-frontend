@@ -3,25 +3,28 @@ import Reveal from '../Reveal';
 import { getCategoryStyle } from '../../utils/eventStyles';
 
 export default function EventCard({ event, index }) {
-    // Curated high-quality music/concert images
+    
+    // Curated high-quality music/concert images ไม่ได้ใช้ แต่เก็บไว้ก่อน
     const FALLBACK_IMAGES = [
         "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1533174000228-4f1b802a433a?q=80&w=800&auto=format&fit=crop",
+        "https://as1.ftcdn.net/v2/jpg/06/46/40/40/1000_F_646404057_dZp9m50EsdwskSbfLRz0g2TbyiDo6IUy.jpg",
         "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1493225457124-a1a2a5bb001b?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1520095972714-909e91b05382?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop"
     ];
 
     // Strictly use mocked images based on index
     const displayImage = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+   
+    // console.log(event.posterImage)
 
-
+    // console.log('EventCard',event.posterImage)
 
     // Robust field extraction
     const eventName = event.eventName || event.title || event.name || "Untitled Event";
@@ -42,7 +45,7 @@ export default function EventCard({ event, index }) {
 
                 <div className="rounded-[1.8rem] overflow-hidden mb-6 aspect-[4/3] relative bg-[#0B0C10] shadow-2xl">
                     <img
-                        src={displayImage}
+                        src={event.posterImage}
                         alt={eventName}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out opacity-70 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0"
                     />
