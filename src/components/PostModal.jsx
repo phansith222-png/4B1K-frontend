@@ -4,11 +4,13 @@ import { X, Send, ImageIcon, Loader2 } from "lucide-react";
 import usePostStore from "../stores/postStore";
 import useUserStore from "../stores/userStore";
 import { uploadToCloudinary } from "../utils/uploadCloud";
+import { useCyberToast } from "./CyberToast";
 import CommentItem from "./CommentItem";
 
 // ── PostModal ──
 function PostModal({ post, onClose }) {
-  // ดึง post แบบ live จาก store เพื่อให้ comments อัปเดตทันที
+  const { showToast } = useCyberToast();
+  // Fetch post live from store so comments update immediately
   const livePost = usePostStore(
     (state) => state.posts.find((p) => p.id === post.id) || post
   );
@@ -32,10 +34,10 @@ function PostModal({ post, onClose }) {
     hour: '2-digit',
     minute: '2-digit',
   }); 
-  // ผลลัพธ์: "22 Apr 2026, 17:35"
+  // Result: "22 Apr 2026, 17:35"
 };
 
-  // Cleanup ObjectURL เมื่อปิด Modal
+  // Cleanup ObjectURL when modal is closed
   useEffect(() => {
     return () => {
       if (imagePreview) URL.revokeObjectURL(imagePreview);
@@ -46,7 +48,7 @@ function PostModal({ post, onClose }) {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("ขนาดรูปภาพต้องไม่เกิน 5MB");
+        showToast("Image size must be less than 5MB", "error");
         return;
       }
       if (imagePreview) URL.revokeObjectURL(imagePreview);
@@ -69,7 +71,7 @@ function PostModal({ post, onClose }) {
       let uploadedImageUrl = null;
       if (selectedFile) {
         uploadedImageUrl = await uploadToCloudinary(selectedFile);
-        if (!uploadedImageUrl) throw new Error("อัปโหลดรูปภาพไม่สำเร็จ");
+        if (!uploadedImageUrl) throw new Error("Upload failed");
       }
       await createComment(livePost.id, {
         content: commentText.trim(),
@@ -79,7 +81,7 @@ function PostModal({ post, onClose }) {
       handleRemoveImage();
     } catch (error) {
       console.error("Comment failed:", error);
-      alert("เกิดข้อผิดพลาดในการส่งคอมเมนต์");
+      showToast("Failed to post comment. Please try again.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +89,7 @@ function PostModal({ post, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      {/* พื้นหลังสำหรับกดปิดเมื่อคลิกข้างนอก */}
+      {/* Background overlay to close on outside click */}
       <div className="absolute inset-0" onClick={!isSubmitting ? onClose : undefined} />
 
       <motion.div
@@ -112,7 +114,7 @@ function PostModal({ post, onClose }) {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
 
-          {/* ต้นฉบับโพสต์ */}
+          {/* Original Post */}
           <div className="flex gap-4 border-b border-white/5 pb-6">
             <img
               src={
@@ -129,12 +131,10 @@ function PostModal({ post, onClose }) {
               </span>
               <span className="text-xs text-gray-500 flex items-center gap-1">
                   {isEdited ? (
-                    // ถ้าถูก Edit ให้โชว์ updatedAt เป็นวันและเวลา
                     <span className="italic">
                       Edited : {formatDateTime(post.updatedAt)}
                     </span>
                   ) : (
-                    // ถ้ายังไม่ถูก Edit ให้โชว์ createdAt เป็น TimeAgo เหมือนเดิม
                     <span className="italic">
                       {formatDateTime(post.createdAt)}
                     </span>
@@ -149,7 +149,7 @@ function PostModal({ post, onClose }) {
           </div>
 
 
-          {/* รูปภาพของโพสต์ */}
+          {/* Post Images */}
           {livePost.postImages && livePost.postImages.length > 0 && (
             <div
               className={`grid gap-2 ${
@@ -172,7 +172,7 @@ function PostModal({ post, onClose }) {
             </div>
           )}
 
-          {/* รายการ Comments */}
+          {/* Comments List */}
           <h3 className="font-bold text-white px-2">
             Comments{" "}
             {livePost.comments?.length > 0 && (
@@ -192,7 +192,7 @@ function PostModal({ post, onClose }) {
               ))
             ) : (
               <div className="text-center text-gray-500 py-10">
-                ยังไม่มีความคิดเห็น มาเริ่มกันเลย! 💬
+                No comments yet. Be the first to start the conversation! 💬
               </div>
             )}
           </div>

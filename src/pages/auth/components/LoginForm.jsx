@@ -32,9 +32,9 @@ export function LoginForm({ onSwitch }) {
       const resp = await mainapi.post('/auth/login', data)
       setUser(resp.data.user, resp.data.token)
       showToast('Login Success', 'success')
-      navigate('/community')
+      navigate('/')
     } catch (err) {
-      const msg = 'Invalid username or password.'
+      const msg = err.response?.data?.message || 'Invalid username or password.'
       setApiError(msg)
       showToast(msg, 'error')
     }

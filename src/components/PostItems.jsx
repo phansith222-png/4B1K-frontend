@@ -27,7 +27,7 @@ function PostItem({ post, index }) {
 
   // const currentLikes = usePostStore(state => state.currentLikes) || []
 
-  const haveLiked = post.likes?.some((el) => el.userId === user.id);
+  const haveLiked = post.likes?.some((el) => el.userId === user?.id);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditPostOpen, setIsEditPostOpen] = useState(false);
