@@ -23,25 +23,25 @@ export default function EventShowcase() {
 
   const getEventColor = (event) => {
     try {
-        let aId = null;
-        if (event.artistId) aId = event.artistId;
-        else if (event.artist?.id) aId = event.artist.id;
-        else if (event.artists && event.artists.length > 0) {
-            aId = event.artists[0].artistId || event.artists[0].artist?.id;
-        }
-        
-        aId = Number(aId);
+      let aId = null;
+      if (event.artistId) aId = event.artistId;
+      else if (event.artist?.id) aId = event.artist.id;
+      else if (event.artists && event.artists.length > 0) {
+        aId = event.artists[0].artistId || event.artists[0].artist?.id;
+      }
 
-        if (aId) {
-            if ([1, 2, 3, 4, 5].includes(aId)) return "#FF007F"; // Pop
-            if ([6, 7, 8, 9, 10].includes(aId)) return "#D3131F"; // Rock
-            if ([16, 17, 18, 19, 20].includes(aId)) return "#d83bb6"; // R&B / Classic
-            if ([11, 12, 13, 14, 15].includes(aId)) return "#00E5FF"; // Hip Hop
-            if ([21, 22, 23, 24, 25].includes(aId)) return "#7000FF"; // EDM
-        }
-        return "#00E5FF"; // default
+      aId = Number(aId);
+
+      if (aId) {
+        if ([1, 2, 3, 4, 5].includes(aId)) return "#FF007F"; // Pop
+        if ([6, 7, 8, 9, 10].includes(aId)) return "#D3131F"; // Rock
+        if ([16, 17, 18, 19, 20].includes(aId)) return "#d83bb6"; // R&B / Classic
+        if ([11, 12, 13, 14, 15].includes(aId)) return "#00E5FF"; // Hip Hop
+        if ([21, 22, 23, 24, 25].includes(aId)) return "#7000FF"; // EDM
+      }
+      return "#00E5FF"; // default
     } catch (err) {
-        return "#00E5FF";
+      return "#00E5FF";
     }
   };
 
@@ -56,7 +56,7 @@ export default function EventShowcase() {
       >
         <div>
           <span className="text-[#00E5FF] font-black text-[10px] tracking-[0.3em] uppercase mb-2 block">Live Experiences</span>
-          <h2 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tighter mb-3">Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] to-[#c6ff00]">Events</span></h2>
+          <h2 className="text-3xl md:text-5xl font-black uppercase text-white tracking-tighter mb-3">Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] to-[#00E5FF]">Events</span></h2>
           <p className="text-gray-400 text-sm md:text-base font-medium max-w-md">
             Discover the hottest upcoming concerts and festivals. Grab your tickets before they sell out!
           </p>
@@ -73,10 +73,10 @@ export default function EventShowcase() {
             // 📌 การ์ดเด้งขึ้นมาจากด้านล่างแบบนุ่มๆ
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            whileHover={{ 
-                y: -8, 
-                borderColor: `${getEventColor(event)}60`,
-                boxShadow: `0 20px 40px ${getEventColor(event)}20`
+            whileHover={{
+              y: -8,
+              borderColor: `${getEventColor(event)}60`,
+              boxShadow: `0 20px 40px ${getEventColor(event)}20`
             }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ type: "spring", stiffness: 100, damping: 20, delay: idx * 0.1 }}
@@ -87,7 +87,7 @@ export default function EventShowcase() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/60 to-transparent"></div>
 
             <div className="absolute bottom-0 left-0 w-full p-6">
-              <span 
+              <span
                 className="text-black px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 inline-block"
                 style={{ backgroundColor: getEventColor(event), boxShadow: `0 0 10px ${getEventColor(event)}80` }}
               >
@@ -100,7 +100,7 @@ export default function EventShowcase() {
         ))}
       </div>
 
-      <button onClick={() => navigate('/new-event')} className="mt-8 w-full text-center text-xs font-bold text-[#c6ff00] border border-[#c6ff00]/20 hover:bg-[#c6ff00]/10 rounded-full py-4 uppercase tracking-widest sm:hidden transition-colors">
+      <button onClick={() => navigate('/new-event')} className="mt-8 w-full text-center text-xs font-bold text-[#00E5FF] border border-[#00E5FF]/20 hover:bg-[#00E5FF]/10 rounded-full py-4 uppercase tracking-widest sm:hidden transition-colors">
         View All Events
       </button>
     </section>

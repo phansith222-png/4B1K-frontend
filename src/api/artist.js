@@ -1,23 +1,21 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000'; // เปลี่ยนพอร์ตให้ตรงกับ Backend
+import mainapi from './auth';
 
 export const getAllArtists = async () => {
-  const response = await axios.get(`${API_URL}/artists`);
+  const response = await mainapi.get('/artists');
   return response.data;
 };
 
 export const getArtistById = async (id) => {
-  const response = await axios.get(`${API_URL}/artists/${id}`);
+  const response = await mainapi.get(`/artists/${id}`);
   return response.data;
 };
 
 export const getSongsByArtist = async (id) => {
-  const response = await axios.get(`${API_URL}/artists/${id}/songs`);
+  const response = await mainapi.get(`/artists/${id}/songs`);
   return response.data;
 };
 
 export const getEventsByArtist = async (id) => {
-  const response = await axios.get(`${API_URL}/artists/${id}/events`);
+  const response = await mainapi.get(`/artists/${id}/events`);
   return response.data;
-};
+};

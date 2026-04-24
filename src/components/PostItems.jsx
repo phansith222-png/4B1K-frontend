@@ -7,7 +7,7 @@ import {
   Share2,
   Verified,
 } from "lucide-react";
-import { ActionButton } from "../icon/icon";
+import { ActionButton } from "../icon/SidebarIcons";
 import usePostStore from "../stores/postStore";
 import useUserStore from "../stores/userStore";
 import { useState } from "react";
@@ -80,19 +80,21 @@ function PostItem({ post, index }) {
             <div className="flex items-center gap-4">
               <img
                 src={
+                  post.user?.profileImage ||
                   post.user?.avatar ||
                   `https://ui-avatars.com/api/?name=${post.user?.username || "User"}&background=random&color=fff`
                 }
-                className="w-8 h-8 rounded-full border border-white/10 object-cover shrink-0"
+                className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0 shadow-sm"
                 alt={post.user?.username || "User Avatar"}
               />
+
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-black text-base group-hover:text-[#c6ff00] transition-colors">
+                  <span className="font-black text-base group-hover:text-[#00E5FF] transition-colors">
                     {post.user?.username}
                   </span>
                   {post.user?.verified && (
-                    <Verified size={16} className="text-[#c6ff00]" />
+                    <Verified size={16} className="text-[#00E5FF]" />
                   )}
                 </div>
 
@@ -119,7 +121,7 @@ function PostItem({ post, index }) {
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)} // สลับเปิด-ปิดเมนู
-                  className="text-gray-600 hover:text-white p-2 rounded-full hover:bg-white/5"
+                  className="text-gray-500 group-hover:text-[#00E5FF] transition p-2 rounded-full bg-white/5 hover:scale-110"
                 >
                   <MoreHorizontal size={20} />
                 </button>
@@ -203,7 +205,7 @@ function PostItem({ post, index }) {
             {post.postArtists?.map((item) => (
               <span
                 key={item.artistId}
-                className="text-[#c6ff00] text-xs w-fit font-bold bg-[#c6ff00]/10 px-3 py-1 rounded-full border border-[#c6ff00]/20 flex items-center gap-1"
+                className="text-[#00E5FF] text-xs w-fit font-bold bg-[#7C4DFF]/10 px-3 py-1 rounded-full border border-[#7C4DFF]/20 flex items-center gap-1"
               >
                 🎤 {item.artist?.artistName}
               </span>
@@ -222,8 +224,10 @@ function PostItem({ post, index }) {
               <img
                 key={el.id || index}
                 src={el.url}
-                className={`w-full object-cover rounded-2xl border border-white/10 shadow-inner ${
-                  post.postImages.length === 1 ? "h-[400px]" : "h-[200px]"
+                className={`w-full object-contain bg-black/20 rounded-2xl border border-white/10 shadow-inner ${
+                  post.postImages.length === 1
+                    ? "h-auto max-h-[500px]"
+                    : "h-[150px] sm:h-[200px]"
                 }`}
                 alt={`Post content ${idx}`}
               />
@@ -255,7 +259,7 @@ function PostItem({ post, index }) {
             <button
               onClick={() => setIsModalOpen(true)}
               type="button"
-              className="relative z-30 cursor-pointer flex items-center gap-2.5 transition-colors hover:text-[#c6ff00] group border-none bg-transparent p-1"
+              className="relative z-30 cursor-pointer flex items-center gap-2.5 transition-colors hover:text-[#00E5FF] group border-none bg-transparent p-1"
             >
               <div className="group-hover:scale-110 transition-transform pointer-events-none">
                 <MessageCircle size={18} />
@@ -266,13 +270,6 @@ function PostItem({ post, index }) {
             </button>
           </div>
 
-          {/* ปุ่ม Share */}
-          <button
-            type="button"
-            className="relative z-30 cursor-pointer flex items-center gap-2.5 transition-colors hover:text-blue-400 group border-none bg-transparent p-1"
-          >
-            <Share2 size={18} />
-          </button>
         </div>
       </motion.div>
 

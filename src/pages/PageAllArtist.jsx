@@ -11,6 +11,7 @@ export default function PageAllArtist() {
     const navigate = useNavigate();
     const [artists, setArtists] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [spotlightArtist, setSpotlightArtist] = useState(null);
 
     // 1. ดึงข้อมูลศิลปินทั้งหมดจาก Backend
     useEffect(() => {
@@ -20,6 +21,12 @@ export default function PageAllArtist() {
                 const response = await getAllArtists();
                 const data = response?.artists || response?.data || response || [];
                 setArtists(data);
+                
+                // Pick a random spotlight artist
+                if (data.length > 0) {
+                    const randomArtist = data[Math.floor(Math.random() * data.length)];
+                    setSpotlightArtist(randomArtist);
+                }
             } catch (error) {
                 console.error("Error fetching all artists:", error);
             } finally {
@@ -29,7 +36,18 @@ export default function PageAllArtist() {
         fetchArtists();
     }, []);
 
-    // 2. จัดหมวดหมู่ศิลปินแบบ "เจาะจงเป๊ะๆ" (ป้องกันการซ้ำ)
+    // 2. สุ่ม Spotlight Artist ทุกๆ 5 วินาที
+    useEffect(() => {
+        if (artists.length > 0) {
+            const interval = setInterval(() => {
+                const randomArtist = artists[Math.floor(Math.random() * artists.length)];
+                setSpotlightArtist(randomArtist);
+            }, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [artists]);
+
+    // 3. จัดหมวดหมู่ศิลปินแบบ "เจาะจงเป๊ะๆ" (ป้องกันการซ้ำ)
     const sections = useMemo(() => {
         const categories = [
             {
@@ -88,13 +106,17 @@ export default function PageAllArtist() {
     }, [artists]);
 
     // สร้างข้อมูลตัวโน้ตดนตรีลอยๆ
-    const floatingNotes = useMemo(() => Array.from({ length: 12 }).map((_, i) => ({
+    const floatingNotes = useMemo(() => Array.from({ length: 20 }).map((_, i) => ({
         id: i,
         symbol: ['♪', '♫', '♬', '♩'][Math.floor(Math.random() * 4)],
         size: Math.random() * 20 + 15,
-        left: Math.random() * 100,
-        delay: Math.random() * 5,
-        duration: Math.random() * 4 + 4,
+        left: (Math.random() - 1) * 800, // Wider range for scattering
+        delay: Math.random() * 3,
+        duration: Math.random() * 6 + 6, // Much slower
+        color: ['#FF00FF', '#00E5FF', '#7000FF', '#FFFFFF'][Math.floor(Math.random() * 4)],
+        blur: Math.random() * 1.5,
+        sway: (Math.random() - 0.5) * 80,
+        swaySpeed: Math.random() * 3 + 1,
     })), []);
 
 
@@ -114,38 +136,42 @@ export default function PageAllArtist() {
             {/* ================= STYLE ================= */}
             <style>{`
                 .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); }
-                .mesh-gradient { position: absolute; inset: 0; z-index: 0; filter: blur(80px); animation: mesh-move 20s ease-in-out infinite alternate; background: radial-gradient(circle at var(--x1, 20%) var(--y1, 20%), rgba(255, 0, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at var(--x2, 80%) var(--y2, 80%), rgba(0, 229, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at var(--x3, 50%) var(--y3, 50%), rgba(112, 0, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at var(--x4, 20%) var(--y4, 80%), rgba(255, 0, 255, 0.05) 0%, transparent 40%); }
-                @keyframes mesh-move { 0% { --x1: 20%; --y1: 20%; --x2: 80%; --y2: 80%; --x3: 50%; --y3: 50%; --x4: 20%; --y4: 80%; } 100% { --x1: 80%; --y1: 80%; --x2: 20%; --y2: 20%; --x3: 20%; --y3: 50%; --x4: 50%; --y4: 80%; } }
-                .dark-grain { position: fixed; inset: 0; opacity: 0.04; pointer-events: none; z-index: 100; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-                
-                /* ซ่อน Scrollbar ของ Slider */
-                .hide-scrollbar::-webkit-scrollbar { display: none; }
-                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-                /* แอนิเมชันแผ่นเสียงหมุน */
-                @keyframes spin-vinyl {
-                    100% { transform: rotate(360deg); }
-                }
-                .hero-vinyl {
-                    background: repeating-radial-gradient(circle, #0B0C10, #0B0C10 3px, #1A1C23 4px, #0B0C10 5px);
-                    border: 10px solid #050505;
-                    box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
-                    animation: spin-vinyl 10s linear infinite;
-                }
             `}</style>
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                {/* Large Background Text */}
+                <div className="absolute top-[10%] left-[-2%] text-[18vw] font-black text-white opacity-[0.02] select-none leading-none tracking-tighter uppercase font-heading">
+                    Discover
+                </div>
+                <div className="absolute bottom-[15%] right-[-2%] text-[18vw] font-black text-white opacity-[0.02] select-none leading-none tracking-tighter uppercase font-heading">
+                    Legends
+                </div>
+
+                {/* Digital Grid Overlay */}
+                <div 
+                    className="absolute inset-0 opacity-[0.04]" 
+                    style={{ 
+                        backgroundImage: `linear-gradient(#444 1px, transparent 1px), linear-gradient(90deg, #444 1px, transparent 1px)`,
+                        backgroundSize: '80px 80px'
+                    }}
+                ></div>
+
+                <div className="mesh-gradient opacity-30" />
+            </div>
 
             <div className="dark-grain" />
 
             <Reveal>
-                <HeroSection floatingNotes={floatingNotes} />
+                <HeroSection floatingNotes={floatingNotes} spotlightArtist={spotlightArtist} />
             </Reveal>
 
-            {/* ================= ARTIST SECTIONS (CAROUSEL) ================= */}
-            {sections.map((section, sIdx) => section.artists.length > 0 && (
-                <Reveal key={sIdx}>
-                    <CategorySection section={section} navigate={navigate} />
-                </Reveal>
-            ))}
+            {/* ================= CONTENT ================= */}
+            <div id="artists-content" className="relative z-10 pt-10">
+                {sections.map((section, sIdx) => section.artists.length > 0 && (
+                    <Reveal key={sIdx}>
+                        <CategorySection section={section} navigate={navigate} />
+                    </Reveal>
+                ))}
+            </div>
 
             <Reveal>
                 <BottomTextSection />
