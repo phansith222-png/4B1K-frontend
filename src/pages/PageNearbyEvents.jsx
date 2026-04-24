@@ -7,6 +7,7 @@ import MapOverlay from '../components/NearbyEvents/MapOverlay';
 import { Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllEvents } from '../api/event';
+import BackButton from '../components/BackButton';
 
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -63,26 +64,26 @@ export default function PageNearbyEvents() {
         const mappedEvents = eventData.map((event, index) => {
           // Robust Coordinate extraction
           const lat = parseFloat(
-            event.venue?.latitude || 
-            event.venue?.lat || 
-            event.location?.latitude || 
-            event.location?.lat || 
-            event.latitude || 
-            event.lat || 
-            event.venue_lat || 
+            event.venue?.latitude ||
+            event.venue?.lat ||
+            event.location?.latitude ||
+            event.location?.lat ||
+            event.latitude ||
+            event.lat ||
+            event.venue_lat ||
             0
           );
           const lng = parseFloat(
-            event.venue?.longitude || 
-            event.venue?.lng || 
-            event.location?.longitude || 
-            event.location?.lng || 
-            event.longitude || 
-            event.lng || 
-            event.venue_lng || 
+            event.venue?.longitude ||
+            event.venue?.lng ||
+            event.location?.longitude ||
+            event.location?.lng ||
+            event.longitude ||
+            event.lng ||
+            event.venue_lng ||
             0
           );
-          
+
           // Image URL formatting (Strictly use mocked images)
           const imageUrl = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
 
@@ -243,6 +244,7 @@ export default function PageNearbyEvents() {
 
   return (
     <div className="relative w-full h-[calc(100vh-72px)] bg-black text-white overflow-hidden font-sans">
+      <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
 
       {/* 🔄 Loading Overlay */}
       <AnimatePresence>

@@ -8,6 +8,7 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
   const [allArtists, setAllArtists] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [localSelection, setLocalSelection] = useState(selectedArtists);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,11 +33,16 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
   });
 
   const toggleArtist = (artist) => {
-    const already = selectedArtists.some((a) => a.id === artist.id);
+    const already = localSelection.some((a) => a.id === artist.id);
     const next = already
-      ? selectedArtists.filter((a) => a.id !== artist.id)
-      : [...selectedArtists, artist];
-    onSelectionChange(next);
+      ? localSelection.filter((a) => a.id !== artist.id)
+      : [...localSelection, artist];
+    setLocalSelection(next);
+  };
+
+  const handleConfirm = () => {
+    onSelectionChange(localSelection);
+    onClose();
   };
 
   return createPortal(
@@ -90,7 +96,7 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
           ) : filteredArtists.length > 0 ? (
             <div className="grid grid-cols-1 gap-2">
               {filteredArtists.map((artist) => {
-                const isSelected = selectedArtists.some((a) => a.id === artist.id);
+                const isSelected = localSelection.some((a) => a.id === artist.id);
                 return (
                   <button
                     key={artist.id}
@@ -125,14 +131,13 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
           )}
         </div>
 
-        {/* Footer */}
         <div className="p-5 border-t border-white/5 bg-black/40 backdrop-blur-xl">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleConfirm}
             className="w-full bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white font-black py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_10px_30px_rgba(124,77,255,0.25)] uppercase tracking-widest text-[11px]"
           >
-            Confirm Selection
+            Confirm Selection ({localSelection.length})
           </button>
         </div>
       </div>

@@ -40,7 +40,9 @@ export default function PageClassic() {
         changeSong,
         handleSongSelect,
         handleProgressClick,
-    } = useYouTubePlayer(songs, PLAYER_ID);
+    } = useYouTubePlayer(songs, PLAYER_ID, {
+        autoplay: searchParams.get('autoplay') === 'true'
+    });
 
     // ── Neon dust particles (stable random values) ────────────────────────
     const neonDust = useMemo(() => Array.from({ length: 30 }).map((_, i) => ({
@@ -81,17 +83,7 @@ export default function PageClassic() {
 
             {/* Animated background */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="absolute inset-0 bg-[#0B0C10]" />
-                <CategoryBackground keyword="r&b" isPlaying={isPlaying} />
-                
-                {/* Digital Grid Overlay */}
-                <div 
-                    className="absolute inset-0 opacity-[0.05]" 
-                    style={{ 
-                        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
-                        backgroundSize: '100px 100px'
-                    }}
-                />
+                <CategoryBackground keyword="r&b" isPlaying={isPlaying} artist={artist} />
             </div>
 
             <HeroSection artist={artist} events={events} />
@@ -109,7 +101,7 @@ export default function PageClassic() {
                 handleSongSelect={handleSongSelect}
                 handleProgressClick={handleProgressClick}
             />
-            <ConcertSection events={events} />
+            <ConcertSection events={events} artist={artist} />
             <StatsSection songs={songs} />
         </div>
     );

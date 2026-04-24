@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerFrontendSchema } from '../../../validations/registerSchema'
@@ -12,6 +13,7 @@ import { useCyberToast } from '../../../components/CyberToast'
  * @param {{ onSwitch: () => void }} props
  */
 export function RegisterForm({ onSwitch }) {
+  const navigate = useNavigate()
   const [apiError, setApiError] = useState('')
   const { showToast } = useCyberToast()
 
@@ -41,7 +43,7 @@ export function RegisterForm({ onSwitch }) {
         nationalId: values.nationalId || null,
       })
       showToast('Register Success', 'success')
-      setTimeout(() => onSwitch(), 2000)
+      setTimeout(() => navigate('/home'), 2000)
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Registration failed. Please try again.'
       setApiError(msg)

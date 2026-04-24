@@ -6,7 +6,7 @@ import { ActionButton } from '../icon/SidebarIcons';
 import PostItem from './PostItems';
 
 
-function PostContainer({ activeTab, selectedArtistId }) {
+function PostContainer({ activeTab, selectedArtistIds }) {
     const getAllPosts = usePostStore(state => state.getAllPosts);
     const posts = usePostStore(state => state.posts);
     const [visibleCount, setVisibleCount] = React.useState(5);
@@ -19,7 +19,7 @@ function PostContainer({ activeTab, selectedArtistId }) {
     // Reset count when tab or artist changes
     useEffect(() => {
         setVisibleCount(5);
-    }, [activeTab, selectedArtistId]);
+    }, [activeTab, selectedArtistIds]);
 
     const handleLoadMore = () => {
         setIsLoadingMore(true);
@@ -35,10 +35,10 @@ function PostContainer({ activeTab, selectedArtistId }) {
 
         let result = posts;
 
-        // Filter by selected artist tag if active
-        if (selectedArtistId) {
+        // Filter by selected artist tags if active
+        if (selectedArtistIds && selectedArtistIds.length > 0) {
             result = result.filter(post =>
-                post.postArtists?.some(pa => pa.artistId === selectedArtistId)
+                post.postArtists?.some(pa => selectedArtistIds.includes(pa.artistId))
             );
         }
 
@@ -54,7 +54,7 @@ function PostContainer({ activeTab, selectedArtistId }) {
                 break;
         }
         return result;
-    }, [posts, activeTab, selectedArtistId]);
+    }, [posts, activeTab, selectedArtistIds]);
 
     const visiblePosts = filteredPosts.slice(0, visibleCount);
 

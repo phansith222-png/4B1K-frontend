@@ -43,7 +43,9 @@ export default function PagePop() {
         changeSong,
         handleSongSelect,
         handleProgressClick,
-    } = useYouTubePlayer(songs, PLAYER_ID);
+    } = useYouTubePlayer(songs, PLAYER_ID, {
+        autoplay: searchParams.get('autoplay') === 'true'
+    });
 
     // ── States ────────────────────────────────────────────────────────────
     if (loading) {
@@ -118,7 +120,7 @@ export default function PagePop() {
                 currentSong={songs[currentSongIndex]}
             />
             <Reveal>
-                <ConcertSection events={events} />
+                <ConcertSection events={events} artist={artist} />
             </Reveal>
             <Reveal>
                 <StatsSection songs={songs} />

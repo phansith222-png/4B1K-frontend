@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSearchData } from '../../hooks/useSearchData';
 import NavSearchDropdown from './NavSearchDropdown';
 import useSearchStore from '../../stores/searchStore';
@@ -30,12 +30,23 @@ export default function NavSearchBar({ navigate }) {
         clearSearch();
     };
 
+    // Click outside to close
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (wrapRef.current && !wrapRef.current.contains(event.target)) {
+                closeSearch();
+            }
+        };
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             setShowDrop(false);
             executeSearch(); // เรียกฟังก์ชันค้นหาหลัก (ไปหน้าศิลปินหรือเปิดหน้าดีเทล)
-            // ปิดแถบค้นหาก็ต่อเมื่อมีการพิมพ์ข้อความทิ้งไว้
-            if (query.trim()) setTimeout(closeSearch, 50);
         }
         if (e.key === 'Escape') closeSearch();
     };
@@ -94,7 +105,7 @@ export default function NavSearchBar({ navigate }) {
                 {isOpen && (
                     <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); executeSearch(); setTimeout(closeSearch, 50); }}
+                        onMouseDown={(e) => { e.preventDefault(); executeSearch(); }}
                         className="pr-4 text-gray-400 hover:text-[#00E5FF] transition-colors flex-shrink-0"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

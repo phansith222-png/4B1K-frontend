@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import useUserStore from '../stores/userStore'
 
 /* ─── Site links that map to real routes ─── */
 const NAV_COLUMNS = [
@@ -53,6 +54,20 @@ function GoogleIcon() {
 
 export default function Footer() {
   const year = new Date().getFullYear()
+  const user = useUserStore((state) => state.user)
+
+  // Filter columns based on auth status
+  const columns = NAV_COLUMNS.map(col => {
+    if (col.heading === 'Account' && user) {
+      return {
+        ...col,
+        links: col.links.filter(link => 
+          link.label !== 'Sign In' && link.label !== 'Create Account'
+        )
+      }
+    }
+    return col
+  })
 
   return (
     <footer className="bg-[#0B0C10] border-t border-white/8 pt-14 pb-8 px-6 md:px-10 font-sans text-white relative z-10 overflow-hidden">
@@ -101,7 +116,7 @@ export default function Footer() {
 
           {/* Nav columns */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-12 gap-y-8">
-            {NAV_COLUMNS.map((col) => (
+            {columns.map((col) => (
               <div key={col.heading}>
                 <h4 className="text-[10px] font-black tracking-[0.18em] uppercase text-gray-500 mb-4">
                   {col.heading}

@@ -35,8 +35,8 @@ export default function StatsSection({ songs }) {
                                 return (
                                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-crosshair z-10">
                                         <div className="flex w-full justify-center gap-1 md:gap-2 items-end h-full px-1 md:px-2">
-                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-1/2 md:w-6 bg-gradient-to-t from-[#00E5FF]/40 to-[#00E5FF] rounded-t-sm transition-all duration-500 group-hover:brightness-125" />
-                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-1/2 md:w-6 bg-gradient-to-t from-[#7000FF]/40 to-[#7000FF] rounded-t-sm transition-all duration-500 group-hover:brightness-125 shadow-[0_0_10px_rgba(112,0,255,0.2)] relative" />
+                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-1/2 md:w-6 bg-[#FF0000] rounded-t-sm transition-all duration-500 group-hover:brightness-125 shadow-[0_0_10px_rgba(255,0,0,0.3)]" />
+                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-1/2 md:w-6 bg-[#1DB954] rounded-t-sm transition-all duration-500 group-hover:brightness-125 shadow-[0_0_10px_rgba(29,185,84,0.3)] relative" />
                                         </div>
                                         <span className="text-gray-500 text-[10px] md:text-xs font-black uppercase mt-4 truncate w-full text-center px-1 group-hover:text-[#00E5FF] transition-colors">{song.title.split(' ')[0]}</span>
                                         
@@ -48,8 +48,8 @@ export default function StatsSection({ songs }) {
                                             <div className="bg-[#050505] border border-gray-700 p-3 rounded-xl shadow-2xl min-w-[140px] text-center">
                                                 <p className="text-[10px] font-bold text-white border-b border-gray-800 pb-1.5 mb-1.5 truncate">{song.title}</p>
                                                 <div className="flex justify-between items-center text-[10px] font-black">
-                                                    <span className="text-[#00E5FF]">YT: {ytValue}M</span>
-                                                    <span className="text-[#7000FF]">SP: {spValue}M</span>
+                                                    <span className="text-[#FF0000]">YT: {ytValue}M</span>
+                                                    <span className="text-[#1DB954]">SP: {spValue}M</span>
                                                 </div>
                                             </div>
                                             <div className="w-3 h-3 bg-[#050505] border-b border-r border-gray-700 rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
@@ -63,11 +63,11 @@ export default function StatsSection({ songs }) {
 
                         <div className="mt-8 flex justify-center gap-8">
                              <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-sm bg-[#00E5FF]"></span>
+                                <span className="w-3 h-3 rounded-sm bg-[#FF0000] shadow-[0_0_8px_rgba(255,0,0,0.4)]"></span>
                                 <span className="text-xs md:text-sm text-gray-400 font-bold tracking-wider uppercase">YouTube</span>
                             </div>
                              <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-sm bg-[#7000FF] shadow-[0_0_10px_#7000FF]"></span>
+                                <span className="w-3 h-3 rounded-sm bg-[#1DB954] shadow-[0_0_8px_rgba(29,185,84,0.4)]"></span>
                                 <span className="text-xs md:text-sm text-gray-400 font-bold tracking-wider uppercase">Spotify</span>
                             </div>
                         </div>
