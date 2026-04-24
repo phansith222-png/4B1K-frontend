@@ -5,7 +5,7 @@ import { getCategoryStyle } from '../../utils/eventStyles';
 
 export default function EventSlider({ sliderItems, featuredIndex, setFeaturedIndex }) {
     if (sliderItems.length === 0) return null;
-    
+
     const featuredEvent = sliderItems[featuredIndex] || sliderItems[0];
 
     return (
@@ -38,7 +38,7 @@ export default function EventSlider({ sliderItems, featuredIndex, setFeaturedInd
                             <div className="absolute inset-0 bg-gradient-to-t from-[#11131A] via-[#11131A]/40 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-[#11131A]/60 lg:to-[#11131A] z-10" />
                             <div className="absolute inset-0 shadow-[inset_0_-80px_80px_#11131A] lg:shadow-[inset_-120px_0_120px_#11131A] z-10 pointer-events-none"></div>
 
-                            <div className={`absolute top-6 left-6 md:top-8 md:left-8 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/20 z-20 ${getCategoryStyle(featuredEvent.type)}`}>
+                            <div className={`absolute top-6 left-6 md:top-8 md:left-8 px-2.5 py-1 rounded-full text-[8px] md:text-[9px] font-medium uppercase tracking-[0.2em] backdrop-blur-md border border-white/5 z-20 opacity-50 group-hover:opacity-90 transition-opacity ${getCategoryStyle(featuredEvent.type)}`}>
                                 Highlight Event
                             </div>
                         </div>

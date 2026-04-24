@@ -10,7 +10,7 @@ import ArtistShowcase from '../components/LandingPageComponent/ArtistShowcase';
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0B0C10] text-white font-sans selection:bg-[#00E5FF] selection:text-black overflow-x-hidden relative">
-      
+
       {/* 1. Background Effects (Lasers & Particles) */}
       <BackgroundEffects />
 

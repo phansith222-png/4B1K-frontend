@@ -7,7 +7,7 @@ export default function CategorySection({ section, navigate }) {
     const [isDragging, setIsDragging] = useState(false);
 
     return (
-        <section className="relative w-full py-24 border-t border-white/5 overflow-hidden">
+        <section className="relative w-full py-24 overflow-hidden">
             <CategoryBackground keyword={section.keyword} />
 
             <div className="relative z-10 w-full max-w-[100rem] mx-auto pl-6 md:pl-12">

@@ -9,6 +9,7 @@ import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
 // Components
+import CategoryBackground from '../components/PageAllArtistComponent/CategoryBackground';
 import HeroSection from '../components/PagePopComponent/HeroSection';
 import BioSection from '../components/PagePopComponent/BioSection';
 import MusicPlayerSection from '../components/PagePopComponent/MusicPlayerSection';
@@ -73,14 +74,22 @@ export default function PagePop() {
             {/* Stable hidden player container — DO NOT add key or conditional render */}
             <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
 
+            {/* Animated background */}
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute inset-0 bg-[#0B0C10]" />
+                <CategoryBackground keyword="pop" isPlaying={isPlaying} />
+                
+                {/* Digital Grid Overlay */}
+                <div 
+                    className="absolute inset-0 opacity-[0.05]" 
+                    style={{ 
+                        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+                        backgroundSize: '100px 100px'
+                    }}
+                />
+            </div>
+
             <style>{`
-                .shape-blob-1 { animation: float 10s ease-in-out infinite; }
-                .shape-blob-2 { animation: float 10s ease-in-out infinite reverse; }
-                @keyframes float {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                }
                 @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 .cd-rotate { animation: rotateCD 12s linear infinite; }
                 @keyframes eqRun { 0%, 100% { height: 15%; } 50% { height: 90%; } }

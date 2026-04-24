@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useUserStore from '../../stores/userStore';
 
 export default function FloatingChat() {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
+    const isAuthenticated = useUserStore(s => s.isAuthenticated);
+
+    if (!isAuthenticated) return null;
 
     return (
         <div className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[110]">

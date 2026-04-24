@@ -7,7 +7,7 @@ export const registerFrontendSchema = z.object({
     // --- เปลี่ยนจาก identity เป็น email และ telephone แยกกัน ---
     email: z.string().min(1, "Email is required")
         .regex(emailRegex, "Invalid email format"),
-    telephone: z.string().optional(), // ให้เป็น Optional เผื่อคนไม่อยากกรอกเบอร์
+    telephone: z.string().length(10, "Phone number must be exactly 10 digits").optional().or(z.literal('')),
     
     username: z.string().min(8, "Username must have more than 8 characters"),
     firstName: z.string().min(1, "Firstname is required"),

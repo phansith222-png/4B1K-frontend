@@ -1,13 +1,12 @@
 import  {z} from 'zod';
 
-
 export const profileSchema = z.object({
-  firstName: z.string().min(2, "ชื่อสั้นเกินไป"),
-  lastName: z.string().min(2, "นามสกุลสั้นเกินไป"),
+  firstName: z.string().min(2, "First name is too short"),
+  lastName: z.string().min(2, "Last name is too short"),
   gender: z.string().optional(),
-  nationalId: z.string().length(13, "เลขบัตรประชาชนต้องมี 13 หลัก").optional().or(z.literal('')),
-  username: z.string().min(3, "Username ต้องมี 3 ตัวอักษรขึ้นไป"),
-  telephone: z.string().min(10, "เบอร์โทรไม่ถูกต้อง"),
-  email: z.string().email("รูปแบบอีเมลไม่ถูกต้อง"),
-  bio: z.string().max(200, "Bio ยาวเกินไป").optional(),
+  nationalId: z.string().length(13, "National ID must be 13 digits").optional().or(z.literal('')),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  telephone: z.string().length(10, "Phone number must be exactly 10 digits"),
+  email: z.string().email("Invalid email format"),
+  bio: z.string().max(200, "Bio is too long").optional(),
 });
