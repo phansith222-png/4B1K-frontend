@@ -5,7 +5,6 @@ import Footer from '../components/Footer';
 import PageTransition from '../components/PageTransition';
 import NavbarUser from '../components/NavbarUser';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
-import FloatingChat from '../components/chat/FloatingChat';
 import useSearchStore from '../stores/searchStore';
 
 export default function UserLayout() {
@@ -18,7 +17,7 @@ export default function UserLayout() {
             <NavbarUser />
 
             {/* 📌 2. ใส่ PageTransition ครอบ Outlet โดยห้ามลืมใส่ key={location.pathname} */}
-            <main className="flex-grow relative z-10">
+            <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col h-full overflow-hidden' : ''}`}>
                 <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
                     <PageTransition key={location.pathname}>
                         <Outlet />
@@ -30,7 +29,6 @@ export default function UserLayout() {
 
             {/* Responsive Extras */}
             <MobileBottomNav />
-            {!isSearchOpen && <FloatingChat />}
         </div>
     );
 }

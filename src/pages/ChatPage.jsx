@@ -34,11 +34,17 @@ export default function ChatPage() {
   const emojiRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const activeChatRef = useRef(activeChat);
+
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
 
   const activeRoom = contacts.find((r) => r.id === activeChat);
-  const isGroup = activeRoom?.type === "community" || activeRoom?.name || (activeRoom?.participants?.length ?? 0) > 2;
-  const other = !isGroup ? activeRoom?.participants?.find((p) => p.id !== myUserId) : null;
-  const roomName = activeRoom?.name || other?.username || other?.firstName || (activeRoom ? `ห้อง ${activeRoom.id}` : "");
+  // เชื่อใจค่า isGroup จาก DB เป็นหลัก
+  const isGroup = activeRoom?.isGroup ?? false;
+  const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
+  const roomName = isGroup ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`) : (other?.username || other?.firstName || "กำลังโหลด...");
   const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.profileImage : other?.profileImage);
   const myName = user?.username || user?.firstName || "U";
   const myAvatar = avatarUrl(myName, user?.profileImage);
@@ -93,20 +99,53 @@ export default function ChatPage() {
   const startPrivateChat = async (friendId) => {
     if (!friendId || friendId === myUserId) return;
     try {
+      // 1. Call API to find or create a private room
       const res = await mainapi.post("/chats/personal", { friendId });
+      
+      // 2. Refresh the room list to include the new/updated room
       const listRes = await mainapi.get("/chats/rooms");
       setContacts(listRes.data);
+      
+      // 3. Navigate to the private room
       setActiveChat(res.data.id);
+      
+      // 4. Automatically switch to the "Personal" tab so the user sees the active chat in the sidebar
       setTab("personal");
-      if (window.innerWidth < 768) setShowSidebar(false);
+      
+      // 5. On mobile, hide the sidebar to show the chat area
+      if (window.innerWidth < 768) {
+        setShowSidebar(false);
+      } else {
+        setShowSidebar(true);
+      }
     } catch (err) {
       console.error("Failed to start private chat:", err);
+      alert("ไม่สามารถเริ่มแชทส่วนตัวได้ในขณะนี้");
     }
   };
 
-  const handleDeleteGroup = () => {
-    if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบกลุ่มนี้? ข้อมูลทั้งหมดจะสูญหาย")) {
-      socket.emit("delete_group", { roomId: activeChat, userId: myUserId });
+  const handleDeleteRoom = async () => {
+    const confirmMsg = isGroup 
+      ? "คุณแน่ใจหรือไม่ว่าต้องการลบกลุ่มนี้? ข้อมูลทั้งหมดจะสูญหาย" 
+      : "คุณแน่ใจหรือไม่ว่าต้องการลบการสนทนานี้? ข้อความทั้งหมดจะถูกลบถาวร";
+      
+    if (window.confirm(confirmMsg)) {
+      try {
+        if (isGroup) {
+          // ถ้าเป็นกลุ่ม ใช้ socket เพื่อแจ้งเตือนทุกคนในกลุ่ม
+          socket.emit("delete_group", { roomId: activeChat, userId: myUserId });
+        } else {
+          // ถ้าเป็นแชทส่วนตัว ใช้ API ลบปกติ
+          await mainapi.delete(`/chats/rooms/${activeChat}`);
+          // อัปเดต UI ฝั่งเรา
+          setContacts((prev) => prev.filter((c) => c.id !== activeChat));
+          setActiveChat(null);
+          alert("ลบการสนทนาเรียบร้อยแล้ว");
+        }
+      } catch (err) {
+        console.error("Failed to delete room:", err);
+        alert("ไม่สามารถลบได้ในขณะนี้");
+      }
     }
   };
 
@@ -126,19 +165,20 @@ export default function ChatPage() {
 
   const handleReceive = useCallback((msg) => {
     const rid = String(msg.chatRoomId);
-    setActiveChat((prev) => {
-      if (rid === String(prev)) {
-        setMessages((ms) => {
-          if (ms.some((m) => m.id === msg.id)) return ms;
-          return [...ms.filter((m) => !(m.isOptimistic && m.content === msg.content)),
-            { ...msg, isSent: true, isOptimistic: false }];
-        });
-        socket?.emit("mark_read", { chatRoomId: rid, userId: myUserId });
-      } else {
+    const currentActiveChat = String(activeChatRef.current);
+
+    if (rid === currentActiveChat) {
+      setMessages((ms) => {
+        if (ms.some((m) => m.id === msg.id)) return ms;
+        return [...ms.filter((m) => !(m.isOptimistic && m.content === msg.content)),
+          { ...msg, isSent: true, isOptimistic: false }];
+      });
+      socket?.emit("mark_read", { chatRoomId: rid, userId: myUserId, lastMessageId: msg.id });
+    } else {
+      if (msg.senderId !== myUserId) {
         setUnreadCounts((u) => ({ ...u, [rid]: (u[rid] || 0) + 1 }));
       }
-      return prev;
-    });
+    }
   }, [socket, myUserId]);
 
   const handleRead = useCallback(({ chatRoomId, readByUserId }) => {
@@ -164,7 +204,9 @@ export default function ChatPage() {
       mainapi.get("/chats/rooms").then((r) => setContacts(r.data)).catch(console.error);
     };
 
-    socket.on("connect", () => setConnected(true));
+    socket.on("connect", () => {
+      setConnected(true);
+    });
     socket.on("disconnect", () => setConnected(false));
     socket.on("receive_message", handleReceive);
     socket.on("message_read", handleRead);
@@ -183,8 +225,26 @@ export default function ChatPage() {
   }, [socket, handleReceive, handleRead]);
 
   useEffect(() => {
-    mainapi.get("/chats/rooms").then((r) => setContacts(r.data)).catch(console.error);
-  }, []);
+    mainapi.get("/chats/rooms").then((r) => {
+      setContacts(r.data);
+      const initialUnread = {};
+      r.data.forEach(room => {
+        if (room.unreadCount > 0) {
+          initialUnread[room.id] = room.unreadCount;
+        }
+      });
+      setUnreadCounts(prev => ({ ...prev, ...initialUnread }));
+    }).catch(console.error);
+  }, []); // Remove socket dependency as we handle join separately
+
+  // Dedicated effect to join rooms when socket is connected and contacts are loaded
+  useEffect(() => {
+    if (socket && connected && contacts.length > 0) {
+      contacts.forEach(room => {
+        socket.emit("join_room", String(room.id));
+      });
+    }
+  }, [socket, connected, contacts]);
 
   useEffect(() => {
     if (!socket || !activeChat) return;
@@ -192,10 +252,16 @@ export default function ChatPage() {
     setTypingText("");
     setUnreadCounts((u) => ({ ...u, [activeChat]: 0 }));
     mainapi.get(`/chats/${activeChat}/messages`)
-      .then((r) => { setMessages(r.data.map((m) => ({ ...m, isSent: true }))); scrollToBottom(); })
+      .then((r) => { 
+        setMessages(r.data.map((m) => ({ ...m, isSent: true }))); 
+        scrollToBottom(); 
+        if (r.data.length > 0) {
+          const lastMsg = r.data[r.data.length - 1];
+          socket.emit("mark_read", { chatRoomId: activeChat, userId: myUserId, lastMessageId: lastMsg.id });
+        }
+      })
       .catch(console.error);
     socket.emit("join_room", String(activeChat));
-    socket.emit("mark_read", { chatRoomId: activeChat, userId: myUserId });
   }, [socket, activeChat, myUserId, scrollToBottom]);
 
   useEffect(() => {
@@ -230,25 +296,23 @@ export default function ChatPage() {
   };
 
   const grouped = useMemo(() => messages.map((m, i) => {
-    const prev = messages[i - 1];
     const isMe = m.senderId === myUserId;
-    const same = prev?.senderId === m.senderId;
-    const close = prev && new Date(m.createdAt) - new Date(prev.createdAt) < 300000;
-    return { ...m, isMe, isGrouped: same && close, showAvatar: !same || !close };
+    // Always show avatar for every message as requested
+    return { ...m, isMe, isGrouped: false, showAvatar: true };
   }), [messages, myUserId]);
 
   const filtered = useMemo(() => {
-    const byTab = contacts.filter((r) => {
-      const isCommunity = r.type === "community" || r.name || (r.participants?.length ?? 0) > 2;
-      return tab === "community" ? isCommunity : !isCommunity;
-    });
+    // กรองตาม Tab (ใช้ isGroup จาก DB ตรงๆ)
+    const byTab = contacts.filter((r) => tab === "community" ? r.isGroup : !r.isGroup);
+
     if (!search.trim()) return byTab;
     const q = search.toLowerCase();
     return byTab.filter((r) => {
-      const n = r.name || r.participants?.find((p) => p.id !== myUserId)?.username || "";
-      return n.toLowerCase().includes(q);
+      const otherUser = r.users?.find((u) => u.userId !== myUserId)?.user;
+      const name = r.isGroup ? r.name : (otherUser?.username || otherUser?.firstName || "");
+      return (name || "").toLowerCase().includes(q);
     });
-  }, [contacts, tab, search, myUserId]);
+  }, [contacts, search, tab, myUserId]);
 
   const openChat = (id) => { setActiveChat(id); setShowSidebar(false); };
   const goBack = () => { setActiveChat(null); setShowSidebar(true); };
@@ -295,7 +359,7 @@ export default function ChatPage() {
         handleAvatarClick={handleAvatarClick}
         fileInputRef={fileInputRef}
         handleFileChange={handleFileChange}
-        handleDeleteGroup={handleDeleteGroup}
+        handleDeleteRoom={handleDeleteRoom}
         startPrivateChat={startPrivateChat}
         scrollRef={scrollRef}
         emojiRef={emojiRef}

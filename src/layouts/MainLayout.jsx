@@ -5,7 +5,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PageTransition from '../components/PageTransition';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
-import FloatingChat from '../components/chat/FloatingChat';
 import useSearchStore from '../stores/searchStore';
 
 export default function MainLayout() {
@@ -29,7 +28,6 @@ export default function MainLayout() {
 
             {/* Responsive Extras */}
             <MobileBottomNav />
-            {!isSearchOpen && <FloatingChat />}
         </div>
     );
 }
