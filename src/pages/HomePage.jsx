@@ -8,7 +8,7 @@ import { getAllArtists } from '../api/auth';
 
 // Separate Components
 import NavigationSidebar from '../components/HomePage/NavigationSidebar';
-import StartSquadCard from '../components/HomePage/StartSquadCard';
+import MusicDiscoveryCard from '../components/HomePage/MusicDiscoveryCard';
 import FeedFilter from '../components/HomePage/FeedFilter';
 import TrendingArtists from '../components/HomePage/TrendingArtists';
 import DiscoverArtists from '../components/HomePage/DiscoverArtists';
@@ -18,14 +18,23 @@ import ArtistPickerModal from '../components/ArtistPickerModal';
 
 export default function CommunityHomePage() {
   const [activeTab, setActiveTab] = useState('All');
-  const [selectedArtist, setSelectedArtist] = useState(null);
+  const [selectedArtists, setSelectedArtists] = useState([]);
   const [isArtistPickerOpen, setIsArtistPickerOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleArtistSelect = (artist) => {
-    setSelectedArtist(artist);
-    setActiveTab('All'); // Switch to feed when selecting artist
+  const handleArtistSelect = (selected) => {
+    setSelectedArtists(selected);
+    if (selected.length > 0) setActiveTab('All');
     setIsArtistPickerOpen(false);
+  };
+
+  const toggleArtist = (artist) => {
+    setSelectedArtists(prev => {
+      const already = prev.find(a => a.id === artist.id);
+      if (already) return prev.filter(a => a.id !== artist.id);
+      return [...prev, artist];
+    });
+    setActiveTab('All');
   };
 
   return (
@@ -37,7 +46,7 @@ export default function CommunityHomePage() {
         {/* --- 👈 LEFT SIDEBAR (Navigation & Shortcuts) --- */}
         <aside className="hidden xl:col-span-3 xl:block space-y-6 h-fit z-20">
           <NavigationSidebar />
-          <StartSquadCard />
+          <MusicDiscoveryCard />
         </aside>
 
         {/* --- 📱 CENTER FEED (Main Content) --- */}
@@ -51,51 +60,49 @@ export default function CommunityHomePage() {
               activeTab={activeTab} 
               setActiveTab={(tab) => {
                 setActiveTab(tab);
-                setSelectedArtist(null);
+                setSelectedArtists([]);
               }} 
               onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
-              selectedArtistName={selectedArtist?.artistName}
+              selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
             />
             
-            {selectedArtist && (
-              <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-4 bg-gradient-to-r from-[#7C4DFF]/20 to-transparent border-l-4 border-[#7C4DFF] px-5 py-4 rounded-r-2xl shadow-xl"
-              >
-                <img 
-                  src={selectedArtist.profileImage || `https://ui-avatars.com/api/?name=${selectedArtist.artistName}`} 
-                  className="w-10 h-10 rounded-full border border-white/10" 
-                  alt="" 
-                />
-                <div className="flex-1">
-                   <p className="text-[#00E5FF] text-[10px] font-black uppercase tracking-widest">Selected Artist</p>
-                   <p className="text-white text-base font-bold">{selectedArtist.artistName}</p>
-                </div>
-                <button 
-                  onClick={() => setSelectedArtist(null)}
-                  className="bg-white/5 hover:bg-red-500/20 text-white hover:text-red-500 p-2.5 rounded-full transition-all"
-                >
-                  <X size={18} />
-                </button>
-              </motion.div>
+            {selectedArtists.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {selectedArtists.map(artist => (
+                  <motion.div 
+                    key={artist.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex items-center gap-3 bg-gradient-to-r from-[#7C4DFF]/15 to-[#00E5FF]/5 border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg group hover:border-[#00E5FF]/30 transition-all"
+                  >
+                    <img 
+                      src={artist.profileImage || `https://ui-avatars.com/api/?name=${artist.artistName}`} 
+                      className="w-7 h-7 rounded-full border border-white/10" 
+                      alt="" 
+                    />
+                    <span className="text-white text-sm font-bold">{artist.artistName}</span>
+                    <button 
+                      onClick={() => setSelectedArtists(prev => prev.filter(a => a.id !== artist.id))}
+                      className="text-gray-500 hover:text-red-500 transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
             )}
           </div>
 
           <AnimatePresence mode="wait">
-              <PostContainer activeTab={activeTab} selectedArtistId={selectedArtist?.id} />
+              <PostContainer activeTab={activeTab} selectedArtistIds={selectedArtists.map(a => a.id)} />
           </AnimatePresence>
         </div>
 
         {/* --- 👉 RIGHT SIDEBAR (Trending & Discover) --- */}
         <aside className="xl:col-span-3 space-y-8 h-fit z-20">
           <TrendingArtists 
-            onSelectArtist={(id) => {
-              // We need to find the artist object to show the name in filter
-              // For now, let's just use the ID filtering
-              setSelectedArtist({ id, artistName: 'Trending Artist' });
-            }} 
-            selectedArtistId={selectedArtist?.id} 
+            onToggleArtist={toggleArtist} 
+            selectedArtistIds={selectedArtists.map(a => a.id)} 
           />
           <DiscoverArtists />
         </aside>
@@ -106,8 +113,8 @@ export default function CommunityHomePage() {
       {/* Artist Selection Modal */}
       {isArtistPickerOpen && (
         <ArtistPickerModal 
-          selectedArtists={selectedArtist ? [selectedArtist] : []}
-          onSelectionChange={(selected) => handleArtistSelect(selected[0])}
+          selectedArtists={selectedArtists}
+          onSelectionChange={handleArtistSelect}
           onClose={() => setIsArtistPickerOpen(false)}
         />
       )}

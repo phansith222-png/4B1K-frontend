@@ -15,7 +15,7 @@ export default function OAuthCallback() {
     // ถ้าผู้ใช้ล็อกอินอยู่แล้ว (เช่น router remount หลังจาก setUser)
     // ให้กลับไปหน้า home ได้เลย ไม่ต้องถือว่าเป็นข้อผิดพลาด
     if (user) {
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
       return;
     }
 

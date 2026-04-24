@@ -98,7 +98,10 @@ export default function FeaturedArtists({ genre = 'pop' }) {
                     <Reveal key={artist.id || idx} delay={idx * 0.1} effect="fade-up" overflow="visible">
                         <motion.div 
                             className="flex flex-col items-center group cursor-pointer relative"
-                            onClick={() => navigate(getArtistPath(artist))}
+                            onClick={() => {
+                                window.scrollTo(0, 0);
+                                navigate(getArtistPath(artist));
+                            }}
                             style={{ willChange: 'transform' }}
                             whileHover={{ y: -15 }}
                             transition={{ type: "spring", stiffness: 150, damping: 20 }}

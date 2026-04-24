@@ -9,7 +9,7 @@ export default function MusicPlayerSection({
     const currentSong = songs[currentSongIndex] || null;
 
     return (
-        <section className="relative w-full py-32 px-6 overflow-hidden z-10">
+        <section className="relative w-full py-32 px-6 bg-transparent overflow-hidden z-10">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[800px] bg-gradient-to-r from-[#FF007F] via-transparent to-[#00F5D4] rounded-[100%] blur-[80px] animate-pulse" style={{ willChange: 'transform, opacity' }}></div>
@@ -43,9 +43,18 @@ export default function MusicPlayerSection({
                                 <div className="flex-1 flex flex-col gap-1.5">
                                     <span className="text-[10px] tracking-widest uppercase text-[#FF007F] font-black">Top Track</span>
                                     <span className="font-black text-xl leading-tight line-clamp-1 group-hover:text-[#00F5D4] transition-colors">{item.title}</span>
-                                    <span className="text-xs text-gray-400 font-bold tracking-widest uppercase">
-                                        {item.popularity ? `${(item.popularity / 1000000).toFixed(1)}M Streams` : 'Trending'}
-                                    </span>
+                                    <div className="flex items-center gap-3 text-[10px] font-black tracking-wider uppercase mt-1.5">
+                                        <span className="text-[#FF0000] flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse"></div>
+                                            YouTube
+                                        </span>
+                                        <span className="w-px h-2 bg-white/10"></span>
+                                        <span className="text-[#1DB954] flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#1DB954] animate-pulse"></div>
+                                            Spotify
+                                        </span>
+                                        <span className="text-gray-400 ml-1">{item.popularity ? `${(item.popularity / 1000000).toFixed(1)}M` : '1.2M'} Streams</span>
+                                    </div>
                                 </div>
                             </button>
                         </Reveal>
@@ -62,15 +71,6 @@ export default function MusicPlayerSection({
                         
                         {/* ส่วนซ้าย: รูปแผ่นเสียง */}
                         <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 flex items-center justify-center">
-                            <div className="absolute inset-0 flex items-end justify-center gap-2 opacity-30 z-0 overflow-hidden">
-                                {[...Array(8)].map((_, i) => (
-                                    <div 
-                                        key={i} 
-                                        className="w-full bg-gradient-to-t from-[#FF007F] to-[#00F5D4] rounded-t-full eq-bar" 
-                                        style={{ animationDelay: `${(i % 6) * 0.2}s`, animationDuration: `${1.2 + (i % 3) * 0.3}s`, animationPlayState: isPlaying ? 'running' : 'paused' }}>
-                                    </div>
-                                ))}
-                            </div>
 
                             <div className="w-full h-full rounded-full bg-[#0B0C10] border-[4px] border-gray-800 cd-rotate flex items-center justify-center shadow-2xl relative z-10 overflow-hidden ring-4 ring-black/40" style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}>
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black border-2 border-gray-600 shadow-inner relative flex items-center justify-center z-20">
@@ -99,9 +99,38 @@ export default function MusicPlayerSection({
                                 </p>
                             </div>
 
-                            {/* Progress Bar */}
-                            <div className="w-full mt-2">
-                                <div className="w-full bg-white/5 rounded-full h-1.5 md:h-2 relative cursor-pointer group" onClick={handleProgressClick}>
+                            {/* Progress Bar with Beats */}
+                            <div className="w-full mt-2 relative">
+                                {/* Background Beat Bars - Refined for Natural Flow */}
+                                <div className="absolute inset-0 -top-6 -bottom-2 flex items-end justify-around gap-1 opacity-[0.12] pointer-events-none z-0 overflow-hidden px-4">
+                                    {[...Array(14)].map((_, i) => {
+                                        const variants = [
+                                            [30, 80, 40, 90, 30],
+                                            [20, 60, 30, 70, 20],
+                                            [40, 75, 50, 85, 40],
+                                            [25, 55, 35, 65, 25]
+                                        ];
+                                        const heights = variants[i % variants.length];
+                                        
+                                        return (
+                                            <motion.div
+                                                key={i}
+                                                className="w-full max-w-[18px] bg-gradient-to-t from-[#FF007F] to-[#00F5D4] rounded-t-lg"
+                                                animate={{ 
+                                                    height: isPlaying ? heights.map(h => `${h}%`) : '15%' 
+                                                }}
+                                                transition={{ 
+                                                    duration: 0.7 + (i % 4) * 0.15, 
+                                                    repeat: Infinity, 
+                                                    ease: "easeInOut",
+                                                    delay: i * 0.04
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="w-full bg-white/5 rounded-full h-1.5 md:h-2 relative cursor-pointer group z-10" onClick={handleProgressClick}>
                                     <motion.div 
                                         className="bg-gradient-to-r from-[#FF007F] to-[#00F5D4] h-full relative rounded-full"
                                         style={{ width: `${progress}%` }}
@@ -110,7 +139,7 @@ export default function MusicPlayerSection({
                                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full shadow-[0_0_10px_#00F5D4,_0_0_20px_#00F5D4] transition-all duration-300 opacity-0 group-hover:opacity-100 md:opacity-100"></div>
                                     </motion.div>
                                 </div>
-                                <div className="flex justify-between text-[10px] md:text-xs text-gray-500 mt-3 font-mono font-bold tracking-widest">
+                                <div className="flex justify-between text-[10px] md:text-xs text-gray-500 mt-3 font-mono font-bold tracking-widest relative z-10">
                                     <span>{currentTime}</span>
                                     <span>{duration}</span>
                                 </div>

@@ -4,7 +4,7 @@ import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function BioSection({ artist }) {
     return (
-        <section className="relative w-full py-24 px-6 bg-gradient-to-b from-transparent to-[#1a1528]/40 overflow-hidden border-b border-white/5">
+        <section className="relative w-full py-24 px-6 bg-transparent overflow-hidden border-b border-white/5">
             <Reveal effect="fade-up">
                 <div className="max-w-4xl mx-auto text-center relative z-10 flex flex-col gap-4 md:gap-6">
                     <motion.h2 

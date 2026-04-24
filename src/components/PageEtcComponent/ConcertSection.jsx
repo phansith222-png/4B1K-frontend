@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
-export default function ConcertSection({ events }) {
+export default function ConcertSection({ events, artist }) {
     const navigate = useNavigate();
     return (
         <section className="relative w-full py-24 px-6">
@@ -16,7 +16,7 @@ export default function ConcertSection({ events }) {
                                 LIVE <span className="text-[#00E5FF]">JOURNEY</span>
                             </h3>
                         </div>
-                        <button onClick={() => navigate('/new-event')} className="flex items-center gap-2 text-xs font-bold text-[#7000FF] hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group">
+                        <button onClick={() => navigate(`/new-event?artistId=${artist?.id}`)} className="flex items-center gap-2 text-xs font-bold text-[#7000FF] hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group">
                             VIEW ALL SHOWS
                             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                         </button>
@@ -29,7 +29,7 @@ export default function ConcertSection({ events }) {
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => navigate('/new-event')}
+                                onClick={() => navigate(`/new-event?artistId=${artist?.id}`)}
                                 className="relative rounded-[2rem] overflow-hidden group bg-[#050505] shadow-[0_10px_30px_rgba(0,0,0,0.5)] h-[400px] cursor-pointer transition-colors duration-500"
                             >
                                 <img

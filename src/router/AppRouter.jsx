@@ -9,6 +9,7 @@ import useUserStore from "../stores/userStore";
 import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
 import OAuthCallback from "../pages/OAuthCallback";
+import CommunityHomePage from "../pages/HomePage";
 
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import("../pages/LandingPage"));
@@ -34,6 +35,7 @@ const guestRouter = createBrowserRouter([
     element: <MainLayout />, // ให้ MainLayout เป็นหน้าหลัก
     children: [
       { path: "/", element: <LandingPage /> },
+      { path: "landing", element: <LandingPage /> },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
       { path: "new-event", Component: NewEvent },
@@ -59,7 +61,8 @@ const userRouter = createBrowserRouter([
     path: "/",
     element: <UserLayout />,
     children: [
-      { path: "/", element: <LandingPage /> },
+      { path: "/", element: <HomePage /> },
+      { path: "landing", element: <LandingPage /> },
       { path: "home", element: <HomePage /> },
       { path: "login", Component: Login },
       { path: "register", Component: Register },

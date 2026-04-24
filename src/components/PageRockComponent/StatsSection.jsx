@@ -5,7 +5,7 @@ import FeaturedArtists from '../FeaturedArtists';
 
 export default function StatsSection({ songs }) {
     return (
-        <section className="relative w-full py-24 px-6 bg-[#050505]">
+        <section className="relative w-full py-24 px-6 bg-transparent">
             <div className="max-w-6xl mx-auto relative z-10">
 
                 <Reveal effect="fade-up">
@@ -23,11 +23,11 @@ export default function StatsSection({ songs }) {
                             
                             <div className="flex justify-center gap-8 mb-12">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 bg-gray-600 rounded-sm"></div>
+                                    <div className="w-3 h-3 bg-[#1DB954] rounded-sm shadow-[0_0_8px_rgba(29,185,84,0.4)]"></div>
                                     <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase text-gray-400">Spotify</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 bg-[#D3131F] rounded-sm shadow-[0_0_8px_#D3131F]"></div>
+                                    <div className="w-3 h-3 bg-[#FF0000] rounded-sm shadow-[0_0_8px_rgba(255,0,0,0.4)]"></div>
                                     <span className="text-[10px] md:text-xs font-bold tracking-widest uppercase text-gray-400">YouTube</span>
                                 </div>
                             </div>
@@ -52,9 +52,9 @@ export default function StatsSection({ songs }) {
                                                     
                                                     <div className="flex w-full justify-center gap-1.5 md:gap-2.5 items-end h-full px-1">
                                                         {/* แท่ง Spotify */}
-                                                        <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-[40%] md:w-8 bar-spotify-v3 relative group-hover:brightness-125" />
+                                                        <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-[40%] md:w-8 bg-[#1DB954] rounded-t-sm relative group-hover:brightness-125 shadow-[0_0_15px_rgba(29,185,84,0.2)]" />
                                                         {/* แท่ง YouTube */}
-                                                        <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-[40%] md:w-8 bar-youtube-v3 relative group-hover:brightness-125" />
+                                                        <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-[40%] md:w-8 bg-[#FF0000] rounded-t-sm relative group-hover:brightness-125 shadow-[0_0_15px_rgba(255,0,0,0.2)]" />
                                                     </div>
                                                     
                                                     <div className="mt-4 text-center w-full">
@@ -68,8 +68,8 @@ export default function StatsSection({ songs }) {
                                                         <div className="bg-black border border-[#D3131F]/30 p-3 rounded shadow-2xl min-w-[140px] text-center">
                                                             <p className="text-[10px] font-bold text-white border-b border-white/10 pb-1.5 mb-1.5 truncate">{song.title}</p>
                                                             <div className="flex justify-between items-center text-[10px] font-black">
-                                                                <span className="text-[#D3131F]">YT: {ytValue}M</span>
-                                                                <span className="text-gray-400">SP: {spValue}M</span>
+                                                                <span className="text-[#FF0000]">YT: {ytValue}M</span>
+                                                                <span className="text-[#1DB954]">SP: {spValue}M</span>
                                                             </div>
                                                         </div>
                                                         <div className="w-3 h-3 bg-black border-b border-r border-[#D3131F]/30 rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>

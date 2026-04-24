@@ -11,6 +11,7 @@ import IndustryStatsSection from '../components/PageEntertainmentComponent/Indus
 import BottomTextSection from '../components/PageEntertainmentComponent/BottomTextSection';
 import TopChartsSection from '../components/PageEntertainmentComponent/TopChartsSection';
 import Reveal from '../components/Reveal';
+import BackButton from '../components/BackButton';
 import { getArtistById } from '../api/artist';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 
@@ -162,6 +163,7 @@ export default function PageEntertainment() {
 
     return (
         <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden selection:bg-[#00E5FF] selection:text-black relative">
+            <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
             
             <BackgroundEffects />
             <Reveal>

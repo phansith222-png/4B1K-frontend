@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 // Hooks
@@ -25,6 +25,13 @@ export default function Navbar() {
         isHoveringMain, setIsHoveringMain,
         chartOrder, setChartOrder,
     } = useNavbarData();
+
+    const location = useLocation();
+    const path = location.pathname;
+    const isConcertActive = ['/new-event', '/nearby-events'].some(p => path.startsWith(p));
+    const isArtistActive = ['/artists', '/pop', '/rock', '/classic', '/etc', '/entertainment'].some(p => path.startsWith(p)) || isArtistMenuOpen;
+    const isCommunityActive = path.startsWith('/community') || path.startsWith('/home');
+    const isChatActive = path.startsWith('/chat');
 
     // Close mega-menu on outside click
     useEffect(() => {
@@ -76,7 +83,7 @@ export default function Navbar() {
 
                 {/* Left: Logo (flex-1 to balance right side) */}
                 <div className="flex-1 flex justify-start">
-                    <div className="flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/')}>
+                    <div className="flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/landing')}>
                         <div className="flex items-end gap-[2px] h-6 w-5">
                             <div className="w-1 rounded-full bar-1" />
                             <div className="w-1 rounded-full bar-2" />
@@ -90,32 +97,43 @@ export default function Navbar() {
                 {/* Center: Navigation (Absolute Center) */}
                 <motion.nav
                     animate={{
-                        opacity: isSearchOpen ? 0.2 : 1,
+                        opacity: 1,
                         x: isSearchOpen ? '-120%' : '-50%',
-                        pointerEvents: isSearchOpen ? 'none' : 'auto'
+                        pointerEvents: 'auto'
                     }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className="absolute left-1/2 hidden xl:block z-[60]"
                 >
-                    <ul className="flex items-center gap-10 text-[15px] font-bold text-gray-300">
-                        <li><Link to="/new-event" className="hover:text-[#00E5FF] transition-colors">Concert Event</Link></li>
-                        <li>
+                    <ul className="flex items-center gap-10 text-[15px] font-bold">
+                        <li className="relative group">
+                            <Link to="/new-event" className={`transition-all duration-300 ${isConcertActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>
+                                Concert Event
+                            </Link>
+                            {isConcertActive && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
+                        </li>
+                        <li className="relative">
                             <button
                                 ref={buttonRef}
                                 onClick={() => setIsArtistMenuOpen(v => !v)}
-                                className={`flex items-center gap-1.5 focus:outline-none transition-colors ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'hover:text-[#00E5FF]'}`}
+                                className={`flex items-center gap-1.5 focus:outline-none transition-all duration-300 ${isArtistActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
                             >
                                 Artist Biology
                                 <motion.svg
                                     animate={{ rotate: isArtistMenuOpen ? 180 : 0 }}
-                                    className={`w-4 h-4 ${isArtistMenuOpen ? 'text-[#00E5FF]' : 'text-gray-500'}`}
+                                    className={`w-4 h-4 ${isArtistActive ? 'text-[#00E5FF]' : 'text-gray-500'}`}
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                                 </motion.svg>
                             </button>
+                            {isArtistActive && !isArtistMenuOpen && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
-                        <li><Link to="/community" className="hover:text-[#00E5FF] transition-colors">Community</Link></li>
+                        <li className="relative group">
+                            <Link to="/community" className={`transition-all duration-300 ${isCommunityActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>
+                                Community
+                            </Link>
+                            {isCommunityActive && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
+                        </li>
                     </ul>
                 </motion.nav>
 

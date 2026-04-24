@@ -5,7 +5,7 @@ import FeaturedArtists from '../FeaturedArtists';
 
 export default function StatsSection({ songs }) {
     return (
-        <section className="relative w-full py-24 px-6 bg-[#050508] border-t border-white/5">
+        <section className="relative w-full py-24 px-6 bg-transparent border-t border-white/5">
             <div className="max-w-5xl mx-auto relative z-10">
 
                 <Reveal effect="fade-up">
@@ -36,8 +36,8 @@ export default function StatsSection({ songs }) {
                                 return (
                                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-crosshair z-10">
                                         <div className="flex w-full justify-center gap-1 md:gap-2 items-end h-full px-1">
-                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-1/2 md:w-8 bg-gradient-to-t from-[#FF007F]/30 to-[#FF007F] rounded-t-full transition-all duration-500 group-hover:brightness-125 shadow-[0_0_15px_rgba(255,0,127,0.3)]" />
-                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-1/2 md:w-8 bg-gradient-to-t from-[#00F5D4]/30 to-[#00F5D4] rounded-t-full transition-all duration-500 group-hover:brightness-125 shadow-[0_0_15px_rgba(0,245,212,0.3)] relative" />
+                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-1/2 md:w-8 bg-[#FF0000] rounded-t-full transition-all duration-500 group-hover:brightness-125 shadow-[0_0_15px_rgba(255,0,0,0.3)]" />
+                                            <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-1/2 md:w-8 bg-[#1DB954] rounded-t-full transition-all duration-500 group-hover:brightness-125 shadow-[0_0_15px_rgba(29,185,84,0.3)] relative" />
                                         </div>
                                         <span className="text-gray-500 text-[10px] md:text-xs font-bold uppercase mt-6 truncate w-full text-center px-1 group-hover:text-white transition-colors">{song.title.split(' ')[0]}</span>
                                         
@@ -49,8 +49,8 @@ export default function StatsSection({ songs }) {
                                             <div className="bg-black/90 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-2xl min-w-[150px] text-center">
                                                 <p className="text-[10px] font-bold text-white border-b border-white/10 pb-2 mb-2 truncate">{song.title}</p>
                                                 <div className="flex justify-between items-center text-[10px] font-black">
-                                                    <span className="text-[#FF007F]">YT: {ytValue}M</span>
-                                                    <span className="text-[#00F5D4]">SP: {spValue}M</span>
+                                                    <span className="text-[#FF0000]">YT: {ytValue}M</span>
+                                                    <span className="text-[#1DB954]">SP: {spValue}M</span>
                                                 </div>
                                             </div>
                                             <div className="w-3 h-3 bg-black/90 border-b border-r border-white/20 rotate-45 absolute -bottom-1.5 left-1/2 -translate-x-1/2"></div>
@@ -64,11 +64,11 @@ export default function StatsSection({ songs }) {
 
                         <div className="mt-12 flex justify-center gap-10">
                             <div className="flex items-center gap-3">
-                                <span className="w-4 h-4 rounded-full bg-[#FF007F] shadow-[0_0_10px_#FF007F]"></span>
+                                <span className="w-4 h-4 rounded-full bg-[#FF0000] shadow-[0_0_10px_rgba(255,0,0,0.4)]"></span>
                                 <span className="text-xs md:text-sm text-gray-400 font-bold tracking-widest uppercase">YouTube</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="w-4 h-4 rounded-full bg-[#00F5D4] shadow-[0_0_10px_#00F5D4]"></span>
+                                <span className="w-4 h-4 rounded-full bg-[#1DB954] shadow-[0_0_10px_rgba(29,185,84,0.4)]"></span>
                                 <span className="text-xs md:text-sm text-gray-400 font-bold tracking-widest uppercase">Spotify</span>
                             </div>
                         </div>

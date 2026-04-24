@@ -7,6 +7,7 @@ import { avatarUrl } from "../utils/chatUtils";
 // Import new modular components
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatArea from "../components/chat/ChatArea";
+import BackButton from "../components/BackButton";
 
 export default function ChatPage() {
   const socket = useSocket();
@@ -319,6 +320,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-[#13141a] text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
       <ChatSidebar
         showSidebar={showSidebar}
         connected={connected}
