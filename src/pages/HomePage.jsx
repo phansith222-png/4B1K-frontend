@@ -71,33 +71,34 @@ export default function CommunityHomePage() {
         }
       `}</style>
 
-      {/* 🔮 MAIN CONTENT LAYOUT */}
+      {/* 🔮 MAIN CONTENT LAYOUT Naigation */}
       <main className="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8">
         
         {/* --- 👈 LEFT SIDEBAR (Navigation & Shortcuts) --- */}
-        <aside className="hidden xl:col-span-3 xl:block space-y-6 sticky top-28 h-[calc(100vh-140px)]">
-          <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
-            <h3 className="text-gray-500 text-xs font-black tracking-widest mb-6 uppercase">Navigation</h3>
-            <ul className="space-y-3">
-              <SidebarItem icon={<Flame size={20} />} label="Hot Feed" active />
-              <SidebarItem icon={<Users size={20} />} label="My Squads" badge="3" />
-              <SidebarItem icon={<Calendar size={20} />} label="Upcoming Gigs" />
-              <SidebarItem icon={<Music4 size={20} />} label="Favorite Artists" />
-              <SidebarItem icon={<MapPin size={20} />} label="Nearby Events" onClick={() => navigate('/nearby-events')} />
-            </ul>
-          </div>
-
-          <div className="bg-gradient-to-br from-[#d000ff]/10 to-transparent border border-[#d000ff]/20 rounded-3xl p-6 relative overflow-hidden group">
-            {/* Background Effect */}
-            <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-[#d000ff] rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity" />
-            
-            <h4 className="font-bold text-lg mb-2 relative z-10">Start a New Squad?</h4>
-            <p className="text-xs text-gray-400 mb-5 relative z-10 leading-relaxed">Find rave mates for the *Coldplay World Tour 2026* in Bangkok.</p>
-            <button className="w-full bg-[#c6ff00] text-black py-3 rounded-2xl text-sm font-black hover:scale-[1.03] transition-transform relative z-10 shadow-[0_0_20px_rgba(198,255,0,0.3)]">
-              CREATE SQUAD
-            </button>
-          </div>
-        </aside>
+                    {/* --- 👈 LEFT SIDEBAR (Navigation & Shortcuts) --- */}
+                <aside className="hidden xl:col-span-3 xl:block space-y-6 sticky top-28 h-[calc(100vh-140px)]">
+                  <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+                    <h3 className="text-gray-500 text-xs font-black tracking-widest mb-6 uppercase">Navigation</h3>
+                    <ul className="space-y-3">
+                      <SidebarItem icon={<Flame size={20} />} label="Hot Feed" active />
+                      <SidebarItem icon={<Users size={20} />} label="My Chats" badge="3" onClick={() => navigate('/chat')}/>
+                      <SidebarItem icon={<Calendar size={20} />} label="Upcoming Events" onClick={() => navigate('/new-event')}/>
+                      <SidebarItem icon={<Music4 size={20} />} label="Favorite Artists" />
+                      <SidebarItem icon={<MapPin size={20} />} label="Nearby Events" onClick={() => navigate('/nearby-events')} />
+                    </ul>
+                  </div>
+        
+                  <div className="bg-gradient-to-br from-[#d000ff]/10 to-transparent border border-[#d000ff]/20 rounded-3xl p-6 relative overflow-hidden group">
+                    {/* Background Effect */}
+                    <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-[#d000ff] rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity" />
+                    
+                    <h4 className="font-bold text-lg mb-2 relative z-10">Start a New Squad?</h4>
+                    <p className="text-xs text-gray-400 mb-5 relative z-10 leading-relaxed">Find rave mates for the *Coldplay World Tour 2026* in Bangkok.</p>
+                    <button className="w-full bg-[#c6ff00] text-black py-3 rounded-2xl text-sm font-black hover:scale-[1.03] transition-transform relative z-10 shadow-[0_0_20px_rgba(198,255,0,0.3)]">
+                      CREATE SQUAD
+                    </button>
+                  </div>
+                </aside>
 
         {/* --- 📱 CENTER FEED (Main Content) --- */}
         <div className="xl:col-span-6 space-y-8">
