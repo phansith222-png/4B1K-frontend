@@ -3,7 +3,7 @@
  */
 export const getCategoryStyle = (type) => {
     const t = (type || "").toLowerCase();
-    if (t === 'all') return 'bg-gradient-to-br from-[#00E5FF] via-[#7000FF] to-[#FF00FF] text-white shadow-[0_10px_25px_rgba(112,0,255,0.4)] border border-white/20';
+    if (t === 'all') return 'bg-gradient-to-br from-[#00E5FF] to-[#7000FF] text-white shadow-[0_10px_25px_rgba(0,229,255,0.3)] border border-white/20';
     if (t.includes('pop')) return 'bg-gradient-to-br from-[#FF00FF] to-[#7000FF] text-white shadow-[0_10px_20px_rgba(255,0,255,0.3)] border border-white/20';
     if (t.includes('rock')) return 'bg-gradient-to-br from-[#FF4D4D] to-[#D3131F] text-white shadow-[0_10px_20px_rgba(211,19,31,0.3)] border border-white/20';
     if (t.includes('hip') || t.includes('edm') || t.includes('rap')) return 'bg-gradient-to-br from-[#CEFF67] to-[#88B04B] text-black shadow-[0_10px_20px_rgba(206,255,103,0.3)] border border-black/10';

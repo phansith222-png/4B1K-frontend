@@ -107,7 +107,7 @@ const [editContent, setEditContent] = useState(post.content);
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
                         disabled={isUploading}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#c6ff00]/50 transition-all resize-none h-32 disabled:opacity-60"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#00E5FF]/50 transition-all resize-none h-32 disabled:opacity-60"
                         placeholder="What's on your mind?"
                     />
 
@@ -147,7 +147,7 @@ const [editContent, setEditContent] = useState(post.content);
                                     <div key={`new-${index}`} className="relative w-24 h-24 group">
                                         <img
                                             src={url}
-                                            className="w-full h-full object-cover rounded-xl border border-[#c6ff00]/30 shadow-lg"
+                                            className="w-full h-full object-cover rounded-xl border border-[#00E5FF]/30 shadow-lg"
                                             alt={`new-${index}`}
                                         />
                                         {!isUploading && (
@@ -201,7 +201,7 @@ const [editContent, setEditContent] = useState(post.content);
                         <button
                             onClick={handleSave}
                             disabled={!hasChanges || isUploading}
-                            className="bg-[#c6ff00] text-black px-6 py-2 rounded-full font-black text-sm hover:bg-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="bg-[#00E5FF] text-black px-6 py-2 rounded-full font-black text-sm hover:bg-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isUploading ? (
                                 <>

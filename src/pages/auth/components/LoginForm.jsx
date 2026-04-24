@@ -7,6 +7,7 @@ import mainapi from '../../../api/auth'
 import useUserStore from '../../../stores/userStore'
 import { InputField } from './InputField'
 import { GoogleButton } from './GoogleButton'
+import { useCyberToast } from '../../../components/CyberToast'
 
 /**
  * Login form panel — rendered on the LEFT half.
@@ -17,6 +18,7 @@ export function LoginForm({ onSwitch }) {
   const setUser = useUserStore((s) => s.setUser)
   const [apiError, setApiError] = useState('')
   const [rememberMe, setRememberMe] = useState(true)
+  const { showToast } = useCyberToast()
 
   const { register, handleSubmit, formState } = useForm({
     resolver: zodResolver(loginSchema),
@@ -29,9 +31,19 @@ export function LoginForm({ onSwitch }) {
     try {
       const resp = await mainapi.post('/auth/login', data)
       setUser(resp.data.user, resp.data.token)
+      showToast('Login Success', 'success')
       navigate('/community')
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Invalid username or password.')
+      const msg = 'Invalid username or password.'
+      setApiError(msg)
+      showToast(msg, 'error')
+    }
+  }
+
+  const onInvalid = (errors) => {
+    const firstError = Object.values(errors)[0]
+    if (firstError) {
+      showToast(firstError.message, 'error')
     }
   }
 
@@ -42,13 +54,8 @@ export function LoginForm({ onSwitch }) {
         Welcome back! Enter your credentials to continue.
       </p>
 
-      {apiError && (
-        <div className="mb-5 text-sm py-3 px-4 rounded-2xl bg-red-500/10 text-red-400 border border-red-500/30 flex items-center gap-2">
-          <span className="font-bold text-base">⚠</span> {apiError}
-        </div>
-      )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex flex-col gap-5" noValidate>
         <InputField
           type="text"
           placeholder="Username"

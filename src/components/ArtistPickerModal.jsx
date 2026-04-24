@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Music4, X, Loader2, Check, Search } from "lucide-react";
+import { motion } from "framer-motion";
 import { getAllArtists } from "../api/auth";
 
-/**
- * ArtistPickerModal
- *
- * Props:
- *  - selectedArtists  : Artist[]   — currently selected artists (controlled)
- *  - onSelectionChange: (Artist[]) => void — called with the full updated list
- *  - onClose          : () => void
- */
 export default function ArtistPickerModal({ selectedArtists, onSelectionChange, onClose }) {
   const [allArtists, setAllArtists] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch artists once when modal mounts
   useEffect(() => {
     let cancelled = false;
     const fetchArtists = async () => {
@@ -46,52 +39,53 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
     onSelectionChange(next);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 w-full h-full bg-black/90 backdrop-blur-xl transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* Modal box */}
-      <div className="relative bg-[#1a1a1a] border border-white/10 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh] overflow-hidden">
+      <div className="relative bg-[#0B0C10] border border-white/10 rounded-[24px] w-full max-w-[380px] shadow-[0_0_80px_rgba(0,0,0,0.9)] flex flex-col max-h-[75vh] overflow-hidden mt-6 animate-in fade-in zoom-in duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <Music4 className="text-[#c6ff00]" size={24} />
-            Select Artists
+        <div className="flex items-center justify-between p-5 border-b border-white/5 bg-gradient-to-r from-white/[0.02] to-transparent">
+          <h3 className="text-base font-black text-white flex items-center gap-3 tracking-tight">
+            <div className="bg-[#7C4DFF]/20 p-2 rounded-xl">
+               <Music4 className="text-[#7C4DFF]" size={16} />
+            </div>
+            Select Artist
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors"
-            aria-label="Close artist picker"
+            className="text-gray-500 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="px-5 pt-4 pb-2">
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 py-2">
+        <div className="px-5 pt-5 pb-2">
+          <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 focus-within:border-[#7C4DFF]/50 transition-all">
             <Search size={16} className="text-gray-500 shrink-0" />
             <input
               type="text"
-              placeholder="Search artist…"
+              placeholder="Search artist..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent outline-none text-sm text-white placeholder:text-gray-500 w-full"
+              className="bg-transparent outline-none text-sm text-white placeholder:text-gray-600 w-full font-medium"
             />
           </div>
         </div>
 
         {/* Artist list */}
-        <div className="px-5 pb-5 overflow-y-auto custom-scrollbar flex-1">
+        <div className="px-5 pb-5 overflow-y-auto custom-scrollbar flex-1 space-y-2">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-10 gap-3 text-gray-400">
-              <Loader2 size={32} className="animate-spin text-[#c6ff00]" />
-              <p>Loading artists…</p>
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500">
+              <Loader2 size={32} className="animate-spin text-[#7C4DFF]" />
+              <p className="text-[10px] font-bold uppercase tracking-widest">Scanning...</p>
             </div>
           ) : filteredArtists.length > 0 ? (
             <div className="grid grid-cols-1 gap-2">
@@ -102,42 +96,47 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
                     key={artist.id}
                     type="button"
                     onClick={() => toggleArtist(artist)}
-                    className={`flex items-center justify-between p-4 rounded-2xl transition-all border ${
+                    className={`flex items-center justify-between p-3.5 rounded-xl transition-all border ${
                       isSelected
-                        ? "bg-[#c6ff00]/10 border-[#c6ff00]/30 text-white"
-                        : "bg-white/[0.02] border-transparent text-gray-300 hover:bg-white/5 hover:border-white/10"
+                        ? "bg-gradient-to-r from-[#7C4DFF]/20 to-[#00E5FF]/5 border-[#7C4DFF]/40 text-white shadow-lg"
+                        : "bg-white/[0.01] border-transparent text-gray-400 hover:bg-white/5 hover:border-white/5"
                     }`}
                   >
-                    <span className="font-medium text-left">
+                    <span className={`text-sm font-bold transition-colors ${isSelected ? 'text-white' : ''}`}>
                       {artist.artistName || artist.name}
                     </span>
                     {isSelected && (
-                      <div className="bg-[#c6ff00] text-black p-1 rounded-full shrink-0">
-                        <Check size={14} strokeWidth={3} />
-                      </div>
+                      <motion.div 
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white p-1 rounded-full shrink-0 shadow-lg"
+                      >
+                        <Check size={12} strokeWidth={4} />
+                      </motion.div>
                     )}
                   </button>
                 );
               })}
             </div>
           ) : (
-            <div className="text-center py-10 text-gray-500">
-              {searchQuery ? "No matching artists." : "No artists found."}
+            <div className="text-center py-20 text-gray-600 text-sm italic font-medium">
+              No results found.
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-white/10 bg-black/20">
+        <div className="p-5 border-t border-white/5 bg-black/40 backdrop-blur-xl">
           <button
             type="button"
             onClick={onClose}
-            className="w-full bg-[#c6ff00] text-black font-bold py-3 rounded-xl hover:bg-white transition-colors"
+            className="w-full bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white font-black py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_10px_30px_rgba(124,77,255,0.25)] uppercase tracking-widest text-[11px]"
           >
-            Done ({selectedArtists.length} selected)
+            Confirm Selection
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

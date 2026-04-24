@@ -116,6 +116,7 @@ function PostModal({ post, onClose }) {
           <div className="flex gap-4 border-b border-white/5 pb-6">
             <img
               src={
+                livePost.user?.profileImage ||
                 livePost.user?.avatar ||
                 `https://ui-avatars.com/api/?name=${livePost.user?.username || "User"}&background=random&color=fff`
               }
@@ -123,7 +124,7 @@ function PostModal({ post, onClose }) {
               alt={livePost.user?.username || "User Avatar"}
             />
             <div>
-              <span className="font-bold text-sm text-[#c6ff00]">
+              <span className="font-bold text-sm text-[#00E5FF]">
                 {livePost.user?.username}
               </span>
               <span className="text-xs text-gray-500 flex items-center gap-1">
@@ -159,9 +160,9 @@ function PostModal({ post, onClose }) {
                 <img
                   key={el.id || idx}
                   src={el.url}
-                  className={`w-full object-cover rounded-2xl border border-white/10 shadow-inner ${
+                  className={`w-full object-contain bg-black/20 rounded-2xl border border-white/10 shadow-inner ${
                     livePost.postImages.length === 1
-                      ? "h-[250px] sm:h-[400px]"
+                      ? "h-auto max-h-[500px]"
                       : "h-[150px] sm:h-[200px]"
                   }`}
                   alt={`Post content ${idx}`}
@@ -221,8 +222,8 @@ function PostModal({ post, onClose }) {
               disabled={isSubmitting}
               className={`p-2.5 rounded-full transition-colors shrink-0 ${
                 imagePreview
-                  ? "text-[#c6ff00] bg-[#c6ff00]/10"
-                  : "text-gray-400 hover:text-[#c6ff00] hover:bg-white/5"
+                  ? "text-[#00E5FF] bg-[#00E5FF]/10"
+                  : "text-gray-400 hover:text-[#00E5FF] hover:bg-white/5"
               } disabled:opacity-50`}
               title="แนบรูปภาพ (สูงสุด 5MB)"
             >

@@ -3,11 +3,12 @@ import useUserStore from '../stores/userStore';
 
 
 const mainapi = axios.create({
-  baseURL: 'http://localhost:5000', // ตรวจสอบว่าตรงกับ Backend port 5000
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
 
 // --- Request Interceptor: ใส่ Token ก่อนส่ง Request ---
 mainapi.interceptors.request.use(

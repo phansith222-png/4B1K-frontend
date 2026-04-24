@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { editProfile, getProfile } from "../api/auth";
-import { toast } from "react-toastify";
 
 const useUserStore = create(
   persist(
@@ -53,12 +52,10 @@ const useUserStore = create(
         try {
           const resp = await editProfile(body)
           set({ user: resp.data.user });
-          toast.success("🚀 Profile updated successfully!");
-          return true;
+          return { success: true };
         } catch (error) {
           const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
-          toast.error(`❌ ${errorMessage}`);
-          return false;
+          return { success: false, error: errorMessage };
         }
       }
 

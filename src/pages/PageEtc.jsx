@@ -10,6 +10,7 @@ import useYouTubePlayer from '../hooks/useYouTubePlayer';
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
 // Components
+import CategoryBackground from '../components/PageAllArtistComponent/CategoryBackground';
 import HeroSection from '../components/PageEtcComponent/HeroSection';
 import BioSection from '../components/PageEtcComponent/BioSection';
 import MusicPlayerSection from '../components/PageEtcComponent/MusicPlayerSection';
@@ -41,24 +42,21 @@ export default function PageEtc() {
         handleProgressClick,
     } = useYouTubePlayer(songs, PLAYER_ID);
 
-    // ── Background blobs (stable random values) ───────────────────────────
-    const floatingBlobs = useMemo(() => Array.from({ length: 8 }).map((_, i) => ({
-        id: i,
-        size: Math.random() * 200 + 150,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        duration: Math.random() * 15 + 15,
-        delay: Math.random() * 5,
-        color: i % 2 === 0 ? '#2B5AE8' : '#CEFF67',
-    })), []);
+    // ── Genre Detection ──────────────────────────────────────────────────
+    const genreKeyword = useMemo(() => {
+        if (!artist?.genres) return 'edm';
+        const gNames = artist.genres.map(g => g.genre?.name?.toLowerCase() || "");
+        if (gNames.some(n => n.includes('hip') || n.includes('rap'))) return 'hip hop';
+        return 'edm';
+    }, [artist]);
 
     // ── States ────────────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="bg-[#050505] min-h-screen flex flex-col items-center justify-center text-[#2B5AE8] relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#2B5AE8] opacity-20 blur-[80px] rounded-full animate-pulse" />
-                <div className="w-16 h-16 border-4 border-gray-800 border-t-[#2B5AE8] rounded-full animate-spin z-10" />
-                <p className="mt-4 font-bold tracking-widest animate-pulse text-white z-10 uppercase text-sm">Loading Beats...</p>
+            <div className="bg-[#0B0C10] min-h-screen flex flex-col items-center justify-center text-[#00E5FF] relative overflow-hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#7000FF] opacity-20 blur-[80px] rounded-full animate-pulse" />
+                <div className="w-16 h-16 border-4 border-white/5 border-t-[#00E5FF] rounded-full animate-spin z-10" />
+                <p className="mt-4 font-black tracking-[0.3em] animate-pulse text-white z-10 uppercase text-xs">Accessing Data...</p>
             </div>
         );
     }
@@ -96,7 +94,7 @@ export default function PageEtc() {
 
                 .bg-grid-animation {
                     background-size: 100px 100px;
-                    background-image: linear-gradient(to right, rgba(43, 90, 232, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(43, 90, 232, 0.05) 1px, transparent 1px);
+                    background-image: linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
                     animation: panGrid 20s linear infinite;
                 }
                 @keyframes panGrid { 0% { transform: translateY(0); } 100% { transform: translateY(100px); } }
@@ -107,19 +105,49 @@ export default function PageEtc() {
 
             {/* Animated background */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="absolute inset-[-100%] bg-grid-animation z-0" />
-                {floatingBlobs.map(blob => (
+                <div className="absolute inset-0 bg-[#0B0C10]" />
+                <CategoryBackground keyword={genreKeyword} isPlaying={isPlaying} />
+                
+                {/* Random Theme Shimmer Boxes (Mixed with genre background) */}
+                {[...Array(15)].map((_, i) => (
                     <motion.div
-                        key={blob.id}
-                        className="absolute opacity-[0.06] shape-blob z-0"
+                        key={`shimmer-${i}`}
+                        className="absolute rotate-45"
                         style={{ 
-                            width: blob.size, height: blob.size, left: `${blob.x}%`, top: `${blob.y}%`, backgroundColor: blob.color,
-                            willChange: 'transform, opacity'
+                            left: `${Math.random() * 100}%`, 
+                            top: `${Math.random() * 100}%`,
+                            width: Math.random() * 100 + 50,
+                            height: Math.random() * 100 + 50,
+                            background: i % 2 === 0 ? 'linear-gradient(45deg, #00E5FF10, transparent)' : 'linear-gradient(45deg, #7000FF10, transparent)',
+                            border: `1px solid ${i % 2 === 0 ? '#00E5FF20' : '#7000FF20'}`,
+                            backdropFilter: 'blur(4px)'
                         }}
-                        animate={{ x: [0, 40, -40, 0], y: [0, -60, 60, 0] }}
-                        transition={{ duration: blob.duration, delay: blob.delay, repeat: Infinity, ease: 'easeInOut' }}
+                        animate={{ 
+                            x: [0, Math.random() * 50 - 25, 0],
+                            y: [0, Math.random() * 50 - 25, 0],
+                            opacity: isPlaying ? [0.2, 0.5, 0.2] : [0.1, 0.3, 0.1],
+                            rotate: isPlaying ? [45, 225, 45] : [45, 90, 45],
+                            scale: isPlaying ? [1, 1.2, 1] : [1, 1, 1]
+                        }}
+                        transition={{ 
+                            duration: isPlaying ? 1.5 : Math.random() * 10 + 10, 
+                            repeat: Infinity, 
+                            ease: 'easeInOut' 
+                        }}
                     />
                 ))}
+
+                {/* Original Panning Grid Animation (Updated to theme color) */}
+                <div className="absolute inset-[-100%] bg-grid-animation z-0 opacity-40" />
+
+                {/* Digital Grid Overlay (Static layer for depth) */}
+                <div 
+                    className="absolute inset-0 opacity-[0.05]" 
+                    style={{ 
+                        backgroundImage: `linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px)`,
+                        backgroundSize: '100px 100px'
+                    }}
+                />
             </div>
 
             <HeroSection artist={artist} events={events} />

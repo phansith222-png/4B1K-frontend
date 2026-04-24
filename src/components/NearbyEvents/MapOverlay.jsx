@@ -21,7 +21,7 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
                 className="text-2xl md:text-5xl font-black mb-1 flex items-center gap-2 md:gap-3 drop-shadow-lg"
               >
                 <MapPin className="text-[#00E5FF] w-7 h-7 md:w-10 md:h-10" />
-                Nearby Events
+                Map Event
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
