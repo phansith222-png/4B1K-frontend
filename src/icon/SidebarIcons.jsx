@@ -1,17 +1,17 @@
 import { Plus } from 'lucide-react'
 
 // --- 🧩 SUB-COMPONENTS (เพื่อความคลีนของโค้ด) ---
-export const SidebarItem = ({ icon, label, active = false, badge, onClick }) => {
+export const SidebarItem = ({ icon, label, active = false, badge, onClick, activeColor = "from-[#7C4DFF] to-[#00E5FF]", iconColor = "text-white" }) => {
   return (
     <li
       onClick={onClick}
       className={`flex items-center justify-between gap-4 cursor-pointer p-3.5 rounded-2xl transition-all duration-300 ${active
-        ? 'bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white shadow-[0_0_20px_rgba(124,77,255,0.3)] translate-x-1'
+        ? `bg-gradient-to-r ${activeColor} text-white shadow-[0_0_20px_rgba(124,77,255,0.3)] translate-x-1`
         : 'text-gray-400 hover:bg-white/5 hover:text-white'
         }`}
     >
       <div className="flex items-center gap-4">
-        <div className={`${active ? 'scale-110 text-white' : ''} transition-transform`}>
+        <div className={`${active ? `scale-110 ${iconColor}` : ''} transition-transform`}>
           {icon}
         </div>
         <span className={`font-black text-sm uppercase tracking-tighter ${active ? 'text-white' : ''}`}>{label}</span>

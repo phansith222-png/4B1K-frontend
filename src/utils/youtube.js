@@ -4,10 +4,17 @@
  * @returns {string|null} YouTube video ID or null
  */
 export const extractYouTubeID = (url) => {
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    if (!url || typeof url !== 'string') return null;
+    const cleanUrl = url.trim();
+    
+    // 1. Check if it's already a raw 11-char ID
+    if (/^[a-zA-Z0-9_-]{11}$/.test(cleanUrl)) return cleanUrl;
+    
+    // 2. Comprehensive YouTube Regex
+    const regExp = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+    const match = cleanUrl.match(regExp);
+    
+    return (match && match[1].length === 11) ? match[1] : null;
 };
 
 /**

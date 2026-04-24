@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Reveal from '../Reveal'; 
 
-export default function ConcertSection({ events }) {
+export default function ConcertSection({ events, artist }) {
     const navigate = useNavigate();
     return (
         <section className="relative w-full py-32 px-6 bg-transparent border-t border-[#30294e] z-10">
@@ -12,7 +12,7 @@ export default function ConcertSection({ events }) {
                         <h3 className="text-3xl md:text-5xl font-classic font-black tracking-widest uppercase text-white font-light">
                             Live <span className="text-[#d83bb6] font-bold">Sessions</span>
                         </h3>
-                        <button onClick={() => navigate('/new-event')} className="flex items-center gap-2 font-sub text-sm font-bold text-[#f9c1db] hover:text-white transition-colors group bg-[#30294e]/60 px-8 py-3 rounded-full border border-[#b266c5]/40 shadow-[0_0_15px_rgba(155,45,150,0.3)]">
+                        <button onClick={() => navigate(`/new-event?artistId=${artist?.id}`)} className="flex items-center gap-2 font-sub text-sm font-bold text-[#f9c1db] hover:text-white transition-colors group bg-[#30294e]/60 px-8 py-3 rounded-full border border-[#b266c5]/40 shadow-[0_0_15px_rgba(155,45,150,0.3)]">
                             View All Dates
                             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
                         </button>
@@ -25,7 +25,7 @@ export default function ConcertSection({ events }) {
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => navigate('/new-event')}
+                                onClick={() => navigate(`/new-event?artistId=${artist?.id}`)}
                                 className="relative rounded-3xl overflow-hidden group border border-[#b266c5]/20 hover:border-[#d83bb6]/60 transition-all duration-500 cursor-pointer bg-[#30294e]/40 shadow-[0_15px_40px_rgba(48,41,78,0.8)]"
                             >
                                 <div className="aspect-[4/5] relative z-10">

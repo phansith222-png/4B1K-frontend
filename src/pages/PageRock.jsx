@@ -40,7 +40,9 @@ export default function PageRock() {
         changeSong,
         handleSongSelect,
         handleProgressClick,
-    } = useYouTubePlayer(songs, PLAYER_ID);
+    } = useYouTubePlayer(songs, PLAYER_ID, {
+        autoplay: searchParams.get('autoplay') === 'true'
+    });
 
     // ── Particles init (stable callback) ──────────────────────────────────
     const particlesInit = useCallback(async engine => {
@@ -86,17 +88,7 @@ export default function PageRock() {
 
             {/* Animated background */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="absolute inset-0 bg-[#0B0C10]" />
                 <CategoryBackground keyword="rock" isPlaying={isPlaying} />
-                
-                {/* Digital Grid Overlay */}
-                <div 
-                    className="absolute inset-0 opacity-[0.05]" 
-                    style={{ 
-                        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
-                        backgroundSize: '100px 100px'
-                    }}
-                />
             </div>
 
             <style>{`
@@ -159,7 +151,7 @@ export default function PageRock() {
                 handleSongSelect={handleSongSelect}
                 handleProgressClick={handleProgressClick}
             />
-            <ConcertSection events={events} />
+            <ConcertSection events={events} artist={artist} />
             <StatsSection songs={songs} />
         </div>
     );

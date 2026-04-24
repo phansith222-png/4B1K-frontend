@@ -9,6 +9,7 @@ import { uploadToCloudinary } from '../utils/uploadCloud';
 import { useCyberToast } from '../components/CyberToast';
 // 📌 Import Components ที่แยกไว้
 import { AvatarUpload, ProfileInput, ProfileSelect } from '../components/EditProfileComponent/editComponents';
+import BackButton from '../components/BackButton';
 
 export default function EditProfile() {
     const navigate = useNavigate();
@@ -142,17 +143,9 @@ export default function EditProfile() {
                 
                 {/* Header Section */}
                 <div className="relative flex items-center justify-between mb-20">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="group flex items-center gap-3 text-gray-400 hover:text-[#00E5FF] transition-colors z-20"
-                    >
-                        <div className="p-3 rounded-full bg-[#1A1C23]/80 backdrop-blur-md group-hover:bg-[#00E5FF]/10 transition-all border border-white/5 group-hover:border-[#00E5FF]/50 shadow-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </div>
-                        <span className="font-bold uppercase text-xs tracking-widest hidden sm:inline">Back</span>
-                    </button>
+                    <div className="absolute top-0 left-0 -translate-y-12">
+                        <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
+                    </div>
 
                     <div className="absolute left-1/2 -translate-x-1/2 text-center">
                         <span className="text-[#00E5FF] font-black text-[10px] uppercase tracking-[0.3em] block mb-1">Configuration</span>

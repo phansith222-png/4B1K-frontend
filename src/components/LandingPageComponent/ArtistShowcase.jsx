@@ -65,7 +65,7 @@ export default function ArtistShowcase() {
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ type: "spring", stiffness: 120, damping: 15, delay: idx * 0.1 }}
-            onClick={() => { window.scrollTo(0,0); navigate(`${getArtistPath(artist)}?artistId=${artist.id}`); }}
+            onClick={() => { window.scrollTo(0,0); navigate(`${getArtistPath(artist)}?artistId=${artist.id}&autoplay=true`); }}
             className="flex flex-col items-center group cursor-pointer"
           >
             <div className="w-32 h-32 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-tr from-white/5 to-white/20 group-hover:from-[#d000ff] group-hover:to-[#00E5FF] transition-all duration-500 shadow-xl mb-6 relative group-hover:-translate-y-2">

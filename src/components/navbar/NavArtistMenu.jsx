@@ -1,5 +1,6 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 /**
  * The large "Artist Biology" mega-menu dropdown.
@@ -17,6 +18,9 @@ export default function NavArtistMenu({
     chartOrder,
     onNavigate,
 }) {
+    const location = useLocation();
+    const currentPath = location.pathname;
+
     if (!isOpen || mainSlides.length === 0) return null;
 
     return (
@@ -41,7 +45,7 @@ export default function NavArtistMenu({
                                 {/* All Artists — top slot */}
                                 <button
                                     onClick={() => onNavigate('/artists')}
-                                    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-[#00E5FF] font-bold hover:text-white hover:bg-white/5 transition-all group"
+                                    className="flex items-center justify-between px-3 py-2.5 rounded-xl font-bold transition-all group text-[#00E5FF]"
                                 >
                                     <div className="flex items-center gap-3">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -61,17 +65,37 @@ export default function NavArtistMenu({
                                     { path: '/classic', color: '#d83bb6', label: 'R&B / Classic' },
                                     { path: '/etc', color: '#CEFF67', label: 'Hiphop / EDM' },
                                     { path: '/entertainment', color: '#7000FF', label: 'Entertainment' },
-                                ].map(({ path, color, label }) => (
-                                    <button
-                                        key={path}
-                                        onClick={() => onNavigate(path)}
-                                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 font-semibold hover:translate-x-1 transition-all"
-                                        onMouseEnter={e => { e.currentTarget.style.color = color; e.currentTarget.style.backgroundColor = `${color}1a`; }}
-                                        onMouseLeave={e => { e.currentTarget.style.color = ''; e.currentTarget.style.backgroundColor = ''; }}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
+                                ].map(({ path, color, label }) => {
+                                    const isActive = currentPath === path;
+                                    return (
+                                        <button
+                                            key={path}
+                                            onClick={() => onNavigate(path)}
+                                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all"
+                                            style={{
+                                                color: isActive ? color : '',
+                                                backgroundColor: isActive ? `${color}1a` : '',
+                                                transform: isActive ? 'translateX(4px)' : ''
+                                            }}
+                                            onMouseEnter={e => {
+                                                if (!isActive) {
+                                                    e.currentTarget.style.color = color;
+                                                    e.currentTarget.style.backgroundColor = `${color}1a`;
+                                                    e.currentTarget.style.transform = 'translateX(4px)';
+                                                }
+                                            }}
+                                            onMouseLeave={e => {
+                                                if (!isActive) {
+                                                    e.currentTarget.style.color = '';
+                                                    e.currentTarget.style.backgroundColor = '';
+                                                    e.currentTarget.style.transform = '';
+                                                }
+                                            }}
+                                        >
+                                            {label}
+                                        </button>
+                                    );
+                                })}
                             </div>
 
 

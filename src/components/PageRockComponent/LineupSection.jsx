@@ -3,7 +3,7 @@ import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function LineupSection({ artist }) {
     return (
-        <section className="relative w-full py-24 px-6 bg-gradient-to-b from-[#0a0a0a] via-[#110505] to-[#0a0a0a] overflow-hidden border-y border-white/5 noise-bg">
+        <section className="relative w-full py-24 px-6 bg-transparent overflow-hidden">
             {/* 📌 ใส่ Reveal คลุมกล่องข้อความทั้งหมด */}
             <Reveal effect="fade-up">
                 <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col gap-4">

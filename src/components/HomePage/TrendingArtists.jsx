@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Flame } from 'lucide-react';
 import usePostStore from '../../stores/postStore';
 
-export default function TrendingArtists({ onSelectArtist, selectedArtistId }) {
+export default function TrendingArtists({ onToggleArtist, selectedArtistIds }) {
   const posts = usePostStore(state => state.posts);
 
   const trendingArtists = useMemo(() => {
@@ -37,27 +37,30 @@ export default function TrendingArtists({ onSelectArtist, selectedArtistId }) {
       </h3>
       <div className="space-y-5">
         {trendingArtists.length > 0 ? (
-          trendingArtists.map((artist, idx) => (
-            <div 
-              key={artist.id} 
-              onClick={() => onSelectArtist(artist.id)}
-              className={`flex justify-between items-center group cursor-pointer p-2 rounded-xl transition-all ${
-                selectedArtistId === artist.id ? 'bg-[#00F5D4]/10 border border-[#00F5D4]/20' : 'hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`font-black text-xs w-4 ${selectedArtistId === artist.id ? 'text-[#00F5D4]' : 'text-gray-500'}`}>0{idx + 1}</span>
-                <span className={`transition-colors font-bold ${selectedArtistId === artist.id ? 'text-white' : 'text-gray-200 group-hover:text-[#00F5D4]'}`}>
-                  {artist.name}
+          trendingArtists.map((artist, idx) => {
+            const isSelected = selectedArtistIds.includes(artist.id);
+            return (
+              <div 
+                key={artist.id} 
+                onClick={() => onToggleArtist({ id: artist.id, artistName: artist.name })}
+                className={`flex justify-between items-center group cursor-pointer p-2 rounded-xl transition-all ${
+                  isSelected ? 'bg-[#00F5D4]/10 border border-[#00F5D4]/20' : 'hover:bg-white/5'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`font-black text-xs w-4 ${isSelected ? 'text-[#00F5D4]' : 'text-gray-500'}`}>0{idx + 1}</span>
+                  <span className={`transition-colors font-bold ${isSelected ? 'text-white' : 'text-gray-200 group-hover:text-[#00F5D4]'}`}>
+                    {artist.name}
+                  </span>
+                </div>
+                <span className={`text-[10px] px-3 py-1 rounded-full transition-all ${
+                  isSelected ? 'bg-[#00F5D4] text-black' : 'text-gray-500 bg-white/5 group-hover:bg-[#00F5D4]/10 group-hover:text-[#00F5D4]'
+                }`}>
+                  {artist.count} mentions
                 </span>
               </div>
-              <span className={`text-[10px] px-3 py-1 rounded-full transition-all ${
-                selectedArtistId === artist.id ? 'bg-[#00F5D4] text-black' : 'text-gray-500 bg-white/5 group-hover:bg-[#00F5D4]/10 group-hover:text-[#00F5D4]'
-              }`}>
-                {artist.count} mentions
-              </span>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-gray-600 text-xs italic">No data available</p>
         )}

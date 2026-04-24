@@ -6,6 +6,7 @@ import HeroSection from '../components/PageAllArtistComponent/HeroSection';
 import CategorySection from '../components/PageAllArtistComponent/CategorySection';
 import BottomTextSection from '../components/PageAllArtistComponent/BottomTextSection';
 import Reveal from '../components/Reveal';
+import BackButton from '../components/BackButton';
 
 export default function PageAllArtist() {
     const navigate = useNavigate();
@@ -132,11 +133,20 @@ export default function PageAllArtist() {
 
     return (
         <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden relative">
+            <BackButton color="#00F5D4" glowColor="rgba(0, 245, 212, 0.3)" />
 
             {/* ================= STYLE ================= */}
             <style>{`
                 .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); }
+                .bg-noise { 
+                    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+                    filter: contrast(150%) brightness(100%);
+                }
             `}</style>
+
+            {/* Unified Foundation Layer */}
+            <div className="fixed inset-0 bg-[#0B0C10] z-[-1]" />
+
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                 {/* Large Background Text */}
                 <div className="absolute top-[10%] left-[-2%] text-[18vw] font-black text-white opacity-[0.02] select-none leading-none tracking-tighter uppercase font-heading">
@@ -146,16 +156,7 @@ export default function PageAllArtist() {
                     Legends
                 </div>
 
-                {/* Digital Grid Overlay */}
-                <div 
-                    className="absolute inset-0 opacity-[0.04]" 
-                    style={{ 
-                        backgroundImage: `linear-gradient(#444 1px, transparent 1px), linear-gradient(90deg, #444 1px, transparent 1px)`,
-                        backgroundSize: '80px 80px'
-                    }}
-                ></div>
-
-                <div className="mesh-gradient opacity-30" />
+                <div className="mesh-gradient opacity-20" />
             </div>
 
             <div className="dark-grain" />
@@ -165,7 +166,7 @@ export default function PageAllArtist() {
             </Reveal>
 
             {/* ================= CONTENT ================= */}
-            <div id="artists-content" className="relative z-10 pt-10">
+            <div id="artists-content" className="relative z-10">
                 {sections.map((section, sIdx) => section.artists.length > 0 && (
                     <Reveal key={sIdx}>
                         <CategorySection section={section} navigate={navigate} />

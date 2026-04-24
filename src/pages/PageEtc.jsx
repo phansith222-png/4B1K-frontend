@@ -40,7 +40,9 @@ export default function PageEtc() {
         changeSong,
         handleSongSelect,
         handleProgressClick,
-    } = useYouTubePlayer(songs, PLAYER_ID);
+    } = useYouTubePlayer(songs, PLAYER_ID, {
+        autoplay: searchParams.get('autoplay') === 'true'
+    });
 
     // ── Genre Detection ──────────────────────────────────────────────────
     const genreKeyword = useMemo(() => {
@@ -166,7 +168,7 @@ export default function PageEtc() {
                 handleProgressClick={handleProgressClick}
                 currentSong={songs[currentSongIndex]}
             />
-            <ConcertSection events={events} />
+            <ConcertSection events={events} artist={artist} />
             <StatsSection songs={songs} />
         </div>
     );
