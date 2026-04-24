@@ -26,7 +26,7 @@ export default function ConcertSection({ events, artist }) {
                         const FALLBACK_IMAGES = [
                             "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
                             "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
-                            "https://images.unsplash.com/photo-1533174000228-4f1b802a433a?q=80&w=800&auto=format&fit=crop",
+                            "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1280,h_710/w_79,x_14,y_14,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/ffhns1leympcklq0uorh/%E0%B8%97%E0%B8%B1%E0%B8%A7%E0%B8%A3%E0%B9%8C%E0%B9%80%E0%B8%84%E0%B8%9B%E0%B9%87%E0%B8%AD%E0%B8%9B%E0%B9%83%E0%B8%99%E0%B9%82%E0%B8%8B%E0%B8%A5%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%B2%E0%B8%8A%E0%B8%A1%E0%B9%80%E0%B8%97%E0%B8%A8%E0%B8%81%E0%B8%B2%E0%B8%A5%E0%B8%94%E0%B8%99%E0%B8%95%E0%B8%A3%E0%B8%B5SeoulMusicFestival%E0%B8%AB%E0%B8%99%E0%B8%B6%E0%B9%88%E0%B8%87%E0%B8%A7%E0%B8%B1%E0%B8%99.jpg",
                             "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop"
                         ];
 
