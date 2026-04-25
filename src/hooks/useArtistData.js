@@ -8,6 +8,7 @@ import { getArtistById, getSongsByArtist, getEventsByArtist, getAllArtists } fro
  * @param {string|null} queryArtistId - Specific artist ID from URL query param (overrides random)
  * @returns {{ artist, songs, events, loading }}
  */
+
 const useArtistData = (genreArtistIds, queryArtistId) => {
     const [artist, setArtist] = useState(null);
     const [songs, setSongs] = useState([]);
@@ -19,37 +20,27 @@ const useArtistData = (genreArtistIds, queryArtistId) => {
             try {
                 setLoading(true);
 
-                // Fetch all artists and filter by genre
-                let allArtistsRes;
-                try {
-                    allArtistsRes = await getAllArtists();
-                } catch (err) {
-                    console.error('Failed to fetch all artists:', err);
-                    allArtistsRes = [];
-                }
-
-                const allArtistsList =
-                    allArtistsRes?.artists ||
-                    allArtistsRes?.data ||
-                    allArtistsRes ||
-                    [];
+                // 1. ดึงรายชื่อศิลปินทั้งหมดเพื่อมาทำ Filter หรือสุ่ม (ถ้าจำเป็น)
+                let allArtistsRes = await getAllArtists().catch(() => []);
+                const allArtistsList = 
+                    allArtistsRes?.artists || 
+                    allArtistsRes?.data || 
+                    allArtistsRes || [];
 
                 let filteredArtists = allArtistsList.filter((a) =>
-                    genreArtistIds.includes(a.id)
+                    genreArtistIds?.includes(a.id)
                 );
 
-                // Fallback: use all artists if genre filter returns nothing
+                // Fallback: ถ้า filter แล้วไม่เจออะไรเลย ให้ใช้รายชื่อทั้งหมด
                 if (filteredArtists.length === 0 && allArtistsList.length > 0) {
                     filteredArtists = allArtistsList;
                 }
 
-                // Determine which artist ID to load
+                // 2. กำหนดว่าเราจะดึงข้อมูลของ Artist ID ไหน
                 let artistId;
                 if (queryArtistId) {
-                    // Specific artist requested via URL param
                     artistId = Number(queryArtistId);
                 } else if (filteredArtists.length > 0) {
-                    // Pick a random artist from the genre
                     const randomIndex = Math.floor(Math.random() * filteredArtists.length);
                     artistId = filteredArtists[randomIndex].id;
                 } else {
@@ -58,39 +49,27 @@ const useArtistData = (genreArtistIds, queryArtistId) => {
                     return;
                 }
 
-                // Fetch artist details, songs, and events in parallel
-                const [artistRes, songsRes, eventsRes] = await Promise.all([
-                    getArtistById(artistId).catch(() => null),
-                    getSongsByArtist(artistId).catch(() => null),
-                    getEventsByArtist(artistId).catch(() => null),
-                ]);
+                // 3. ดึงข้อมูลจาก API แค่เส้นเดียว (Single Point of Truth)
+                // เพราะ Backend include: { songs: true, events: true } มาให้แล้ว
+                const artistRes = await getArtistById(artistId);
 
-                const mainArtist =
-                    artistRes?.artist ||
-                    artistRes?.data ||
-                    artistRes ||
-                    filteredArtists[0];
-                setArtist(mainArtist);
+                // Normalize ข้อมูลที่ได้รับมา
+                const mainArtist = 
+                    artistRes?.artist || 
+                    artistRes?.data || 
+                    artistRes;
 
-                // Normalize songs response
-                const extractedSongs = (() => {
-                    if (Array.isArray(songsRes)) return songsRes;
-                    if (Array.isArray(songsRes?.data)) return songsRes.data;
-                    if (Array.isArray(songsRes?.songs)) return songsRes.songs;
-                    if (Array.isArray(mainArtist?.songs)) return mainArtist.songs;
-                    return [];
-                })();
-                setSongs(extractedSongs);
+                if (mainArtist) {
+                    // เก็บข้อมูลศิลปิน
+                    setArtist(mainArtist);
 
-                // Normalize events response
-                const extractedEvents = (() => {
-                    if (Array.isArray(eventsRes)) return eventsRes;
-                    if (Array.isArray(eventsRes?.data)) return eventsRes.data;
-                    if (Array.isArray(eventsRes?.events)) return eventsRes.events;
-                    if (Array.isArray(mainArtist?.events)) return mainArtist.events;
-                    return [];
-                })();
-                setEvents(extractedEvents);
+                    // ดึงข้อมูลเพลงจาก mainArtist.songs
+                    setSongs(Array.isArray(mainArtist.songs) ? mainArtist.songs : []);
+
+                    // ดึงข้อมูลอีเวนต์จาก mainArtist.events
+                    setEvents(Array.isArray(mainArtist.events) ? mainArtist.events : []);
+                }
+
             } catch (error) {
                 console.error('Error fetching artist data:', error);
             } finally {
@@ -99,7 +78,8 @@ const useArtistData = (genreArtistIds, queryArtistId) => {
         };
 
         fetchArtist();
-    }, [queryArtistId]); // re-fetch when URL query changes
+        // เพิ่ม genreArtistIds เข้าไปใน Dependency เผื่อมีการเปลี่ยนหมวดหมู่
+    }, [queryArtistId, genreArtistIds]); 
 
     return { artist, songs, events, loading };
 };

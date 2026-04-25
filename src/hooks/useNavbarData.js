@@ -24,7 +24,7 @@ export const useNavbarData = () => {
                 ]);
 
                 if (cancelled) return;
-
+                console.log('artistRes', artistRes)
                 // Artists → slides
                 if (artistRes.status === 'fulfilled') {
                     const r = artistRes.value;
