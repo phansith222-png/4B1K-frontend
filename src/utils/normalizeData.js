@@ -1,8 +1,11 @@
 /**
- * จัดระเบียบข้อมูล Artist รายคน (ให้มี artist, songs, events เสมอ)
+ * Normalizes a single artist's data to ensure consistent structure (artist, songs, events).
+ * 
+ * @param {Object} res - API response containing artist data.
+ * @returns {{ artist: Object|null, songs: Array, events: Array }} Normalized artist object.
  */
 export const normalizeArtist = (res) => {
-    // ดึงก้อนข้อมูลหลักออกมา ไม่ว่า Backend จะส่งมาในชื่ออะไร
+    // Extract main data object regardless of backend payload wrapper
     const data = res?.artist || res?.data || res || null;
 
     if (!data) return { artist: null, songs: [], events: [] };
@@ -16,14 +19,17 @@ export const normalizeArtist = (res) => {
             agency: data.agency || null,
             genres: data.genres || [],
         },
-        // ดึงเพลงและอีเวนต์ออกมา ถ้าไม่มีให้เป็น Array ว่างป้องกัน Error .map()
+        // Ensure arrays to prevent .map() errors
         songs: Array.isArray(data.songs) ? data.songs : [],
         events: Array.isArray(data.events) ? data.events : []
     };
 };
 
 /**
- * จัดระเบียบรายชื่อศิลปิน (ให้เป็น Array เสมอ)
+ * Normalizes an artist list to always return an array.
+ * 
+ * @param {Object|Array} res - API response.
+ * @returns {Array} Array of artists.
  */
 export const normalizeArtistList = (res) => {
     const list = res?.artists || res?.data || res || [];
@@ -32,10 +38,13 @@ export const normalizeArtistList = (res) => {
 
 
 /**
- * จัดระเบียบข้อมูล Event รายเดียว
+ * Normalizes a single event's data.
+ * 
+ * @param {Object} res - API response.
+ * @returns {{ event: Object|null, artists: Array, venue: Object|null }} Normalized event object.
  */
 export const normalizeEvent = (res) => {
-    // ดึงก้อนข้อมูลหลักออกมา
+    // Extract main data object
     const data = res?.event || res?.data || res || null;
 
     if (!data) return { event: null, artists: [], venue: null };
@@ -48,20 +57,23 @@ export const normalizeEvent = (res) => {
             coverImage: data.coverImage,
             startTime: data.startTime,
             endTime: data.endTime,
-            location: data.location, // กรณีเป็น String ธรรมดา
+            location: data.location, // Simple string location
             status: data.status,
         },
-        // กรณีที่มีการ include ข้อมูลที่เกี่ยวข้องมาด้วย
+        // Handle included relationships
         artists: Array.isArray(data.artists) ? data.artists : [],
-        venue: data.venue || null // กรณีมีตาราง Venue แยก
+        venue: data.venue || null // For separate Venue tables
     };
 };
 
 /**
- * จัดระเบียบรายชื่อ Event (ให้เป็น Array เสมอ)
+ * Normalizes an event list to always return an array.
+ * 
+ * @param {Object|Array} res - API response.
+ * @returns {Array} Array of events.
  */
 export const normalizeEventList = (res) => {
-    // รองรับทั้ง res.events, res.data.events หรือ res.data ที่เป็น array
+    // Support various payload structures (res.events, res.data.events, res.data)
     const list = res?.events || res?.data?.events || res?.data || res || [];
     return Array.isArray(list) ? list : [];
 };

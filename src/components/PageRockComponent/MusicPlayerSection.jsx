@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; // Add Import
 
 export default function MusicPlayerSection({ 
     artist, songs, currentSongIndex, isPlaying,
@@ -25,7 +25,7 @@ export default function MusicPlayerSection({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-20">
                     {songs.slice(0, 4).map((item, idx) => (
-                        // 📌 ใส่ Reveal คลุมรายชื่อเพลงแต่ละอันให้เด้งเรียงกัน
+                        // Wrap each song item in Reveal for staggered animation
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <button 
                                 onClick={(e) => handleSongSelect(idx, e)}
@@ -79,7 +79,7 @@ export default function MusicPlayerSection({
                         {/* Red glow behind player */}
                         <div className="absolute -top-20 -left-20 w-64 h-64 bg-[#D3131F] opacity-10 blur-[80px] pointer-events-none"></div>
 
-                        {/* ฝั่งซ้าย: รูปแผ่นเสียง */}
+                        {/* Left side: Vinyl Record */}
                         <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 flex items-center justify-center">
 
                             <div className="w-full h-full rounded-full bg-[#111111] border-[4px] border-[#222] cd-rotate flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.9)] relative z-10 overflow-hidden group ring-2 ring-[#D3131F]/20" style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}>
@@ -96,7 +96,7 @@ export default function MusicPlayerSection({
                             </div>
                         </div>
 
-                        {/* ฝั่งกลาง: ข้อมูลเพลงและหลอดความคืบหน้า */}
+                        {/* Center: Song info and progress bar */}
                         <div className="flex-1 w-full flex flex-col justify-center px-2 md:px-6 relative z-10">
                             <div className="flex flex-col items-center lg:items-start mb-6">
                                 <span className="text-[#D3131F] text-[10px] md:text-xs font-black tracking-widest uppercase mb-3 inline-block border border-[#D3131F]/40 bg-[#D3131F]/5 px-3 py-1 rounded-md shadow-[0_0_15px_rgba(211,19,31,0.15)]">
@@ -160,7 +160,7 @@ export default function MusicPlayerSection({
                             </div>
                         </div>
 
-                        {/* ฝั่งขวา: ปุ่มควบคุม (Soft & Natural Buttons) */}
+                        {/* Right side: Controls (Soft & Natural Buttons) */}
                         <div className="flex items-center gap-4 md:gap-6 mt-4 lg:mt-0 relative z-10">
                             {/* Prev Button */}
                             <button onClick={(e) => changeSong(-1, e)} className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-full transition-all duration-300 ease-out active:scale-95">
@@ -195,3 +195,4 @@ export default function MusicPlayerSection({
         </section>
     );
 }
+

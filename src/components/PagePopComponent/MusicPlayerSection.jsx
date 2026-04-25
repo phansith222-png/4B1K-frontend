@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; // Add Import
 
 export default function MusicPlayerSection({ 
     artist, songs, currentSongIndex, isPlaying,
@@ -70,7 +70,7 @@ export default function MusicPlayerSection({
                 <Reveal delay={0.2} effect="fade-up">
                     <div className="w-full max-w-5xl mx-auto bg-[#181a20]/80 backdrop-blur-3xl rounded-[2.5rem] p-6 md:p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-10 border border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.7)] relative overflow-hidden">
                         
-                        {/* ส่วนซ้าย: รูปแผ่นเสียง */}
+                        {/* Left side: Vinyl record */}
                         <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 flex items-center justify-center">
 
                             <div className="w-full h-full rounded-full bg-[#0B0C10] border-[4px] border-gray-800 cd-rotate flex items-center justify-center shadow-2xl relative z-10 overflow-hidden ring-4 ring-black/40" style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}>
@@ -86,7 +86,7 @@ export default function MusicPlayerSection({
                             </div>
                         </div>
 
-                        {/* ส่วนกลาง: ข้อมูลเพลงและหลอดความคืบหน้า */}
+                        {/* Center: Song info and progress bar */}
                         <div className="flex-1 w-full flex flex-col justify-center px-2 md:px-6 relative z-10">
                             <div className="flex flex-col items-center lg:items-start mb-6">
                                 <span className="text-[#FF007F] text-[10px] md:text-xs font-black tracking-widest uppercase mb-3 inline-block border border-[#FF007F]/40 bg-[#FF007F]/5 px-3 py-1 rounded-md shadow-[0_0_15px_rgba(255,0,127,0.15)]">
@@ -147,7 +147,7 @@ export default function MusicPlayerSection({
                             </div>
                         </div>
                         
-                        {/* ส่วนขวา: ปุ่มควบคุม */}
+                        {/* Right side: Controls */}
                         <div className="flex items-center gap-4 md:gap-6 mt-4 lg:mt-0 relative z-10">
                             <button onClick={(e) => changeSong(-1, e)} className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-full transition-all duration-300 ease-out active:scale-95">
                                 <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z" /></svg>

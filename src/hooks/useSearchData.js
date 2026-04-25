@@ -5,14 +5,14 @@ import { normalizeArtistList, normalizeArtist, normalizeEventList } from "../uti
 import { getArtistInfo } from "../utils/artistHelper";
 /**
  * [useSearchData Hook]
- * ทำหน้าที่เป็นหัวใจหลักของระบบค้นหา (Global Search) ใน Navbar
+ * Acts as the core of the Global Search system in the Navbar.
  * 
- * การทำงานแบ่งเป็น 3 ระยะ:
- * 1. [FETCHING]: ดึงข้อมูล Artists และ Events ทั้งหมดมาเก็บไว้ในหน่วยความจำ (Client-side indexing)
- * 2. [INDEXING]: เนื่องจาก API ข้อมูลรวมไม่ให้ลิสต์เพลงมาด้วย เราจึงต้องดึงข้อมูล Artist รายบุคคล
- *    เพื่อเอาเพลงมาจัดเรียงใหม่ (Flat Map) ให้สามารถค้นหาชื่อเพลงได้ทันที
- * 3. [FILTERING]: เมื่อผู้ใช้พิมพ์ (Query) ระบบจะทำการกรองข้อมูลแบบ "Starts With" 
- *    (ขึ้นต้นด้วยคำที่พิมพ์เท่านั้น) เพื่อความแม่นยำตามความต้องการของผู้ใช้
+ * The process is divided into 3 phases:
+ * 1. [FETCHING]: Fetch all Artists and Events and store them in memory (Client-side indexing).
+ * 2. [INDEXING]: Since the bulk API doesn't return songs, we fetch individual artist details
+ *    to map and flatten songs so they can be searched instantly.
+ * 3. [FILTERING]: As the user types (Query), the system filters data using "Starts With"
+ *    to provide accurate results based on user input.
  */
 
 // GET /artists        → basic list (no songs)
@@ -28,10 +28,10 @@ export const useSearchData = (navigate) => {
     const hasFetched = useRef(false);
 
     /**
-     * ค้นหาและเตรียมข้อมูลเบื้องต้น:
-     * 1. ดึงข้อมูล Artists และ Events ทั้งหมดจาก API
-     * 2. ดึงข้อมูลรายละเอียดของ Artist แต่ละคนเพื่อเอาลิสต์เพลง (Songs)
-     * 3. ทำการเก็บข้อมูลไว้ใน State เพื่อให้ค้นหาได้รวดเร็วแบบ Offline/Live
+     * Search and prepare basic data:
+     * 1. Fetch all Artists and Events from API.
+     * 2. Fetch individual Artist details to extract songs.
+     * 3. Store data in State for fast Offline/Live search.
      */
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export const useSearchData = (navigate) => {
 
         const loadAndIndexData = async () => {
             try {
-                // Step 1: ดึงรายชื่อทั้งหมด
+                // Step 1: Fetch all lists
                 const [artistRes, eventRes] = await Promise.allSettled([
                     getAllArtists(),
                     getAllEvents(),
@@ -59,7 +59,7 @@ export const useSearchData = (navigate) => {
 
                 if (basicArtists.length === 0) return;
 
-                // Step 2: เจาะข้อมูลศิลปินทีละคนเพื่อดึงเพลง
+                // Step 2: Fetch individual artist details for songs
                 const detailResults = await Promise.allSettled(
                     basicArtists.map(a => getArtistById(a.id))
                 );
@@ -71,7 +71,7 @@ export const useSearchData = (navigate) => {
                     const { songs } = normalizeArtist(res.value);
                     const basicArtist = basicArtists[idx];
                     
-                    // 🌟 ดึงข้อมูล Path หน้าเว็บที่ถูกต้องจาก Helper
+                    // 🌟 Get correct page path from Helper
                     const artistInfo = getArtistInfo(basicArtist);
 
                     songs.forEach(s => flatSongs.push({
@@ -80,7 +80,7 @@ export const useSearchData = (navigate) => {
                         coverImage: s.coverImage || s.cover || null,
                         artistId: basicArtist.id,
                         artistName: basicArtist.artistName,
-                        artistPage: artistInfo.path, // นำ Path ไปใช้ทันที
+                        artistPage: artistInfo.path, // Use path immediately
                     }));
                 });
 
@@ -106,26 +106,26 @@ export const useSearchData = (navigate) => {
 
         const results = [];
 
-        // 1. ค้นหา ศิลปิน
+        // 1. Search Artists
         allArtists
             .filter(a => a.artistName?.toLowerCase().startsWith(q))
             .slice(0, 5)
             .forEach(a => {
-                // 🌟 ดึงข้อมูลจาก Helper เพื่อให้สี, Path และ Label ตรงกันทั้งแอป
+                // 🌟 Fetch data from Helper to align colors, paths, and labels
                 const artistInfo = getArtistInfo(a);
                 
                 results.push({
                     type: "artist",
                     id: `artist-${a.id}`,
                     label: a.artistName,
-                    // ถ้าไม่มี Genre ใน Database ให้ใช้ fallback label จาก Helper (เช่น "Pop", "Rock")
+                    // Fallback label from Helper if no Genre in Database
                     sublabel: a.genres?.map(g => g.genre?.name).filter(Boolean).join(" · ") || artistInfo.label,
                     image: a.profileImage || null,
                     navigateTo: `${artistInfo.path}?artistId=${a.id}`,
                 });
             });
 
-        // 2. ค้นหา เพลง
+        // 2. Search Songs
         allSongs
             .filter(s => s.title?.toLowerCase().startsWith(q))
             .slice(0, 5)
@@ -138,7 +138,7 @@ export const useSearchData = (navigate) => {
                 navigateTo: `${s.artistPage}?artistId=${s.artistId}`,
             }));
 
-        // 3. ค้นหา Events
+        // 3. Search Events
         allEvents
             .filter(e => e.eventName?.toLowerCase().startsWith(q))
             .slice(0, 3)
@@ -154,7 +154,7 @@ export const useSearchData = (navigate) => {
                 navigateTo: "/new-event",
             }));
 
-        // 4. ค้นหา สถานที่ (Venues)
+        // 4. Search Venues
         const seenVenues = new Set();
         allEvents
             .filter(e => e.venue?.name?.toLowerCase().startsWith(q) && !seenVenues.has(e.venue?.name))
@@ -174,7 +174,7 @@ export const useSearchData = (navigate) => {
         setSuggestions(results.slice(0, 12));
     }, [query, allArtists, allSongs, allEvents]);
 
-    // ฟังก์ชันสำหรับล้างคำค้นหา
+    // Function to clear search query
     const clearSearch = useCallback(() => {
         setQuery("");
         setSuggestions([]);

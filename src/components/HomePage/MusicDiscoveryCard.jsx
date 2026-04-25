@@ -26,12 +26,12 @@ export default function MusicDiscoveryCard() {
       try {
         setLoading(true);
         setError(null);
-        console.log('[MusicCard] STAGE 1: Fetching all artists...');
+        // Logs removed
         const resp = await getAllArtists();
 
         const list = normalizeArtistList(resp)
 
-        console.log(`[MusicCard] STAGE 1 SUCCESS: Found ${list.length} artists`);
+        // Logs removed
 
         if (list.length > 0) {
           setArtists(list);

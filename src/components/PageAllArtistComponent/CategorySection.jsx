@@ -12,7 +12,7 @@ export default function CategorySection({ section, navigate }) {
 
             <div className="relative z-10 w-full max-w-[100rem] mx-auto pl-6 md:pl-12">
 
-                {/* Header ของแต่ละหมวด */}
+                {/* Category Header */}
                 <div className="flex flex-col md:flex-row items-end justify-between mb-12 pr-6 md:pr-12 gap-6">
                     <div className="border-l-[6px] pl-6" style={{ borderColor: section.primary }}>
                         <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase drop-shadow-lg" style={{ color: section.primary }}>
@@ -28,7 +28,7 @@ export default function CategorySection({ section, navigate }) {
                     </div>
                 </div>
 
-                {/* Slider Container แบบ Framer Motion Drag */}
+                {/* Framer Motion Drag Slider Container */}
                 <motion.div ref={sliderRef} className="w-full overflow-hidden cursor-grab active:cursor-grabbing pb-16">
                     <motion.div
                         drag="x"
@@ -48,7 +48,7 @@ export default function CategorySection({ section, navigate }) {
                                 whileHover={{ y: -15 }}
                                 onClick={() => {
                                     window.scrollTo(0, 0);
-                                    // พาไปที่ Path ของหมวดหมู่นั้นๆ (เช่น /pop, /rock) พร้อมแนบ ?artistId=
+                                    // Navigate to category path (e.g. /pop, /rock) with ?artistId=
                                     const targetPath =
                                         section.keyword === 'pop' ? '/pop' :
                                             section.keyword === 'rock' ? '/rock' :
@@ -58,7 +58,7 @@ export default function CategorySection({ section, navigate }) {
                                 }}
                                 className="flex flex-col gap-5 group w-[280px] md:w-[380px] flex-shrink-0"
                             >
-                                {/* รูปการ์ดหลัก */}
+                                {/* Main Card Image */}
                                 <div
                                     className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/40 backdrop-blur-xl border border-white/10 transition-all duration-500"
                                     style={{ boxShadow: `0 20px 40px -10px ${section.primary}30` }}
@@ -88,10 +88,10 @@ export default function CategorySection({ section, navigate }) {
                                     </div>
                                 </div>
 
-                                {/* แถบข้อมูลด้านล่าง */}
+                                {/* Bottom Info Bar */}
                                 <div className="mx-4 mb-4 px-5 py-3.5 rounded-2xl bg-[#0B0C10]/60 backdrop-blur-md border border-white/5 flex justify-between items-center group-hover:bg-[#12141A]/80 group-hover:border-white/20 transition-all duration-500 overflow-hidden relative shadow-lg group-hover:shadow-2xl">
 
-                                    {/* 1. แสง Gradient วิ่งพื้นหลัง (อิงตามสีประจำหมวดหมู่) */}
+                                    {/* 1. Gradient Light Background */}
                                     <div
                                         className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none"
                                         style={{ background: `linear-gradient(90deg, ${section.primary}, transparent)` }}
@@ -103,7 +103,7 @@ export default function CategorySection({ section, navigate }) {
                                                 Latest Release
                                             </span>
 
-                                            {/* 2. ลูกเล่นคลื่นเสียง (Equalizer) เด้งตอน Hover */}
+                                            {/* 2. Equalizer Hover Effect */}
                                             <div className="hidden group-hover:flex items-end gap-[2px] h-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                                 <motion.div animate={{ height: [3, 8, 3] }} transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut" }} className="w-[2px] rounded-full" style={{ backgroundColor: section.primary }} />
                                                 <motion.div animate={{ height: [5, 11, 5] }} transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut", delay: 0.15 }} className="w-[2px] rounded-full" style={{ backgroundColor: section.primary }} />
@@ -111,26 +111,26 @@ export default function CategorySection({ section, navigate }) {
                                             </div>
                                         </div>
 
-                                        {/* 3. ชื่อเพลง เลื่อนขวาเบาๆ ตอน Hover */}
+                                        {/* 3. Title sliding right on hover */}
                                         <span className="text-sm md:text-base font-black text-gray-200 uppercase line-clamp-1 transition-all duration-500 group-hover:text-white group-hover:translate-x-1">
                                             {artist.songs?.[0]?.title || "Upcoming Track"}
                                         </span>
                                     </div>
 
-                                    {/* 4. ปุ่ม Play Button พร้อมเอฟเฟกต์แสงกระจาย (Glow & Pulse) */}
+                                    {/* 4. Play Button with Glow & Pulse Effect */}
                                     <div className="relative z-10 flex-shrink-0">
-                                        {/* วงแหวนกระจายแสงด้านหลัง */}
+                                        {/* Background Glow Ring */}
                                         <div
                                             className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-40 group-hover:animate-ping"
                                             style={{ backgroundColor: section.primary }}
                                         />
 
-                                        {/* ตัวปุ่มหลัก */}
+                                        {/* Main Button */}
                                         <div
                                             className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500 group-hover:scale-110 relative z-10"
                                             style={{
                                                 backgroundColor: section.primary,
-                                                boxShadow: `0 4px 15px ${section.primary}60` // สร้างเงาสะท้อนตามสีหมวด
+                                                boxShadow: `0 4px 15px ${section.primary}60` // Create shadow based on category color
                                             }}
                                         >
                                             <svg className="w-4 h-4 text-black ml-0.5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">

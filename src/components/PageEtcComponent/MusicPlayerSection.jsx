@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; // Add Import
 
 export default function MusicPlayerSection({ 
     artist, songs, currentSongIndex, isPlaying,
@@ -70,7 +70,7 @@ export default function MusicPlayerSection({
                         {/* Blue glow behind player */}
                         <div className="absolute -top-20 -left-20 w-64 h-64 bg-[#00E5FF] opacity-10 blur-[80px] pointer-events-none"></div>
 
-                        {/* ฝั่งซ้าย: รูปแผ่นเสียง */}
+                        {/* Left side: Vinyl Record */}
                         <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 flex items-center justify-center">
 
                             <div className="w-full h-full rounded-full bg-[#111111] border-[4px] border-[#222] cd-rotate flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.9)] relative z-10 overflow-hidden ring-2 ring-[#00E5FF]/20" style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}>
@@ -86,7 +86,7 @@ export default function MusicPlayerSection({
                             </div>
                         </div>
 
-                        {/* ฝั่งกลาง: ข้อมูลเพลงและหลอดความคืบหน้า */}
+                        {/* Center: Song info and progress bar */}
                         <div className="flex-1 w-full flex flex-col justify-center px-2 md:px-6 relative z-10">
                             <div className="flex flex-col items-center lg:items-start mb-6">
                                 <span className="text-[#00E5FF] text-[10px] md:text-xs font-black tracking-widest uppercase mb-3 inline-block border border-[#00E5FF]/40 bg-[#00E5FF]/5 px-3 py-1 rounded-md shadow-[0_0_15px_rgba(0,229,255,0.15)]">
@@ -149,7 +149,7 @@ export default function MusicPlayerSection({
                             </div>
                         </div>
 
-                        {/* ฝั่งขวา: ปุ่มควบคุม */}
+                        {/* Right side: Controls */}
                         <div className="flex items-center gap-4 md:gap-6 mt-4 lg:mt-0 relative z-10">
                             <button onClick={(e) => changeSong(-1, e)} className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-3 md:p-4 rounded-full transition-all duration-300 ease-out active:scale-95">
                                 <svg className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z" /></svg>

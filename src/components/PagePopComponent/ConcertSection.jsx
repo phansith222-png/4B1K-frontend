@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import Reveal
+import Reveal from '../Reveal'; // Add Import Reveal
 
 export default function ConcertSection({ events, artist }) {
     const navigate = useNavigate();
     return (
         <section className="relative w-full py-24 px-6 bg-transparent border-t border-white/5">
             <div className="max-w-7xl mx-auto relative z-10">
-                {/* 📌 ครอบส่วนหัวด้วย Reveal */}
+                {/* Wrap header with Reveal */}
                 <Reveal effect="fade-up">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-6">
                         <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-white">Live <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF007F] to-[#00F5D4]">Concerts</span></h3>

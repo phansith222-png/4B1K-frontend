@@ -9,13 +9,13 @@ export default function PageTransition({ children }) {
             exit="exit"
             className="relative w-full h-full"
         >
-            {/* 🎬 1. ตัวเนื้อหาเว็บ (ค่อยๆ เลื่อนขึ้นมานุ่มๆ ตอนโหลดเสร็จ) */}
+            {/* 🎬 1. Main Content (Smoothly slide up after load) */}
             <motion.div
                 variants={{
                     initial: { opacity: 0, y: 15 },
                     animate: { 
                         opacity: 1, y: 0, 
-                        // หน่วงเวลา 0.2s ให้หน้าจอ Loading เฟดหายไปก่อน เนื้อหาค่อยโชว์
+                        // Delay 0.1s to allow Loading screen to fade out before showing content
                         transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 } 
                     },
                     exit: { 
@@ -28,31 +28,31 @@ export default function PageTransition({ children }) {
                 {children}
             </motion.div>
 
-            {/* 🎬 2. หน้าจอ Loading (แบบไร้ม่าน เฟดเข้า-ออกอย่างเดียว) */}
+            {/* 🎬 2. Loading Screen (Fade in/out) */}
             <motion.div
-                // z-[9999] บังทุกสิ่งในเว็บ, pointer-events-none เพื่อไม่ให้บังการคลิกตอนจางหายไปแล้ว
+                // z-[9999] covers everything, pointer-events-none prevents blocking clicks after fade
                 className="fixed inset-0 z-[9999] bg-[#0B0C10] flex flex-col items-center justify-center pointer-events-none"
                 variants={{
-                    // 📌 1. เริ่มต้นหน้าใหม่: จอต้องดำสนิท (opacity: 1) เพื่อบังรอยต่อ
+                    // 📌 1. Initial load: Pitch black (opacity: 1) to hide transition
                     initial: { opacity: 1 }, 
                     
-                    // 📌 2. พอหน้าเว็บพร้อม: ให้จอดำค่อยๆ เฟดจางหายไป เผยให้เห็นเว็บ
+                    // 📌 2. When ready: Fade out black screen to reveal content
                     animate: { 
                         opacity: 0, 
                         transition: { duration: 0.6, ease: "easeInOut", delay: 0.1 } 
                     }, 
                     
-                    // 📌 3. ตอนกดลิงก์เปลี่ยนหน้า: จอดำเฟดกลับมาบังหน้าจอ (เอาไว้ซ่อนจังหวะกระตุก)
+                    // 📌 3. Page exit: Fade back to black (hides stuttering)
                     exit: { 
                         opacity: 1, 
                         transition: { duration: 0.4, ease: "easeInOut" } 
                     } 
                 }}
             >
-                {/* ลายเส้น Noise ให้พื้นหลังไม่ดูดำสนิทจนเกินไป */}
+                {/* Noise texture so the background isn't purely black */}
                 <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E')]"></div>
 
-                {/* แอนิเมชันตอนโหลด (คลื่นเสียง + โลโก้) */}
+                {/* Loading animation (Soundwave + Logo) */}
                 <div className="flex flex-col items-center gap-6 relative z-10">
                     <div className="flex gap-2 items-center justify-center h-12">
                         {[...Array(5)].map((_, i) => (

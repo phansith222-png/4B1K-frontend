@@ -105,8 +105,8 @@ const usePostStore = create(
         try {
             const resp = await editCommentApi(postId, commentId, body)
 
-            // Optimistic update: อัปเดต comment ใน local store ทันที
-            // ทำให้รูปและข้อความโชว์โดยไม่ต้องรอ getAllPosts()
+            // Optimistic update: Update comment in local store immediately
+            // So that images and text display without waiting for getAllPosts()
             set((state) => ({
                 posts: state.posts.map((post) =>
                     post.id === postId

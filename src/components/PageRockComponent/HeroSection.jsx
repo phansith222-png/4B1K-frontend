@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; // Add Import
 
 export default function HeroSection({ artist, events, embers }) {
     const navigate = useNavigate();

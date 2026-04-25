@@ -33,9 +33,9 @@ export default function StatsSection({ songs }) {
                                 return (
                                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative cursor-crosshair z-10">
                                         <div className="flex w-full justify-center gap-1.5 md:gap-3 items-end h-full px-1">
-                                            {/* แท่ง YouTube */}
+                                            {/* YouTube Bar */}
                                             <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-[45%] md:w-6 bg-[#FF0000] rounded-t-md transition-all duration-500 group-hover:brightness-125 shadow-[0_0_15px_rgba(255,0,0,0.3)]" />
-                                            {/* แท่ง Spotify */}
+                                            {/* Spotify Bar */}
                                             <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-[45%] md:w-6 bg-[#1DB954] rounded-t-md transition-all duration-500 group-hover:brightness-125 shadow-[0_0_15px_rgba(29,185,84,0.3)] relative" />
                                         </div>
                                         <span className="font-sub text-[#b266c5] text-[10px] md:text-xs font-bold uppercase mt-6 truncate w-full text-center px-1 group-hover:text-[#f9c1db] transition-colors">{song.title.split(' ')[0]}</span>

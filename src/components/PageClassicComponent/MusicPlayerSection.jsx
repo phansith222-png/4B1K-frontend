@@ -94,7 +94,7 @@ export default function MusicPlayerSection({
                                         <div className="w-2 h-2 rounded-full bg-[#f9c1db]"></div>
                                     </div>
                                 </div>
-                                {/* สไตล์หมุน CD */}
+                                {/* CD rotation style */}
                                 <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
                             </div>
 
@@ -111,13 +111,13 @@ export default function MusicPlayerSection({
                                     </p>
                                 </div>
 
-                                {/* Progress Bar - แก้ไขตรงนี้ 🌟 */}
+                                {/* Progress Bar - Modified here 🌟 */}
                                 <div className="w-full mt-2">
                                     <div 
                                         className="w-full bg-[#30294e]/60 rounded-full h-2 relative cursor-pointer group" 
                                         onClick={handleProgressClick}
                                     >
-                                        {/* เราจะใช้ Ref คุมตัวนี้ ห้ามใส่ width ล็อคไว้ในสไตล์ถ้า Ref ไม่ขยับ */}
+                                        {/* Using Ref to control this, avoid static width if Ref is used */}
                                         <div 
                                             ref={progressBarRef}
                                             className="bg-gradient-to-r from-[#9b2d96] to-[#d83bb6] h-full rounded-full relative transition-[width] duration-150 ease-linear"

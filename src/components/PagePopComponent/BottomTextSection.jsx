@@ -1,5 +1,5 @@
 import React from 'react';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; // Add Import
 
 export default function BottomTextSection({ artist }) {
     return (

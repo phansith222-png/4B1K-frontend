@@ -124,7 +124,7 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                     />
                 </div>
 
-                {/* Rising Embers (สเก็ตไฟ - Natural Flow) */}
+                {/* Rising Embers - Natural Flow */}
                 {[...Array(30)].map((_, i) => (
                     <motion.div key={`ember-${i}`} className="absolute rounded-full"
                         style={{ 
