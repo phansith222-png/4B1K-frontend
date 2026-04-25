@@ -10,49 +10,32 @@ const getMockArtists = () => Array.from({ length: 7 }).map((_, i) => ({
     profileImage: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400&auto=format&fit=crop'
 }));
 
-export default function HeroVideoShowcase() {
+export default function HeroVideoShowcase({ artists = [] }) {
     const navigate = useNavigate();
-    const [artists, setArtists] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const isMobile = React.useRef(window.innerWidth < 768);
 
     useEffect(() => {
-        const fetchArtists = async () => {
-            try {
-                const res = await getAllArtists();
-                let data = res?.artists || res?.data || res || [];
-                // สุ่มลำดับศิลปินให้ไม่ซ้ำเดิม
-                const shuffled = [...data].sort(() => 0.5 - Math.random());
-                setArtists(shuffled.length > 5 ? shuffled : getMockArtists());
-            } catch (err) {
-                console.error("Failed to load artists", err);
-                setArtists(getMockArtists());
-            }
-        };
-        fetchArtists();
+        const handleResize = () => { isMobile.current = window.innerWidth < 768; };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Filter out mock artists if they exist in the passed list
+    const displayArtists = artists.length > 0 ? artists : getMockArtists();
 
     // ระบบเล่นอัตโนมัติ (Pop ขึ้นมาทีละคนช้าๆ แบบเป็นธรรมชาติ)
     useEffect(() => {
-        if (artists.length === 0 || isHovered) return;
+        if (displayArtists.length === 0 || isHovered) return;
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % artists.length);
+            setCurrentIndex((prev) => (prev + 1) % displayArtists.length);
         }, 3500); // เปลี่ยนศิลปินทุกๆ 3.5 วินาที
         return () => clearInterval(timer);
-    }, [artists, isHovered]);
+    }, [displayArtists, isHovered]);
 
     const getArtistPath = (artist) => {
-        if (!artist.id || artist.id.toString().startsWith('mock')) return '#';
-        const aId = Number(artist.id);
-        const popIds = [1, 2, 3, 4, 5];
-        const rockIds = [6, 7, 8, 9, 10];
-        const classicIds = [16, 17, 18, 19, 20];
-        const etcIds = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25];
-        if (popIds.includes(aId)) return '/pop';
-        if (rockIds.includes(aId)) return '/rock';
-        if (classicIds.includes(aId)) return '/classic';
-        if (etcIds.includes(aId)) return '/etc';
-        return '/artists';
+        return artist.path || '/artists';
     };
 
     const getGenreColor = (genresArray) => {
@@ -72,16 +55,16 @@ export default function HeroVideoShowcase() {
         return genresArray[0]?.genre?.name || "Featured Artist";
     };
 
-    if (artists.length === 0) return <div className="h-[40vh] w-full"></div>;
+    if (displayArtists.length === 0) return <div className="h-[40vh] w-full"></div>;
 
     // คำนวณตำแหน่งให้เรียงเป็น "เส้นโค้งสายรุ้ง" แบบมีองศาการเอียง (ตามภาพตัวอย่าง JoyJam)
     const getLayout = (distance) => {
-        const isMobile = window.innerWidth < 768;
+        const mobile = isMobile.current;
         const abs = Math.abs(distance);
         const sign = Math.sign(distance);
 
         // ซ่อนตัวที่อยู่ไกลๆ เพื่อไม่ให้รกบนมือถือ
-        if (isMobile && abs > 1) return { opacity: 0, scale: 0.5, x: sign * 150, y: 80, rotate: sign * 20, zIndex: 0 };
+        if (mobile && abs > 1) return { opacity: 0, scale: 0.5, x: sign * 150, y: 80, rotate: sign * 20, zIndex: 0 };
 
         // ขนาด: ปรับให้เล็กลงเพื่อให้มีพื้นที่ตรงกลางสำหรับข้อความ
         const scale = abs === 0 ? 1 : abs === 1 ? 0.8 : 0.65;
@@ -91,7 +74,7 @@ export default function HeroVideoShowcase() {
 
         // แกน X: ระยะห่างซ้ายขวากว้างขึ้น
         let x = 0;
-        if (abs === 1) x = sign * (isMobile ? 130 : 280);
+        if (abs === 1) x = sign * (mobile ? 130 : 280);
         if (abs === 2) x = sign * 520;
 
         // องศาการเอียง (Rotate Z)
@@ -115,12 +98,12 @@ export default function HeroVideoShowcase() {
 
             <div className="relative w-full max-w-6xl flex justify-center items-center h-full">
                 <AnimatePresence mode="popLayout">
-                    {artists.map((artist, idx) => {
+                    {displayArtists.map((artist, idx) => {
                         // คำนวณระยะห่างจากตัวตรงกลางแบบวงกลม
                         let distance = idx - currentIndex;
-                        const half = Math.floor(artists.length / 2);
-                        if (distance > half) distance -= artists.length;
-                        if (distance < -half) distance += artists.length;
+                        const half = Math.floor(displayArtists.length / 2);
+                        if (distance > half) distance -= displayArtists.length;
+                        if (distance < -half) distance += displayArtists.length;
 
                         if (Math.abs(distance) > 2) return null; // ไม่เรนเดอร์ตัวที่อยู่ไกลเกินไป
 
@@ -171,6 +154,7 @@ export default function HeroVideoShowcase() {
                                         <img
                                             src={artist.profileImage}
                                             alt={artist.artistName}
+                                            loading="lazy"
                                             className="w-full h-full object-cover opacity-90 transition-transform duration-[2s] hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end justify-center pb-6 pointer-events-none">
@@ -202,7 +186,7 @@ export default function HeroVideoShowcase() {
                                                         boxShadow: `0 0 20px ${getGenreColor(artist.genres)}60`
                                                     }}
                                                 >
-                                                    <img src={artist.profileImage} alt={artist.artistName} className="w-full h-full object-cover rounded-full border-2 border-black" />
+                                                    <img src={artist.profileImage} alt={artist.artistName} loading="lazy" className="w-full h-full object-cover rounded-full border-2 border-black" />
                                                 </div>
                                                 <h3 className="text-xl md:text-2xl font-black text-white text-center leading-tight mb-1 line-clamp-1 w-full px-2">{artist.artistName}</h3>
                                                 <span
