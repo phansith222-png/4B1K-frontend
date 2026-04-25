@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 // Hooks
-import useArtistData from '../hooks/useArtistData';
+import { useArtists } from '../hooks/useArtists';
+import { useArtistDetail } from '../hooks/useArtistDetail';
+import {getFilteredRandomArtistId} from '../utils/artistHelper'
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
-
 // Constants
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
@@ -16,6 +17,7 @@ import BioSection from '../components/PageClassicComponent/BioSection';
 import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSection';
 import ConcertSection from '../components/PageClassicComponent/ConcertSection';
 import StatsSection from '../components/PageClassicComponent/StatsSection';
+import ArtistPageSkeleton from '../components/Skeleton/ArtistPageSkeleton';
 
 const PLAYER_ID = 'yt-player-hidden-classic';
 
@@ -24,10 +26,16 @@ export default function PageClassic() {
     const queryArtistId = searchParams.get('artistId');
 
     // ── Data ─────────────────────────────────────────────────────────────
-    const { artist, songs, events, loading } = useArtistData(
-        GENRE_ARTIST_IDS.classic,
-        queryArtistId
-    );
+    const { artists, loading: loadingAll } = useArtists();
+
+    const targetId = useMemo(() => {
+        if (loadingAll) return null;
+        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+    }, [artists, loadingAll, queryArtistId]);
+
+    const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
+
+    const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
     const {
@@ -56,13 +64,7 @@ export default function PageClassic() {
 
     // ── States ────────────────────────────────────────────────────────────
     if (loading) {
-        return (
-            <div className="bg-[#0B0C10] min-h-screen flex flex-col items-center justify-center text-[#d83bb6] relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#d83bb6] opacity-20 blur-[80px] rounded-full animate-pulse" />
-                <div className="w-16 h-16 border-4 border-white/5 border-t-[#d83bb6] rounded-full animate-spin z-10" />
-                <p className="mt-4 font-black tracking-[0.3em] animate-pulse text-white z-10 uppercase text-xs">Loading Classics...</p>
-            </div>
-        );
+        return <ArtistPageSkeleton />;
     }
 
     if (!artist) {

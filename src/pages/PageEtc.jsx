@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 // Hooks
-import useArtistData from '../hooks/useArtistData';
+import { useArtists } from '../hooks/useArtists';
+import { useArtistDetail } from '../hooks/useArtistDetail';
+import { getFilteredRandomArtistId } from '../utils/artistHelper'
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 
 // Constants
@@ -24,10 +26,16 @@ export default function PageEtc() {
     const queryArtistId = searchParams.get('artistId');
 
     // ── Data ─────────────────────────────────────────────────────────────
-    const { artist, songs, events, loading } = useArtistData(
-        GENRE_ARTIST_IDS.etc,
-        queryArtistId
-    );
+    const { artists, loading: loadingAll } = useArtists();
+
+    const targetId = useMemo(() => {
+        if (loadingAll) return null;
+        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+    }, [artists, loadingAll, queryArtistId]);
+
+    const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
+
+    const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
     const {
@@ -109,14 +117,14 @@ export default function PageEtc() {
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 bg-[#0B0C10]" />
                 <CategoryBackground keyword={genreKeyword} isPlaying={isPlaying} />
-                
+
                 {/* Random Theme Shimmer Boxes (Mixed with genre background) */}
                 {[...Array(15)].map((_, i) => (
                     <motion.div
                         key={`shimmer-${i}`}
                         className="absolute rotate-45"
-                        style={{ 
-                            left: `${Math.random() * 100}%`, 
+                        style={{
+                            left: `${Math.random() * 100}%`,
                             top: `${Math.random() * 100}%`,
                             width: Math.random() * 100 + 50,
                             height: Math.random() * 100 + 50,
@@ -124,17 +132,17 @@ export default function PageEtc() {
                             border: `1px solid ${i % 2 === 0 ? '#00E5FF20' : '#7000FF20'}`,
                             backdropFilter: 'blur(4px)'
                         }}
-                        animate={{ 
+                        animate={{
                             x: [0, Math.random() * 50 - 25, 0],
                             y: [0, Math.random() * 50 - 25, 0],
                             opacity: isPlaying ? [0.2, 0.5, 0.2] : [0.1, 0.3, 0.1],
                             rotate: isPlaying ? [45, 225, 45] : [45, 90, 45],
                             scale: isPlaying ? [1, 1.2, 1] : [1, 1, 1]
                         }}
-                        transition={{ 
-                            duration: isPlaying ? 1.5 : Math.random() * 10 + 10, 
-                            repeat: Infinity, 
-                            ease: 'easeInOut' 
+                        transition={{
+                            duration: isPlaying ? 1.5 : Math.random() * 10 + 10,
+                            repeat: Infinity,
+                            ease: 'easeInOut'
                         }}
                     />
                 ))}
@@ -143,9 +151,9 @@ export default function PageEtc() {
                 <div className="absolute inset-[-100%] bg-grid-animation z-0 opacity-40" />
 
                 {/* Digital Grid Overlay (Static layer for depth) */}
-                <div 
-                    className="absolute inset-0 opacity-[0.05]" 
-                    style={{ 
+                <div
+                    className="absolute inset-0 opacity-[0.05]"
+                    style={{
                         backgroundImage: `linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px)`,
                         backgroundSize: '100px 100px'
                     }}

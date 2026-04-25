@@ -14,3 +14,19 @@ export const getArtistInfo = (artist) => {
     if (gs.some(g => g.includes('hip hop') || g.includes('edm'))) return { path: '/etc', color: '#CEFF67', label: 'Hiphop / EDM' };
     return { path: '/pop', color: '#FF007F', label: 'Pop' };
 };
+
+
+// utils/artistHelpers.js
+export const getFilteredRandomArtistId = (artists, genreArtistIds, queryArtistId) => {
+    if (queryArtistId) return Number(queryArtistId);
+
+    let filtered = artists.filter((a) => genreArtistIds?.includes(a.id));
+    
+    // Fallback ถ้าไม่เจอใน Genre ให้เลือกจากทั้งหมด
+    const pool = filtered.length > 0 ? filtered : artists;
+    
+    if (pool.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    return pool[randomIndex].id;
+};

@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { loadSlim } from '@tsparticles/slim';
 
 // Hooks
-import useArtistData from '../hooks/useArtistData';
+import { useArtists } from '../hooks/useArtists';
+import { useArtistDetail } from '../hooks/useArtistDetail';
+import { getFilteredRandomArtistId } from '../utils/artistHelper'
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 
 // Constants
@@ -24,10 +26,16 @@ export default function PageRock() {
     const queryArtistId = searchParams.get('artistId');
 
     // ── Data ─────────────────────────────────────────────────────────────
-    const { artist, songs, events, loading } = useArtistData(
-        GENRE_ARTIST_IDS.rock,
-        queryArtistId
-    );
+    const { artists, loading: loadingAll } = useArtists();
+
+    const targetId = useMemo(() => {
+        if (loadingAll) return null;
+        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+    }, [artists, loadingAll, queryArtistId]);
+
+    const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
+
+    const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
     const {

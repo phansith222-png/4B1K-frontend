@@ -6,6 +6,8 @@ import Footer from '../components/Footer';
 import PageTransition from '../components/PageTransition';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
 import useSearchStore from '../stores/searchStore';
+import SectionErrorFallback from "../components/SectionErrorFallback";
+import { ErrorBoundary } from "react-error-boundary";
 
 export default function MainLayout() {
     const location = useLocation();
@@ -19,7 +21,13 @@ export default function MainLayout() {
             <main className="flex-grow relative z-10">
                 <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
                     <PageTransition key={location.pathname}>
-                        <Outlet />
+                        <ErrorBoundary
+                            FallbackComponent={SectionErrorFallback}
+                            // 💡 Tip: เมื่อเปลี่ยน Path ให้รีเซ็ต Error อัตโนมัติ
+                            resetKeys={[location.pathname]}
+                        >
+                            <Outlet />
+                        </ErrorBoundary>
                     </PageTransition>
                 </AnimatePresence>
             </main>

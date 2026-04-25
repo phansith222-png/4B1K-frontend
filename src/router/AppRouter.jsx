@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"; 
+import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   Navigate,
@@ -8,7 +8,8 @@ import useUserStore from "../stores/userStore";
 import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
 import OAuthCallback from "../pages/OAuthCallback";
-
+import { ErrorBoundary } from "react-error-boundary";
+import ErrorPage from "../pages/ErrorPage";
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import("../pages/LandingPage"));
 const Login = lazy(() => import("../pages/Login"));
@@ -87,14 +88,16 @@ export default function AppRouter() {
   const router = user ? userRouter : guestRouter;
 
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#111418] flex items-center justify-center">
-          <span className="loading loading-spinner loading-lg text-white" />
-        </div>
-      }
-    >
-      <RouterProvider key={user?.id} router={router} />
-    </Suspense>
+    <ErrorBoundary FallbackComponent={ErrorPage}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[#111418] flex items-center justify-center">
+            <span className="loading loading-spinner loading-lg text-white" />
+          </div>
+        }
+      >
+        <RouterProvider key={user?.id} router={router} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

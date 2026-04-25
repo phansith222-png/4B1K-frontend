@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 // Hooks
-import useArtistData from '../hooks/useArtistData';
+import { useArtists } from '../hooks/useArtists';
+import { useArtistDetail } from '../hooks/useArtistDetail';
+import { getFilteredRandomArtistId } from '../utils/artistHelper'
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 
 // Constants
@@ -24,10 +26,16 @@ export default function PagePop() {
     const queryArtistId = searchParams.get('artistId');
 
     // ── Data ─────────────────────────────────────────────────────────────
-    const { artist, songs, events, loading } = useArtistData(
-        GENRE_ARTIST_IDS.pop,
-        queryArtistId
-    );
+    const { artists, loading: loadingAll } = useArtists();
+
+    const targetId = useMemo(() => {
+        if (loadingAll) return null;
+        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+    }, [artists, loadingAll, queryArtistId]);
+
+    const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
+
+    const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
     // The hidden div (#PLAYER_ID) below is a stable DOM node — it must never
@@ -80,11 +88,11 @@ export default function PagePop() {
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 bg-[#0B0C10]" />
                 <CategoryBackground keyword="pop" isPlaying={isPlaying} />
-                
+
                 {/* Digital Grid Overlay */}
-                <div 
-                    className="absolute inset-0 opacity-[0.05]" 
-                    style={{ 
+                <div
+                    className="absolute inset-0 opacity-[0.05]"
+                    style={{
                         backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
                         backgroundSize: '100px 100px'
                     }}
