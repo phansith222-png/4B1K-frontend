@@ -7,6 +7,7 @@ import CategorySection from '../components/PageAllArtistComponent/CategorySectio
 import BottomTextSection from '../components/PageAllArtistComponent/BottomTextSection';
 import Reveal from '../components/Reveal';
 import BackButton from '../components/BackButton';
+import ArtistPageSkeleton from '../components/Skeleton/ArtistPageSkeleton';
 
 export default function PageAllArtist() {
     const navigate = useNavigate();
@@ -122,13 +123,7 @@ export default function PageAllArtist() {
 
 
     if (loading) {
-        return (
-            <div className="bg-[#0B0C10] min-h-screen flex flex-col items-center justify-center text-[#00E5FF]">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#7000FF] opacity-20 blur-[80px] rounded-full"></div>
-                <div className="w-16 h-16 border-4 border-white/5 border-t-[#00E5FF] rounded-full animate-spin z-10"></div>
-                <p className="mt-4 font-black tracking-[0.3em] uppercase animate-pulse z-10">Archiving Artists...</p>
-            </div>
-        );
+        return <ArtistPageSkeleton />;
     }
 
     return (

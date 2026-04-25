@@ -119,7 +119,7 @@ function CommentItem({ comment, postId }) {
     try {
       setIsDeleting(true);
       await deleteComment(postId, comment.id);
-      console.log(postId,comment.id)
+      // Logs removed
 
       setShowDeleteModal(false);
     } catch (err) {

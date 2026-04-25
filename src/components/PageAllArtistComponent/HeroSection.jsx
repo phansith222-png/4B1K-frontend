@@ -39,7 +39,7 @@ export default function HeroSection({ floatingNotes, spotlightArtist }) {
 
             <div className="max-w-7xl w-full mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-16 mt-20 md:mt-0">
                 
-                {/* ฝั่งข้อความ */}
+                {/* Text side */}
                 <div className="w-full md:w-1/2 flex flex-col items-center md:items-start text-center md:text-left z-20">
                     <motion.div 
                         initial={{ opacity: 0, y: 30 }}
@@ -71,7 +71,7 @@ export default function HeroSection({ floatingNotes, spotlightArtist }) {
                     </motion.button>
                 </div>
 
-                {/* ฝั่งกราฟิก (แผ่นไวนิลและ Spotlight Artist) */}
+                {/* Graphics side (Vinyl and Spotlight Artist) */}
                 <div className="w-full md:w-1/2 flex justify-center md:justify-end relative h-[450px] md:h-[650px]">
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.8, rotate: -20 }}
@@ -128,7 +128,7 @@ export default function HeroSection({ floatingNotes, spotlightArtist }) {
                         )}
                     </AnimatePresence>
 
-                    {/* ตัวโน้ตดนตรีลอยออกมา */}
+                    {/* Floating music notes */}
                     {floatingNotes.map((note) => (
                         <motion.div
                             key={note.id}

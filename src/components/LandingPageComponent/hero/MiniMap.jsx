@@ -10,97 +10,65 @@ import { getAllEvents } from '../../../api/event';
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 
-export default function MiniMap() {
+export default function MiniMap({ events: initialEvents = [] }) {
   const mapRef = React.useRef(null);
   const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(11);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoading(true);
-        const res = await getAllEvents();
-        
-        // Handle deeply nested response structures
-        let eventData = [];
-        if (Array.isArray(res)) {
-          eventData = res;
-        } else if (res?.events && Array.isArray(res.events)) {
-          eventData = res.events;
-        } else if (res?.data?.events && Array.isArray(res.data.events)) {
-          eventData = res.data.events;
-        } else if (res?.result?.events && Array.isArray(res.result.events)) {
-          eventData = res.result.events;
-        } else if (res?.data && Array.isArray(res.data)) {
-          eventData = res.data;
-        } else if (res?.result && Array.isArray(res.result)) {
-          eventData = res.result;
-        }
-
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-        const mappedEvents = eventData.map(event => {
-          // Robust Coordinate extraction
-          const lat = parseFloat(
-            event.venue?.latitude || 
-            event.venue?.lat || 
-            event.location?.latitude || 
-            event.location?.lat || 
-            event.latitude || 
-            event.lat || 
-            event.venue_lat || 
-            0
-          );
-          const lng = parseFloat(
-            event.venue?.longitude || 
-            event.venue?.lng || 
-            event.location?.longitude || 
-            event.location?.lng || 
-            event.longitude || 
-            event.lng || 
-            event.venue_lng || 
-            0
-          );
-          
-          // Image URL formatting
-          let imageUrl = event.posterImage || event.image || event.poster_image || event.thumbnail;
-          if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('http')) {
-            const cleanPath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
-            imageUrl = `${API_BASE_URL}/${cleanPath}`;
-          }
-          if (!imageUrl) {
-            imageUrl = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop';
-          }
-
-          return {
-            id: event.id || Math.random(),
-            title: event.eventName || event.title || event.name || 'Untitled Event',
-            category: event.type || event.category || event.genre || 'All',
-            date: event.startTime ? new Date(event.startTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (event.date || 'Date TBA'),
-            time: event.startTime ? `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (event.time || 'Time TBA'),
-            location: event.venue?.name || event.location?.name || event.location || 'Location TBA',
-            lat: lat,
-            lng: lng,
-            attendees: event.attendeesCount || event.attendees || event.capacity || 0,
-            price: event.price || '฿0',
-            image: imageUrl,
-            hot: event.isHot || event.hot || event.is_hot || false
-          };
-        }).filter(e => e.lat !== 0 && e.lng !== 0);
-
-        setEvents(mappedEvents);
-      } catch (error) {
-        console.error("❌ Failed to fetch events for minimap:", error);
-      } finally {
-        setLoading(false);
+  const events = React.useMemo(() => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return initialEvents.map(event => {
+      // Robust Coordinate extraction
+      const lat = parseFloat(
+        event.venue?.latitude || 
+        event.venue?.lat || 
+        event.location?.latitude || 
+        event.location?.lat || 
+        event.latitude || 
+        event.lat || 
+        event.venue_lat || 
+        0
+      );
+      const lng = parseFloat(
+        event.venue?.longitude || 
+        event.venue?.lng || 
+        event.location?.longitude || 
+        event.location?.lng || 
+        event.longitude || 
+        event.lng || 
+        event.venue_lng || 
+        0
+      );
+      
+      // Image URL formatting
+      let imageUrl = event.posterImage || event.image || event.poster_image || event.thumbnail;
+      if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('http')) {
+        const cleanPath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+        imageUrl = `${API_BASE_URL}/${cleanPath}`;
       }
-    };
-    fetchEvents();
-  }, []);
+      if (!imageUrl) {
+        imageUrl = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop';
+      }
+
+      return {
+        id: event.id || Math.random(),
+        title: event.eventName || event.title || event.name || 'Untitled Event',
+        category: event.type || event.category || event.genre || 'All',
+        date: event.startTime ? new Date(event.startTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (event.date || 'Date TBA'),
+        time: event.startTime ? `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (event.time || 'Time TBA'),
+        location: event.venue?.name || event.location?.name || event.location || 'Location TBA',
+        lat: lat,
+        lng: lng,
+        attendees: event.attendeesCount || event.attendees || event.capacity || 0,
+        price: event.price || '฿0',
+        image: imageUrl,
+        hot: event.isHot || event.hot || event.is_hot || false
+      };
+    }).filter(e => e.lat !== 0 && e.lng !== 0);
+  }, [initialEvents]);
 
 
 
@@ -137,6 +105,16 @@ export default function MiniMap() {
     });
   }, [events]);
 
+  const zoomTimerRef = React.useRef(null);
+
+  // Throttled move handler to prevent expensive re-renders on every pixel move
+  const handleMove = React.useCallback((e) => {
+    clearTimeout(zoomTimerRef.current);
+    zoomTimerRef.current = setTimeout(() => {
+      setZoomLevel(e.viewState.zoom);
+    }, 200);
+  }, []);
+
   return (
     <div className="relative w-full h-[400px] md:h-[450px] rounded-3xl overflow-hidden group">
       
@@ -166,7 +144,7 @@ export default function MiniMap() {
           style={{ width: '100%', height: '100%' }}
           interactive={true}
           scrollZoom={false} // Disable scroll zoom so it doesn't break page scrolling
-          onMove={(e) => setZoomLevel(e.viewState.zoom)}
+          onMove={handleMove}
           onClick={() => setSelectedEvent(null)}
         >
           {/* User Location */}

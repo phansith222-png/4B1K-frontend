@@ -51,9 +51,9 @@ export default function StatsSection({ songs }) {
                                                 <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end relative z-10 group cursor-crosshair">
                                                     
                                                     <div className="flex w-full justify-center gap-1.5 md:gap-2.5 items-end h-full px-1">
-                                                        {/* แท่ง Spotify */}
+                                                        {/* Spotify Bar */}
                                                         <motion.div initial={{ height: 0 }} whileInView={{ height: `${spotifyPop}%` }} className="w-[40%] md:w-8 bg-[#1DB954] rounded-t-sm relative group-hover:brightness-125 shadow-[0_0_15px_rgba(29,185,84,0.2)]" />
-                                                        {/* แท่ง YouTube */}
+                                                        {/* YouTube Bar */}
                                                         <motion.div initial={{ height: 0 }} whileInView={{ height: `${youtubePop}%` }} className="w-[40%] md:w-8 bg-[#FF0000] rounded-t-sm relative group-hover:brightness-125 shadow-[0_0_15px_rgba(255,0,0,0.2)]" />
                                                     </div>
                                                     

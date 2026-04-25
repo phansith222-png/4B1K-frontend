@@ -1,10 +1,10 @@
 import React from 'react';
-import Reveal from '../Reveal'; // 📌 เพิ่ม Import
+import Reveal from '../Reveal'; // Add Import
 
 export default function LineupSection({ artist }) {
     return (
         <section className="relative w-full py-24 px-6 bg-transparent overflow-hidden">
-            {/* 📌 ใส่ Reveal คลุมกล่องข้อความทั้งหมด */}
+            {/* Wrap text box with Reveal */}
             <Reveal effect="fade-up">
                 <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col gap-4">
                     <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-600 tracking-tighter hover:from-[#D3131F] hover:to-red-900 transition-all duration-500 cursor-default uppercase">

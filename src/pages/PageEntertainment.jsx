@@ -50,7 +50,7 @@ export default function PageEntertainment() {
                 }
                 
                 const allArtistsList = allArtistsRes?.artists || allArtistsRes?.data || allArtistsRes || [];
-                console.log("Total Artists found:", allArtistsList.length);
+                // Logs removed
 
                 // ── Fetch Songs for Top Charts (Database Only) ─────────────
                 // Limit to first 12 artists for a good sample size without overloading
@@ -80,7 +80,7 @@ export default function PageEntertainment() {
                     allSongs = [...allSongs, ...songsWithArtist];
                 });
 
-                console.log("Extraction complete. Total songs found:", allSongs.length);
+                // Logs removed
 
                 // Sort by popularity or views
                 allSongs.sort((a, b) => {

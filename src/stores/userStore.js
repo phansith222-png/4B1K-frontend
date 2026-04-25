@@ -19,7 +19,7 @@ const useUserStore = create(
       setTokenOnly: (token) =>
         set({
           token,
-          isAuthenticated: false, // ยังไม่เปิดสถานะจนกว่าจะดึง Profile สำเร็จ เพื่อมาใหม่******
+          isAuthenticated: false, // Don't enable auth status until Profile is successfully fetched
         }),
 
       logout: () =>
@@ -32,18 +32,18 @@ const useUserStore = create(
 
       getProfile: async () => {
         try {
-          // ดึง Profile จาก Backend (ต้องแนบ Token ไปที่ Header ด้วยใน API ของคุณ)
+          // Fetch Profile from Backend
           const resp = await getProfile()
 
           if (resp.data.user) {
             set({
               user: resp.data.user,
-              isAuthenticated: true // ดึง Profile สำเร็จ ค่อยเปิดสถานะ
+              isAuthenticated: true // Enable auth status on successful fetch
             })
           }
         } catch (error) {
           console.error("Failed to get profile:", error);
-          // ถ้าดึงไม่ได้ (เช่น Token หมดอายุ หรือไม่ถูกต้อง) ให้เตะออก
+          // If fetch fails (e.g. invalid/expired Token), force logout
           get().logout();
         }
       },

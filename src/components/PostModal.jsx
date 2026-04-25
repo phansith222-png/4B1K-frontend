@@ -198,10 +198,10 @@ function PostModal({ post, onClose }) {
           </div>
         </div>
 
-        {/* ช่องกรอกคอมเมนต์ */}
+        {/* Comment input field */}
         <div className="p-4 border-t border-white/5 bg-white/[0.01] flex flex-col gap-3 shrink-0">
 
-          {/* Preview รูปที่แนบ */}
+          {/* Attached image preview */}
           {imagePreview && (
             <div className="relative w-20 h-20 ml-2">
               <img src={imagePreview} className="w-full h-full object-cover rounded-xl border border-white/10" alt="preview" />
@@ -216,7 +216,7 @@ function PostModal({ post, onClose }) {
           )}
 
           <div className="relative flex items-center gap-2">
-            {/* ปุ่มเลือกรูปภาพ */}
+            {/* Select image button */}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isSubmitting}
@@ -225,7 +225,7 @@ function PostModal({ post, onClose }) {
                   ? "text-[#00E5FF] bg-[#00E5FF]/10"
                   : "text-gray-400 hover:text-[#00E5FF] hover:bg-white/5"
               } disabled:opacity-50`}
-              title="แนบรูปภาพ (สูงสุด 5MB)"
+              title="Attach image (Max 5MB)"
             >
               <ImageIcon size={20} />
             </button>
@@ -244,11 +244,11 @@ function PostModal({ post, onClose }) {
               onChange={(e) => setCommentText(e.target.value)}
               disabled={isSubmitting}
               onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
-              placeholder="เขียนความคิดเห็นของคุณ..."
+              placeholder="Write your comment..."
               className="flex-1 bg-white/5 border border-white/10 rounded-full py-3 px-5 pr-12 text-sm text-white focus:outline-none focus:border-pink-500/50 transition-all disabled:opacity-50"
             />
 
-            {/* ปุ่มส่ง */}
+            {/* Submit button */}
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || (!commentText.trim() && !selectedFile)}
