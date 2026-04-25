@@ -29,3 +29,39 @@ export const normalizeArtistList = (res) => {
     const list = res?.artists || res?.data || res || [];
     return Array.isArray(list) ? list : [];
 };
+
+
+/**
+ * จัดระเบียบข้อมูล Event รายเดียว
+ */
+export const normalizeEvent = (res) => {
+    // ดึงก้อนข้อมูลหลักออกมา
+    const data = res?.event || res?.data || res || null;
+
+    if (!data) return { event: null, artists: [], venue: null };
+
+    return {
+        event: {
+            id: data.id,
+            eventName: data.eventName,
+            description: data.description,
+            coverImage: data.coverImage,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            location: data.location, // กรณีเป็น String ธรรมดา
+            status: data.status,
+        },
+        // กรณีที่มีการ include ข้อมูลที่เกี่ยวข้องมาด้วย
+        artists: Array.isArray(data.artists) ? data.artists : [],
+        venue: data.venue || null // กรณีมีตาราง Venue แยก
+    };
+};
+
+/**
+ * จัดระเบียบรายชื่อ Event (ให้เป็น Array เสมอ)
+ */
+export const normalizeEventList = (res) => {
+    // รองรับทั้ง res.events, res.data.events หรือ res.data ที่เป็น array
+    const list = res?.events || res?.data?.events || res?.data || res || [];
+    return Array.isArray(list) ? list : [];
+};
