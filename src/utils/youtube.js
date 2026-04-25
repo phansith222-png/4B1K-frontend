@@ -28,3 +28,23 @@ export const formatTime = (time) => {
     const s = Math.floor(time % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
+
+
+export const loadYouTubeAPI = (onReadyCallback) => {
+    if (window.YT && window.YT.Player) {
+        onReadyCallback();
+        return;
+    }
+
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+    }
+
+    const previousOnReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+        if (previousOnReady) previousOnReady();
+        onReadyCallback();
+    };
+};

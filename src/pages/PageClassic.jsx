@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 // Hooks
 import { useArtists } from '../hooks/useArtists';
 import { useArtistDetail } from '../hooks/useArtistDetail';
-import {getFilteredRandomArtistId} from '../utils/artistHelper'
+import { getFilteredRandomArtistId } from '../utils/artistHelper'
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
 // Constants
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
@@ -48,6 +48,9 @@ export default function PageClassic() {
         changeSong,
         handleSongSelect,
         handleProgressClick,
+        progressBarRef,
+        currentTimeRef,
+        durationRef
     } = useYouTubePlayer(songs, PLAYER_ID, {
         autoplay: searchParams.get('autoplay') === 'true'
     });
@@ -62,20 +65,6 @@ export default function PageClassic() {
         delay: Math.random() * 10,
     })), []);
 
-    // ── States ────────────────────────────────────────────────────────────
-    if (loading) {
-        return <ArtistPageSkeleton />;
-    }
-
-    if (!artist) {
-        return (
-            <div className="bg-[#221c38] min-h-screen flex flex-col items-center justify-center text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                <p className="font-bold text-xl text-[#d83bb6] uppercase">No Artists Found.</p>
-                <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
-            </div>
-        );
-    }
-
     // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="bg-[#1c172e] min-h-screen text-[#FFFFFF] overflow-x-hidden selection:bg-[#d83bb6] selection:text-white">
@@ -83,28 +72,41 @@ export default function PageClassic() {
             {/* Stable hidden player container — DO NOT add key or conditional render */}
             <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
 
-            {/* Animated background */}
-            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <CategoryBackground keyword="r&b" isPlaying={isPlaying} artist={artist} />
-            </div>
+            {/* ── จัดการ State การแสดงผลตรงนี้แทน ── */}
+            {loading ? (
+                <ArtistPageSkeleton />
+            ) : !artist ? (
+                <div className="min-h-[80vh] flex flex-col items-center justify-center text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                    <p className="font-bold text-xl text-[#d83bb6] uppercase">No Artists Found.</p>
+                    <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
+                </div>
+            ) : (
+                <>
+                    {/* Animated background */}
+                    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                        <CategoryBackground keyword="r&b" isPlaying={isPlaying} artist={artist} />
+                    </div>
 
-            <HeroSection artist={artist} events={events} />
-            <BioSection artist={artist} />
-            <MusicPlayerSection
-                artist={artist}
-                songs={songs}
-                currentSongIndex={currentSongIndex}
-                isPlaying={isPlaying}
-                progress={progress}
-                currentTime={currentTime}
-                duration={duration}
-                togglePlayPause={togglePlayPause}
-                changeSong={changeSong}
-                handleSongSelect={handleSongSelect}
-                handleProgressClick={handleProgressClick}
-            />
-            <ConcertSection events={events} artist={artist} />
-            <StatsSection songs={songs} />
+                    <HeroSection artist={artist} events={events} />
+                    <BioSection artist={artist} />
+                    <MusicPlayerSection
+                        artist={artist}
+                        songs={songs}
+                        currentSongIndex={currentSongIndex}
+                        isPlaying={isPlaying}
+                        // 🌟 ส่ง Refs ไปแทน State
+                        progressBarRef={progressBarRef}
+                        currentTimeRef={currentTimeRef}
+                        durationRef={durationRef}
+                        togglePlayPause={togglePlayPause}
+                        changeSong={changeSong}
+                        handleSongSelect={handleSongSelect}
+                        handleProgressClick={handleProgressClick}
+                    />
+                    <ConcertSection events={events} artist={artist} />
+                    <StatsSection songs={songs} />
+                </>
+            )}
         </div>
     );
 }
