@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function MusicPlayerSection({ 
-    artist, songs, currentSongIndex, isPlaying, progress, 
-    currentTime, duration, togglePlayPause, changeSong, handleSongSelect, handleProgressClick 
+    artist, songs, currentSongIndex, isPlaying,
+    progressBarRef, currentTimeRef, durationRef,
+    togglePlayPause, changeSong, handleSongSelect, handleProgressClick 
 }) {
     const currentSong = songs[currentSongIndex] || null;
 
@@ -131,17 +132,17 @@ export default function MusicPlayerSection({
                                 </div>
 
                                 <div className="w-full bg-white/5 rounded-full h-1.5 md:h-2 relative cursor-pointer group z-10" onClick={handleProgressClick}>
-                                    <motion.div 
+                                    <div 
+                                        ref={progressBarRef}
                                         className="bg-gradient-to-r from-[#FF007F] to-[#00F5D4] h-full relative rounded-full"
-                                        style={{ width: `${progress}%` }}
-                                        layout
+                                        style={{ width: '0%', transition: 'width 0.15s linear' }}
                                     >
                                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full shadow-[0_0_10px_#00F5D4,_0_0_20px_#00F5D4] transition-all duration-300 opacity-0 group-hover:opacity-100 md:opacity-100"></div>
-                                    </motion.div>
+                                    </div>
                                 </div>
                                 <div className="flex justify-between text-[10px] md:text-xs text-gray-500 mt-3 font-mono font-bold tracking-widest relative z-10">
-                                    <span>{currentTime}</span>
-                                    <span>{duration}</span>
+                                    <span ref={currentTimeRef}>0:00</span>
+                                    <span ref={durationRef}>0:00</span>
                                 </div>
                             </div>
                         </div>
