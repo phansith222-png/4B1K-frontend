@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { GOOGLE_MAPS_API_KEY } from "../config/env";
 
 const containerStyle = {
   width: "100%",
@@ -11,7 +12,7 @@ const containerStyle = {
 function ConcertMap({ lat, lng, venueName }) {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   });
 
   const [_map, setMap] = useState(null);

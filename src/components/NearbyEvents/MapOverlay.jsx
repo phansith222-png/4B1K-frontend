@@ -7,13 +7,13 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
   return (
     <div className="absolute top-0 left-0 w-full z-10 pointer-events-none">
       {/* Gradient backdrop ด้านบน: มือถือมืดสนิทตามสั่ง / หน้าเว็ปหลักจางลงเหมือนตอนแรก */}
-      <div className="absolute top-0 left-0 w-full h-64 md:h-32 bg-gradient-to-b from-black via-black/95 md:via-black/40 to-transparent -z-10" />
+      <div className="absolute top-0 left-0 w-full h-64 md:h-48 bg-gradient-to-b from-black via-black/95 md:via-black/40 to-transparent -z-10" />
 
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-4 pointer-events-auto">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 md:gap-6">
+      <div className="w-full px-4 md:px-8 pt-6 md:pt-8 pb-4 box-border">
+        <div className="flex flex-col-reverse md:flex-row md:items-start justify-between gap-4 md:gap-6">
 
           {/* Left Side: Title & Search */}
-          <div className="flex flex-col gap-3 md:gap-4">
+          <div className="flex flex-col gap-3 md:gap-4 mt-16 md:mt-20 pointer-events-auto">
             <div>
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
@@ -38,7 +38,7 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="relative max-w-sm"
+              className="relative w-full max-w-xs sm:max-w-sm"
             >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
               <input
@@ -52,14 +52,14 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
           </div>
 
           {/* Right Side: Categories & Location Button (Top Right Stack) */}
-          <div className="flex flex-col items-start md:items-end gap-3 mt-1 md:mt-2 w-full md:w-auto">
+          <div className="flex flex-col items-end gap-3 mt-1 md:mt-2 w-full md:w-auto pointer-events-auto min-w-0">
             
             {/* 7 Categories (2 Rows on Mobile, Single line on Desktop) */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 0.9, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex flex-wrap md:flex-nowrap items-center justify-start md:justify-end gap-2 md:gap-2 py-2 md:py-3 w-full md:w-auto"
+              className="flex flex-wrap md:flex-nowrap items-center justify-end gap-1.5 md:gap-2 py-2 md:py-3 w-full md:w-auto"
             >
               {Object.keys(CATEGORY_COLORS).map(cat => {
                 const isActive = activeCategory === cat;
@@ -69,7 +69,7 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`relative px-4 py-1.5 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 border flex-shrink-0 ${
+                    className={`relative px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 border flex-shrink-0 ${
                       isActive 
                         ? 'text-white border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2)] scale-105' 
                         : 'text-gray-300 border-transparent hover:border-white/20'

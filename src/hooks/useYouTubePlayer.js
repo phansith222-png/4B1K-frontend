@@ -1,12 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { extractYouTubeID } from '../utils/youtube';
+
+const FALLBACK_YOUTUBE_ID = 'dQw4w9WgXcQ';
 
 /**
  * useYouTubePlayer Hook
  * Manages a single YouTube IFrame API player instance for a given set of songs.
  */
 const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
-    const { autoplay = false } = options;
+    const { 
+        autoplay = false, 
+        previewMode = false, 
+        startOffset = 45, 
+        previewDuration = 10,
+        onSongEnded = null,
+        initialIndex = 0
+    } = options;
 
     const [isPlaying, setIsPlaying]               = useState(false);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
@@ -28,7 +37,8 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
     useEffect(() => {
         if (songs.length === 0) return;
 
-        const firstVideoId = extractYouTubeID(songs[0]?.streamUrl) || 'dQw4w9WgXcQ';
+        const targetIdx = initialIndex ?? 0;
+        const firstVideoId = extractYouTubeID(songs[targetIdx]?.streamUrl) || extractYouTubeID(songs[0]?.streamUrl) || FALLBACK_YOUTUBE_ID;
         pendingVideoIdRef.current = firstVideoId;
 
         if (playerRef.current) {
@@ -40,8 +50,8 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
                     playerRef.current.cueVideoById(firstVideoId);
                     setIsPlaying(false);
                 }
-                idxRef.current = 0;
-                setCurrentSongIndex(0);
+                idxRef.current = targetIdx;
+                setCurrentSongIndex(targetIdx);
                 setProgress(0);
                 pendingVideoIdRef.current = null;
             }
@@ -93,14 +103,18 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
                             setIsPlaying(true);
                             event.target.unMute();
                             event.target.setVolume(100);
-                        } else if (event.data === S.PAUSED) {
+                        } else if (event.data === S.PAUSED || event.data === S.CUED || event.data === S.UNSTARTED) {
                             setIsPlaying(false);
                         } else if (event.data === S.ENDED) {
-                            const next = (idxRef.current + 1) % songsRef.current.length;
-                            const nextId = extractYouTubeID(songsRef.current[next]?.streamUrl) || 'dQw4w9WgXcQ';
-                            playerRef.current?.loadVideoById(nextId);
-                            idxRef.current = next;
-                            setCurrentSongIndex(next);
+                            if (onSongEnded) {
+                                onSongEnded();
+                            } else {
+                                const next = (idxRef.current + 1) % songsRef.current.length;
+                                const nextId = extractYouTubeID(songsRef.current[next]?.streamUrl) || FALLBACK_YOUTUBE_ID;
+                                playerRef.current?.loadVideoById(nextId);
+                                idxRef.current = next;
+                                setCurrentSongIndex(next);
+                            }
                         }
                     },
                     onError: (err) => {
@@ -117,31 +131,61 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
                 tag.src = 'https://www.youtube.com/iframe_api';
                 document.head.appendChild(tag);
             }
+            
+            // ใช้ Callback Queue เพื่อรองรับหลาย Player พร้อมกันโดยไม่ต้องใช้ Polling (setInterval)
+            window.YTCallbacks = window.YTCallbacks || [];
+            window.YTCallbacks.push(initPlayer);
+
             const previousOnReady = window.onYouTubeIframeAPIReady;
             window.onYouTubeIframeAPIReady = () => {
-                if (previousOnReady) previousOnReady();
-                initPlayer();
+                if (typeof previousOnReady === 'function') previousOnReady();
+                window.YTCallbacks.forEach(cb => cb());
+                window.YTCallbacks = [];
             };
-            const checkInterval = setInterval(() => {
-                if (window.YT && window.YT.Player) {
-                    initPlayer();
-                    clearInterval(checkInterval);
-                }
-            }, 500);
-            return () => clearInterval(checkInterval);
         } else {
             initPlayer();
         }
     }, [songs, playerId]);
+
+    // ── Preview Mode Logic ────────────────────────────────────────────────
+    useEffect(() => {
+        if (previewMode && isPlaying && isPlayerReady && playerRef.current) {
+            const player = playerRef.current;
+            // Seek to start offset when playback begins
+            if (typeof player.seekTo === 'function') {
+                player.seekTo(startOffset, true);
+            }
+            
+            const timer = setTimeout(() => {
+                setIsPlaying(false);
+                if (typeof player.pauseVideo === 'function') {
+                    player.pauseVideo();
+                }
+            }, previewDuration * 1000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [isPlaying, currentSongIndex, isPlayerReady]);
 
     // ── Time/Progress Updates ─────────────────────────────────────────────
     useEffect(() => {
         let interval;
         if (isPlaying && isPlayerReady && playerRef.current) {
             interval = setInterval(() => {
-                const current = playerRef.current.getCurrentTime();
-                const total = playerRef.current.getDuration();
-                if (total > 0) {
+                const player = playerRef.current;
+                if (!player || typeof player.getCurrentTime !== 'function') return;
+
+                const current = player.getCurrentTime();
+                const total = player.getDuration();
+                
+                if (previewMode) {
+                    // Calculate progress based on the preview window
+                    const elapsed = current - startOffset;
+                    const percent = Math.min(Math.max((elapsed / previewDuration) * 100, 0), 100);
+                    setProgress(percent);
+                    setCurrentTime(formatTime(Math.max(elapsed, 0)));
+                    setDuration(formatTime(previewDuration));
+                } else if (total > 0) {
                     setProgress((current / total) * 100);
                     setCurrentTime(formatTime(current));
                     setDuration(formatTime(total));
@@ -149,7 +193,7 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
             }, 500);
         }
         return () => clearInterval(interval);
-    }, [isPlaying, isPlayerReady]);
+    }, [isPlaying, isPlayerReady, previewMode, startOffset, previewDuration]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -157,12 +201,14 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-    const togglePlayPause = (e) => {
+    const togglePlayPause = useCallback((e) => {
         if (e) e.stopPropagation();
         if (!playerRef.current || !isPlayerReady) return;
         
         try {
-            if (isPlaying) {
+            const state = playerRef.current.getPlayerState();
+            // 1 = PLAYING
+            if (state === 1) {
                 playerRef.current.pauseVideo();
             } else {
                 if (typeof playerRef.current.unMute === 'function') {
@@ -174,29 +220,29 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
         } catch (err) {
             console.error("Playback Error:", err);
         }
-    };
+    }, [isPlaying, isPlayerReady]);
 
-    const changeSong = (direction, e) => {
+    const changeSong = useCallback((direction, e) => {
         if (e) e.stopPropagation();
         if (!playerRef.current || songs.length === 0) return;
         const next = (currentSongIndex + direction + songs.length) % songs.length;
-        const nextId = extractYouTubeID(songs[next]?.streamUrl) || 'dQw4w9WgXcQ';
+        const nextId = extractYouTubeID(songs[next]?.streamUrl) || FALLBACK_YOUTUBE_ID;
         playerRef.current.loadVideoById(nextId);
         setCurrentSongIndex(next);
         idxRef.current = next;
-    };
+    }, [songs, currentSongIndex]);
 
-    const handleSongSelect = (index, e) => {
+    const handleSongSelect = useCallback((index, e) => {
         if (e) e.stopPropagation();
         if (!playerRef.current || songs.length === 0) return;
-        const nextId = extractYouTubeID(songs[index]?.streamUrl) || 'dQw4w9WgXcQ';
+        const nextId = extractYouTubeID(songs[index]?.streamUrl) || FALLBACK_YOUTUBE_ID;
         playerRef.current.loadVideoById(nextId);
         setCurrentSongIndex(index);
         idxRef.current = index;
         setIsPlaying(true);
-    };
+    }, [songs]);
 
-    const handleProgressClick = (e) => {
+    const handleProgressClick = useCallback((e) => {
         if (e) e.stopPropagation();
         if (!playerRef.current || !isPlayerReady) return;
         const rect = e.currentTarget.getBoundingClientRect();
@@ -204,7 +250,18 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
         const percentage = x / rect.width;
         const total = playerRef.current.getDuration();
         playerRef.current.seekTo(total * percentage, true);
-    };
+    }, [isPlayerReady]);
+
+    const setVolume = useCallback((vol) => {
+        // vol: 0–100
+        if (!playerRef.current || !isPlayerReady) return;
+        playerRef.current.setVolume(Math.max(0, Math.min(100, vol)));
+        if (vol === 0) {
+            playerRef.current.mute();
+        } else {
+            playerRef.current.unMute();
+        }
+    }, [isPlayerReady]);
 
     return {
         isPlaying,
@@ -216,7 +273,8 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
         togglePlayPause,
         changeSong,
         handleSongSelect,
-        handleProgressClick
+        handleProgressClick,
+        setVolume,
     };
 };
 

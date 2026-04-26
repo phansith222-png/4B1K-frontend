@@ -4,6 +4,8 @@ import { getAllArtists } from '../api/artist';
 
 // นำเข้า Components ย่อย
 import BackgroundEffects from '../components/PageEntertainmentComponent/BackgroundEffects';
+import PageLoader from '../components/PageLoader';
+import { SkeletonHero, SkeletonGrid } from '../components/Skeleton';
 import HeroSection from '../components/PageEntertainmentComponent/HeroSection';
 import TaglineSection from '../components/PageEntertainmentComponent/TaglineSection';
 import LabelsCategorySection from '../components/PageEntertainmentComponent/LabelsCategorySection';
@@ -12,11 +14,9 @@ import BottomTextSection from '../components/PageEntertainmentComponent/BottomTe
 import TopChartsSection from '../components/PageEntertainmentComponent/TopChartsSection';
 import Reveal from '../components/Reveal';
 import BackButton from '../components/BackButton';
+import { usePlayerStore } from '../stores/playerStore';
+
 import { getArtistById } from '../api/artist';
-import useYouTubePlayer from '../hooks/useYouTubePlayer';
-
-const PLAYER_ID = 'yt-player-hidden-ent';
-
 export default function PageEntertainment() {
     const navigate = useNavigate();
     const [agencies, setAgencies] = useState([]);
@@ -29,12 +29,10 @@ export default function PageEntertainment() {
     const {
         isPlaying,
         currentSongIndex,
-        handleSongSelect,
-    } = useYouTubePlayer(allChartSongs, PLAYER_ID, {
-        previewMode: true,
-        startOffset: 45,
-        previewDuration: 10
-    });
+        controls,
+        playSongs,
+        songs: globalSongs
+    } = usePlayerStore();
 
     useEffect(() => {
         const fetchAgenciesData = async () => {
@@ -48,39 +46,36 @@ export default function PageEntertainment() {
                     console.error("Failed to fetch all artists:", err);
                     allArtistsRes = [];
                 }
-                
+
                 const allArtistsList = allArtistsRes?.artists || allArtistsRes?.data || allArtistsRes || [];
                 console.log("Total Artists found:", allArtistsList.length);
 
                 // ── Fetch Songs for Top Charts (Database Only) ─────────────
-                // Limit to first 12 artists for a good sample size without overloading
                 const chartArtists = allArtistsList.slice(0, 12);
-                
-                // ✅ FIX: Use getArtistById instead of getSongsByArtist (avoid 404)
+
                 const detailResults = await Promise.allSettled(
                     chartArtists.map(a => getArtistById(a.id || a._id))
                 );
-                
+
                 let allSongs = [];
                 detailResults.forEach((res, idx) => {
                     if (res.status !== "fulfilled") return;
-                    
+
                     const r = res.value;
                     const artist = r?.artist || r?.data || r;
                     const artistName = artist.artistName || artist.name || "Unknown Artist";
-                    
+
                     const rawSongs = Array.isArray(artist?.songs) ? artist.songs : [];
 
                     const songsWithArtist = rawSongs.map((s, sIdx) => ({
                         ...s,
                         id: s.id || s._id || `s-${idx}-${sIdx}`,
+                        artistId: artist.id || artist._id,
                         artistName,
                         coverImage: s.coverImage || artist.profileImage || artist.artistImage || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=100&auto=format&fit=crop"
                     }));
                     allSongs = [...allSongs, ...songsWithArtist];
                 });
-
-                console.log("Extraction complete. Total songs found:", allSongs.length);
 
                 // Sort by popularity or views
                 allSongs.sort((a, b) => {
@@ -92,7 +87,7 @@ export default function PageEntertainment() {
                 // Group by platform
                 const yt = allSongs.filter(s => s.streamUrl?.toLowerCase().includes('youtube') || s.streamUrl?.toLowerCase().includes('youtu.be'));
                 const sp = allSongs.filter(s => s.streamUrl?.toLowerCase().includes('spotify'));
-                
+
                 let finalYt = yt.slice(0, 5);
                 let finalSp = sp.slice(0, 5);
 
@@ -151,51 +146,56 @@ export default function PageEntertainment() {
     const topAgencies = agencies.slice(0, 4);
     const indieAgencies = agencies.slice(4);
 
-    if (loading) {
-        return (
-            <div className="bg-[#0B0C10] min-h-screen flex flex-col items-center justify-center text-[#00E5FF] relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#7000FF] opacity-20 blur-[80px] rounded-full animate-pulse"></div>
-                <div className="w-16 h-16 border-4 border-gray-800 border-t-[#00E5FF] rounded-full animate-spin z-10"></div>
-                <p className="mt-4 font-bold tracking-widest animate-pulse text-white z-10 uppercase text-sm">Loading Labels...</p>
-            </div>
-        );
-    }
-
+    // ── Render ────────────────────────────────────────────────────────────
     return (
-        <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden selection:bg-[#00E5FF] selection:text-black relative">
+        <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden hide-scrollbar selection:bg-[#00E5FF] selection:text-black relative">
             <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
-            
+
+            {/* Background Effects - Always Renders */}
             <BackgroundEffects />
-            <Reveal>
-                <HeroSection navigate={navigate} />
-            </Reveal>
 
-            {/* 🎯 TOP CHARTS SECTION */}
-            <TopChartsSection 
-                youtubeSongs={youtubeSongs}
-                spotifySongs={spotifySongs}
-                allChartSongs={allChartSongs}
-                currentSongIndex={currentSongIndex}
-                isPlaying={isPlaying}
-                handleSongSelect={handleSongSelect}
-            />
+            {loading ? (
+                <div className="pt-20">
+                    <SkeletonHero />
+                    <div className="px-6 md:px-12 mt-12">
+                        <SkeletonGrid count={5} />
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <Reveal>
+                        <HeroSection navigate={navigate} />
+                    </Reveal>
 
-            <Reveal>
-                <TaglineSection />
-            </Reveal>
-            <Reveal>
-                <LabelsCategorySection topAgencies={topAgencies} indieAgencies={indieAgencies} cardColors={cardColors} navigate={navigate} />
-            </Reveal>
-            <Reveal>
-                <IndustryStatsSection agencies={agencies} totalArtists={totalArtists} />
-            </Reveal>
-            <Reveal>
-                <BottomTextSection />
-            </Reveal>
+                    <TopChartsSection
+                        youtubeSongs={youtubeSongs}
+                        spotifySongs={spotifySongs}
+                        allChartSongs={allChartSongs}
+                        currentSongIndex={globalSongs === allChartSongs ? currentSongIndex : -1}
+                        isPlaying={globalSongs === allChartSongs ? isPlaying : false}
+                        handleSongSelect={(idx) => {
+                            if (globalSongs !== allChartSongs) {
+                                playSongs({ artistName: 'Top Charts', profileImage: allChartSongs[idx]?.coverImage }, allChartSongs, idx);
+                            } else if (controls?.handleSongSelect) {
+                                controls.handleSongSelect(idx);
+                            }
+                        }}
+                    />
 
-            {/* Stable hidden player container */}
-            <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
-
+                    <Reveal>
+                        <TaglineSection />
+                    </Reveal>
+                    <Reveal>
+                        <LabelsCategorySection topAgencies={topAgencies} indieAgencies={indieAgencies} cardColors={cardColors} navigate={navigate} />
+                    </Reveal>
+                    <Reveal>
+                        <IndustryStatsSection agencies={agencies} totalArtists={totalArtists} />
+                    </Reveal>
+                    <Reveal>
+                        <BottomTextSection />
+                    </Reveal>
+                </>
+            )}
         </div>
     );
 }

@@ -4,7 +4,7 @@ import Reveal from '../Reveal';
 export default function HeroSection() {
     return (
         <Reveal effect="fade-up">
-            <section className="mb-12 text-center md:text-left mt-4 px-2">
+            <section className="text-center md:text-left mt-4 px-2">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="max-w-3xl">
                         <span className="text-[#00E5FF] font-black text-[10px] md:text-xs uppercase tracking-[0.5em] mb-4 block">Event Portal</span>

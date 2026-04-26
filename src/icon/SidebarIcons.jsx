@@ -5,19 +5,19 @@ export const SidebarItem = ({ icon, label, active = false, badge, onClick, activ
   return (
     <li
       onClick={onClick}
-      className={`flex items-center justify-between gap-4 cursor-pointer p-3.5 rounded-2xl transition-all duration-300 ${active
-        ? `bg-gradient-to-r ${activeColor} text-white shadow-[0_0_20px_rgba(124,77,255,0.3)] translate-x-1`
-        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+      className={`flex items-center justify-between gap-4 cursor-pointer p-4 rounded-2xl transition-all duration-300 ${active
+        ? `bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)] translate-x-1 border border-white/10`
+        : 'text-white hover:bg-white/5'
         }`}
     >
       <div className="flex items-center gap-4">
-        <div className={`${active ? `scale-110 ${iconColor}` : ''} transition-transform`}>
+        <div className={`${active ? `scale-110 text-[#00E5FF]` : ''} transition-transform`}>
           {icon}
         </div>
-        <span className={`font-black text-sm uppercase tracking-tighter ${active ? 'text-white' : ''}`}>{label}</span>
+        <span className={`font-bold text-[15px] tracking-tight ${active ? 'text-white' : ''}`}>{label}</span>
       </div>
       {badge && (
-        <span className="text-[10px] font-black bg-white text-[#7C4DFF] w-5 h-5 flex items-center justify-center rounded-full shadow-lg">
+        <span className="text-[10px] font-black bg-[#00E5FF] text-black w-5 h-5 flex items-center justify-center rounded-full shadow-lg">
           {badge}
         </span>
       )}

@@ -6,8 +6,7 @@ import { ExternalLink, MapPin } from 'lucide-react';
 import EventMarker from '../../NearbyEvents/EventMarker';
 import EventPopup from '../../NearbyEvents/EventPopup';
 import { getAllEvents } from '../../../api/event';
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+import { API_URL, MAPBOX_TOKEN } from '../../../config/env';
 
 
 export default function MiniMap() {
@@ -41,7 +40,7 @@ export default function MiniMap() {
           eventData = res.result;
         }
 
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const API_BASE_URL = API_URL;
 
         const mappedEvents = eventData.map(event => {
           // Robust Coordinate extraction

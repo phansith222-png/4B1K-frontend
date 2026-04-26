@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 export default function TaglineSection() {
     return (
         <section className="relative w-full py-24 px-6 border-y border-white/5 bg-gradient-to-b from-[#11131a] to-[#0B0C10] z-10">
-            <div className="max-w-5xl mx-auto text-center flex flex-col gap-8">
+            <div className="max-w-[1600px] mx-auto text-center flex flex-col gap-8">
                 <motion.h2 
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}

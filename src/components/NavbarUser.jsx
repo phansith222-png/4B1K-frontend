@@ -78,6 +78,13 @@ export default function NavbarUser({ isLanding = false }) {
         navigate(path);
     };
 
+    const handleLinkClick = (e, targetPath) => {
+        if (location.pathname === targetPath) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     const handleLogout = () => {
         logout();
         setIsArtistMenuOpen(false);
@@ -102,11 +109,20 @@ export default function NavbarUser({ isLanding = false }) {
                 @keyframes shine{to{background-position:200% center}}
             `}</style>
 
-            <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/95 backdrop-blur-md relative z-50 border-b border-white/5 shadow-lg font-sans">
+            <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/98 relative z-50 border-b border-white/5 shadow-lg font-sans">
 
-                {/* Left: Logo (flex-1 to balance right side) */}
-                <div className="flex-1 flex justify-start">
-                    <div className="flex items-center gap-2 cursor-pointer z-50" onClick={() => navigate('/landing')}>
+                {/* Left: Logo + Search */}
+                <div className="flex-1 flex justify-start items-center gap-6">
+                    <div 
+                        className="flex items-center gap-2 cursor-pointer z-50 shrink-0" 
+                        onClick={(e) => {
+                            if (location.pathname === '/landing') {
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                                navigate('/landing');
+                            }
+                        }}
+                    >
                         <div className="flex items-end gap-[2px] h-6 w-5">
                             <div className="w-1 rounded-full bar-1" />
                             <div className="w-1 rounded-full bar-2" />
@@ -115,13 +131,18 @@ export default function NavbarUser({ isLanding = false }) {
                         </div>
                         <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                     </div>
+
+                    {/* Desktop Search Bar (Now on the left) */}
+                    <div className="hidden xl:block">
+                        <NavSearchBar navigate={navigate} />
+                    </div>
                 </div>
 
                 {/* Center: Navigation (Absolute Center) */}
                 <motion.nav
                     animate={{
                         opacity: 1,
-                        x: isSearchOpen ? '-120%' : '-50%',
+                        x: '-50%',
                         pointerEvents: 'auto'
                     }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -129,10 +150,14 @@ export default function NavbarUser({ isLanding = false }) {
                 >
                     <ul className="flex items-center gap-10 text-[15px] font-bold">
                         <li className="relative group">
-                            <Link to="/new-event" className={`transition-all duration-300 ${isConcertActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>
-                                Concert Event
+                            <Link 
+                                to="/home" 
+                                onClick={(e) => handleLinkClick(e, '/home')}
+                                className={`transition-all duration-300 ${isCommunityActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
+                            >
+                                Community
                             </Link>
-                            {isConcertActive && <motion.div layoutId="nav-active-user" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
+                            {isCommunityActive && <motion.div layoutId="nav-active-user" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative">
                             <button
@@ -152,20 +177,20 @@ export default function NavbarUser({ isLanding = false }) {
                             {isArtistActive && !isArtistMenuOpen && <motion.div layoutId="nav-active-user" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative group">
-                            <Link to="/home" className={`transition-all duration-300 ${isCommunityActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>
-                                Community
+                            <Link 
+                                to="/new-event" 
+                                onClick={(e) => handleLinkClick(e, '/new-event')}
+                                className={`transition-all duration-300 ${isConcertActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
+                            >
+                                Concert Event
                             </Link>
-                            {isCommunityActive && <motion.div layoutId="nav-active-user" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
+                            {isConcertActive && <motion.div layoutId="nav-active-user" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                     </ul>
                 </motion.nav>
 
                 {/* Right: Search + Actions (flex-1) */}
                 <div className="flex-1 flex items-center justify-end gap-3 md:gap-5 z-50">
-                    {/* Desktop Search Bar (Placed here to be near Community but not affect centering) */}
-                    <div className="hidden xl:block mr-4">
-                        <NavSearchBar navigate={navigate} />
-                    </div>
 
                     {!user || isLanding ? (
                         <div className="flex items-center gap-4 whitespace-nowrap">

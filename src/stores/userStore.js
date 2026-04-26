@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { editProfile, getProfile } from "../api/auth";
-
+import { STORAGE_KEYS } from "../config/constants";
 const useUserStore = create(
   persist(
     (set, get) => ({
@@ -61,7 +61,7 @@ const useUserStore = create(
 
     }),
     {
-      name: "auth-storage",
+      name: STORAGE_KEYS.AUTH,
     }
   )
 );

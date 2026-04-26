@@ -7,29 +7,41 @@ export default function ConcertSection({ events, artist }) {
     const navigate = useNavigate();
     return (
         <section className="relative w-full py-24 px-6">
-            <div className="max-w-7xl mx-auto relative z-10">
+            <div className="max-w-[1440px] mx-auto relative z-10">
 
                 <Reveal effect="fade-up">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-14">
                         <div className="flex items-center gap-4">
                             <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-white">
-                                LIVE <span className="text-[#00E5FF]">JOURNEY</span>
+                                CONCERT <span className="text-[#00E5FF]">EVENT</span>
                             </h3>
                         </div>
-                        <button onClick={() => navigate(`/new-event?artistId=${artist?.id}`)} className="flex items-center gap-2 text-xs font-bold text-[#7000FF] hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group">
-                            VIEW ALL SHOWS
-                            <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                        </button>
+                        <motion.button 
+                            onClick={() => {
+                                const eventId = events.length > 0 ? (events[0].event?.id || events[0].id) : '';
+                                const search = artist?.artistName || artist?.name || "";
+                                navigate(`/nearby-events?search=${encodeURIComponent(search)}${eventId ? `&eventId=${eventId}` : ''}`);
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center gap-3 text-[10px] font-black text-cyan-400 hover:text-white uppercase tracking-[0.4em] transition-all bg-cyan-950/20 hover:bg-cyan-500/20 px-8 py-4 rounded-xl border border-cyan-500/20 shadow-[0_0_20px_rgba(0,229,255,0.1)]"
+                        >
+                            PORTAL TO EVENTS
+                            <span className="group-hover:translate-x-2 transition-transform duration-500">&raquo;</span>
+                        </motion.button>
                     </div>
                 </Reveal>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                    {events.slice(0, 4).map((item, idx) => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 md:gap-6">
+                    {events.slice(0, 5).map((item, idx) => {
                         const evt = item.event || item; 
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => navigate(`/new-event?artistId=${artist?.id}`)}
+                                onClick={() => {
+                                    const search = artist?.artistName || artist?.name || "";
+                                    const eventId = evt.id || evt._id;
+                                    navigate(`/nearby-events?search=${encodeURIComponent(search)}&eventId=${eventId}`);
+                                }}
                                 className="relative rounded-[2rem] overflow-hidden group bg-[#050505] shadow-[0_10px_30px_rgba(0,0,0,0.5)] h-[400px] cursor-pointer transition-colors duration-500"
                             >
                                 <img
@@ -53,7 +65,7 @@ export default function ConcertSection({ events, artist }) {
                         </Reveal>
                     )})}
                     {events.length === 0 && (
-                        <p className="text-gray-500 py-10 col-span-4 text-center border border-gray-800 bg-[#111] rounded-[2rem]">No upcoming events scheduled.</p>
+                        <p className="text-gray-500 py-10 col-span-5 text-center border border-gray-800 bg-[#111] rounded-[2rem]">No upcoming events scheduled.</p>
                     )}
                 </div>
             </div>

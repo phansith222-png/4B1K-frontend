@@ -1,107 +1,117 @@
-import { useState, useEffect } from 'react';
-import { getArtistById, getSongsByArtist, getEventsByArtist, getAllArtists } from '../api/artist';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { 
+    getArtistById, getSongsByArtist, getEventsByArtist, getAllArtists
+} from '../api/artist';
+import { getImageUrl } from '../utils/imageUtils';
 
 /**
- * Custom hook to fetch artist, songs, and events data.
- *
- * @param {number[]|null} genreArtistIds - Array of artist IDs for this genre (used for random selection)
- * @param {string|null} queryArtistId - Specific artist ID from URL query param (overrides random)
- * @returns {{ artist, songs, events, loading }}
+ * Hook to fetch artist, songs, and events data from the backend.
+ * REVERTED: Removed all custom image fallback logic.
  */
 const useArtistData = (genreArtistIds, queryArtistId) => {
-    const [artist, setArtist] = useState(null);
-    const [songs, setSongs] = useState([]);
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const normalizedId = queryArtistId ? String(queryArtistId) : null;
+    
+    const [state, setState] = useState({
+        artist: null,
+        songs: [],
+        events: [],
+        loading: true,
+        error: false
+    });
 
-    useEffect(() => {
-        const fetchArtist = async () => {
-            try {
-                setLoading(true);
+    // Use ref to prevent multiple simultaneous fetches
+    const fetchIdRef = useRef(0);
 
-                // Fetch all artists and filter by genre
-                let allArtistsRes;
-                try {
-                    allArtistsRes = await getAllArtists();
-                } catch (err) {
-                    console.error('Failed to fetch all artists:', err);
-                    allArtistsRes = [];
+    const fetchData = useCallback(async (isMounted) => {
+        const currentFetchId = ++fetchIdRef.current;
+        if (isMounted) setState(prev => ({ ...prev, loading: true }));
+        
+        try {
+            const extract = (res, key) => {
+                if (!res) return null;
+                if (Array.isArray(res)) return res;
+                if (res[key] && Array.isArray(res[key])) return res[key];
+                if (res[key]) return res[key];
+                const nested = res.data || res.result;
+                if (nested) {
+                    if (Array.isArray(nested)) return nested;
+                    if (nested[key]) return nested[key];
+                    return nested;
                 }
+                return res;
+            };
 
-                const allArtistsList =
-                    allArtistsRes?.artists ||
-                    allArtistsRes?.data ||
-                    allArtistsRes ||
-                    [];
+            let mainArtist = null;
+            let rawSongs = [];
+            let rawEvents = [];
 
-                let filteredArtists = allArtistsList.filter((a) =>
-                    genreArtistIds.includes(a.id)
-                );
+            if (normalizedId) {
+                const [artRes, sRes, eRes] = await Promise.all([
+                    getArtistById(Number(normalizedId)).catch(() => null),
+                    getSongsByArtist(Number(normalizedId)).catch(() => null),
+                    getEventsByArtist(Number(normalizedId)).catch(() => null),
+                ]);
 
-                // Fallback: use all artists if genre filter returns nothing
-                if (filteredArtists.length === 0 && allArtistsList.length > 0) {
-                    filteredArtists = allArtistsList;
-                }
+                if (currentFetchId !== fetchIdRef.current) return;
 
-                // Determine which artist ID to load
-                let artistId;
-                if (queryArtistId) {
-                    // Specific artist requested via URL param
-                    artistId = Number(queryArtistId);
-                } else if (filteredArtists.length > 0) {
-                    // Pick a random artist from the genre
-                    const randomIndex = Math.floor(Math.random() * filteredArtists.length);
-                    artistId = filteredArtists[randomIndex].id;
-                } else {
-                    setArtist(null);
-                    setLoading(false);
+                mainArtist = extract(artRes, 'artist');
+                rawSongs = extract(sRes, 'songs') || mainArtist?.songs || [];
+                rawEvents = extract(eRes, 'events') || mainArtist?.events || [];
+            } else {
+                const allArtRes = await getAllArtists().catch(() => null);
+                if (currentFetchId !== fetchIdRef.current) return;
+
+                const allList = extract(allArtRes, 'artists') || [];
+                const genreIds = (genreArtistIds || []).map(id => Number(id));
+                let filtered = allList.filter(a => genreIds.includes(Number(a.id || a._id)));
+                
+                if (filtered.length === 0 && allList.length > 0) filtered = allList;
+
+                if (filtered.length === 0) {
+                    if (isMounted) setState({ artist: null, songs: [], events: [], loading: false, error: false });
                     return;
                 }
 
-                // Fetch artist details, songs, and events in parallel
-                const [artistRes, songsRes, eventsRes] = await Promise.all([
-                    getArtistById(artistId).catch(() => null),
-                    getSongsByArtist(artistId).catch(() => null),
-                    getEventsByArtist(artistId).catch(() => null),
+                const picked = filtered[Math.floor(Math.random() * filtered.length)];
+                const [artRes, sRes, eRes] = await Promise.all([
+                    getArtistById(Number(picked.id || picked._id)).catch(() => picked),
+                    getSongsByArtist(Number(picked.id || picked._id)).catch(() => null),
+                    getEventsByArtist(Number(picked.id || picked._id)).catch(() => null),
                 ]);
 
-                const mainArtist =
-                    artistRes?.artist ||
-                    artistRes?.data ||
-                    artistRes ||
-                    filteredArtists[0];
-                setArtist(mainArtist);
+                if (currentFetchId !== fetchIdRef.current) return;
 
-                // Normalize songs response
-                const extractedSongs = (() => {
-                    if (Array.isArray(songsRes)) return songsRes;
-                    if (Array.isArray(songsRes?.data)) return songsRes.data;
-                    if (Array.isArray(songsRes?.songs)) return songsRes.songs;
-                    if (Array.isArray(mainArtist?.songs)) return mainArtist.songs;
-                    return [];
-                })();
-                setSongs(extractedSongs);
-
-                // Normalize events response
-                const extractedEvents = (() => {
-                    if (Array.isArray(eventsRes)) return eventsRes;
-                    if (Array.isArray(eventsRes?.data)) return eventsRes.data;
-                    if (Array.isArray(eventsRes?.events)) return eventsRes.events;
-                    if (Array.isArray(mainArtist?.events)) return mainArtist.events;
-                    return [];
-                })();
-                setEvents(extractedEvents);
-            } catch (error) {
-                console.error('Error fetching artist data:', error);
-            } finally {
-                setLoading(false);
+                mainArtist = extract(artRes, 'artist') || picked;
+                rawSongs = extract(sRes, 'songs') || mainArtist?.songs || [];
+                rawEvents = extract(eRes, 'events') || mainArtist?.events || [];
             }
-        };
 
-        fetchArtist();
-    }, [queryArtistId]); // re-fetch when URL query changes
+            if (isMounted && currentFetchId === fetchIdRef.current) {
+                setState({
+                    artist: mainArtist,
+                    songs: rawSongs,
+                    events: rawEvents,
+                    loading: false,
+                    error: false
+                });
+            }
+        } catch (error) {
+            console.error('[useArtistData] Error:', error);
+            if (isMounted && currentFetchId === fetchIdRef.current) {
+                setState(prev => ({ ...prev, loading: false, error: true }));
+            }
+        }
+    }, [normalizedId, JSON.stringify(genreArtistIds)]);
 
-    return { artist, songs, events, loading };
+    useEffect(() => {
+        let isMounted = true;
+        // Keep old data but set loading to true for background fetch
+        setState(prev => ({ ...prev, loading: true }));
+        fetchData(isMounted);
+        return () => { isMounted = false; };
+    }, [normalizedId, JSON.stringify(genreArtistIds), fetchData]);
+
+    return state;
 };
 
 export default useArtistData;

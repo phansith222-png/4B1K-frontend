@@ -1,5 +1,6 @@
-import React, { useRef, useState, useCallback } from "react";
-import { Plus, Music4, X, Loader2 } from "lucide-react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { Image as ImageIcon, Music4, X, Loader2, Send } from "lucide-react";
 import { PostToolButton } from "../icon/SidebarIcons";
 import useUserStore from "../stores/userStore";
 import usePostStore from "../stores/postStore";
@@ -11,12 +12,34 @@ export default function PostCreator() {
   // Each entry: { file: File, previewUrl: string }
   const [imageItems, setImageItems] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
   const [selectedArtists, setSelectedArtists] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const createPost = usePostStore((state) => state.createPost);
   const user = useUserStore((state) => state.user);
+
+  // ── Scroll Lock ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isModalOpen]);
+
+  const closeModal = useCallback(() => {
+    if (isUploading) return;
+    setContent("");
+    imageItems.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+    setImageItems([]);
+    setSelectedArtists([]);
+    setIsModalOpen(false);
+  }, [isUploading, imageItems]);
 
   // ── Images ────────────────────────────────────────────────────────────────
   const hdlFileChange = (e) => {
@@ -76,6 +99,7 @@ export default function PostCreator() {
       setContent("");
       setImageItems([]);
       setSelectedArtists([]);
+      setIsModalOpen(false); // Close modal on success
     } catch (error) {
       console.error("Create post failed:", error);
     } finally {
@@ -86,130 +110,168 @@ export default function PostCreator() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
-      <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl relative z-20">
-        {/* Hidden file input */}
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={hdlFileChange}
-        />
+      {/* ── TRIGGER BAR ── */}
+      <div 
+        onClick={() => setIsModalOpen(true)}
+        className="bg-[#1A1B23] border border-white/10 rounded-[32px] p-4 shadow-xl relative z-20 group/creator cursor-pointer hover:border-[#00E5FF]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
+      >
+        <div className="flex items-center gap-5 px-1">
+          {/* Avatar (with glow) */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] rounded-full blur-md opacity-20 group-hover/creator:opacity-40 transition-opacity" />
+            <img
+              src={
+                user?.profileImage || user?.avatar ||
+                `https://ui-avatars.com/api/?name=${user?.username || "User"}&background=random&color=fff`
+              }
+              className="w-11 h-11 rounded-full border border-white/20 object-cover relative z-10 shadow-lg"
+              alt="User Avatar"
+            />
+          </div>
 
+          {/* Trigger Text (Vibrant Gradient) */}
+          <div className="flex-1 py-1">
+            <span className="text-[16px] font-black bg-gradient-to-r from-[#7C4DFF] via-[#00E5FF] to-[#7C4DFF] bg-[length:200%_auto] animate-shimmer bg-clip-text text-transparent opacity-90 group-hover/creator:opacity-100 transition-all tracking-tight">
+              Share your concert vibe...
+            </span>
+          </div>
 
-        <div className="flex gap-4">
-          {/* Avatar */}
-          <img
-            src={
-              user?.profileImage || user?.avatar ||
-              `https://ui-avatars.com/api/?name=${user?.username || "User"}&background=random&color=fff`
-            }
-            className="w-12 h-12 rounded-full border border-white/10 object-cover shrink-0 shadow-lg"
-            alt="User Avatar"
+          {/* Decorative Icons (Colored & Glowing) */}
+          <div className="flex items-center gap-4 pr-3">
+            <div className="relative group/icon">
+              <div className="absolute inset-0 bg-[#00E5FF] blur-lg opacity-0 group-hover/creator:opacity-30 transition-opacity" />
+              <ImageIcon size={22} className="text-[#00E5FF] relative z-10 transition-transform group-hover/creator:scale-110" />
+            </div>
+            <div className="relative group/icon">
+              <div className="absolute inset-0 bg-[#7C4DFF] blur-lg opacity-0 group-hover/creator:opacity-30 transition-opacity" />
+              <Music4 size={22} className="text-[#7C4DFF] relative z-10 transition-transform group-hover/creator:scale-110" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── FULL POST MODAL (Portal) ── */}
+      {isModalOpen && createPortal(
+        <div className="fixed inset-0 z-[999] flex items-center justify-center px-4">
+          {/* Backdrop (Soft Blur) */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+            onClick={closeModal}
           />
 
+          {/* Modal Content */}
+          <div className="relative w-full max-w-lg bg-[#111218] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <h3 className="text-lg font-black bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] bg-clip-text text-transparent uppercase tracking-wider">
+                Create New Vibe
+              </h3>
+              <button 
+                onClick={closeModal}
+                className="p-2 hover:bg-white/10 rounded-full transition-all group"
+                disabled={isUploading}
+              >
+                <X size={22} className="text-white group-hover:rotate-90 transition-transform" strokeWidth={3} />
+              </button>
+            </div>
 
-          <div className="flex-1">
-            {/* Textarea */}
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Share your concert vibes, ask questions, or find squad mates…"
-              className="w-full bg-transparent border-none outline-none resize-none pt-2 text-lg text-white placeholder:text-gray-600 h-20 custom-scrollbar"
-            />
-
-            {/* Selected artist tags */}
-            {selectedArtists.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2 mb-2">
-                {selectedArtists.map((artist) => (
-                  <span
-                    key={artist.id}
-                    className="flex items-center gap-1.5 text-sm font-bold bg-[#7C4DFF]/10 text-[#00E5FF] px-3 py-1.5 rounded-full border border-[#7C4DFF]/20"
-                  >
-                    🎤 {artist.artistName || artist.name}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedArtists((prev) =>
-                          prev.filter((a) => a.id !== artist.id)
-                        )
-                      }
-                      className="hover:text-red-400 transition-colors ml-1"
-                      aria-label={`Remove ${artist.artistName || artist.name}`}
-                    >
-                      <X size={14} />
-                    </button>
-                  </span>
-                ))}
+            {/* Body */}
+            <div className="p-6">
+              <div className="flex gap-4 mb-4">
+                <img
+                  src={user?.profileImage || user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}`}
+                  className="w-12 h-12 rounded-full border border-white/10 object-cover"
+                  alt=""
+                />
+                <textarea
+                  autoFocus
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="What's happening? Share your concert vibes..."
+                  className="flex-1 bg-transparent border-none outline-none resize-none py-2 text-lg text-white placeholder:text-gray-600 h-32 custom-scrollbar"
+                />
               </div>
-            )}
 
-            {/* Image previews */}
-            {imageItems.length > 0 && (
-              <div className="flex flex-wrap gap-3 mt-4">
-                {imageItems.map((item, index) => (
-                  <div key={item.previewUrl} className="relative w-24 h-24 group">
-                    <img
-                      src={item.previewUrl}
-                      className="w-full h-full object-cover rounded-xl border border-white/10 shadow-lg"
-                      alt={`preview-${index}`}
-                    />
-                    {!isUploading && (
-                      <button
-                        type="button"
+              {/* Previews (Artists) */}
+              {selectedArtists.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {selectedArtists.map((artist) => (
+                    <span key={artist.id} className="flex items-center gap-1.5 text-[11px] font-black bg-[#7C4DFF]/20 text-[#00E5FF] px-3 py-1 rounded-full border border-[#7C4DFF]/30 uppercase">
+                      🎤 {artist.artistName || artist.name}
+                      <button onClick={() => setSelectedArtists(p => p.filter(a => a.id !== artist.id))} className="hover:text-red-400">
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Previews (Images) */}
+              {imageItems.length > 0 && (
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {imageItems.map((item, index) => (
+                    <div key={item.previewUrl} className="relative w-24 h-24 group">
+                      <img src={item.previewUrl} className="w-full h-full object-cover rounded-xl border border-white/10 shadow-lg" alt="" />
+                      <button 
                         onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors shadow-md z-10"
-                        aria-label="Remove image"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 shadow-md"
                       >
                         <X size={12} />
                       </button>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Footer / Tools */}
+              <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 rounded-2xl bg-white/5 text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-all"
+                    title="Add Photo"
+                  >
+                    <ImageIcon size={20} />
+                  </button>
+                  <button 
+                    onClick={() => setIsArtistModalOpen(true)}
+                    className="p-3 rounded-2xl bg-white/5 text-[#7C4DFF] hover:bg-[#7C4DFF]/10 transition-all"
+                    title="Tag Artist"
+                  >
+                    <Music4 size={20} />
+                  </button>
+                </div>
+
+                <button
+                  onClick={hdlSubmitPost}
+                  disabled={!canPost || isUploading}
+                  className="px-8 py-3 rounded-full bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isUploading ? (
+                    <Loader2 className="animate-spin" size={18} />
+                  ) : (
+                    <>
+                      POST VIBE
+                      <Send size={16} />
+                    </>
+                  )}
+                </button>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
 
-        {/* Toolbar */}
-        <div className="flex justify-between items-center mt-5 pt-5 border-t border-white/5">
-          <div className="flex gap-2">
-            {/* Media button */}
-            <PostToolButton
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              icon={<Plus size={18} />}
-              label={imageItems.length > 0 ? `Images (${imageItems.length})` : "Media"}
-            />
-
-            {/* Artist picker button */}
-            <PostToolButton 
-              onClick={() => setIsArtistModalOpen(true)}
-              icon={<Music4 size={18} />} 
-              label="Artist" 
-            />
-          </div>
-
-          {/* Post button */}
-          <button
-            type="button"
-            onClick={hdlSubmitPost}
-            disabled={!canPost || isUploading}
-            className="bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] text-white px-10 py-3 rounded-full font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(124,77,255,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="animate-spin" size={16} />
-                Posting…
-              </span>
-            ) : (
-              "POST VIBE"
-            )}
-          </button>
-
-        </div>
-      </div>
+      {/* Hidden file input */}
+      <input
+        type="file"
+        multiple
+        accept="image/*"
+        className="hidden"
+        ref={fileInputRef}
+        onChange={hdlFileChange}
+      />
 
       {/* Artist Picker Modal */}
       {isArtistModalOpen && (

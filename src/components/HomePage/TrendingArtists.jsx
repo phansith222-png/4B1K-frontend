@@ -7,17 +7,17 @@ export default function TrendingArtists({ onToggleArtist, selectedArtistIds }) {
 
   const trendingArtists = useMemo(() => {
     if (!posts) return [];
-    
+
     const countMap = {};
     posts.forEach(post => {
       post.postArtists?.forEach(pa => {
         const artist = pa.artist;
         if (artist) {
           if (!countMap[artist.id]) {
-            countMap[artist.id] = { 
-              id: artist.id, 
-              name: artist.artistName, 
-              count: 0 
+            countMap[artist.id] = {
+              id: artist.id,
+              name: artist.artistName,
+              count: 0
             };
           }
           countMap[artist.id].count += 1;
@@ -31,38 +31,36 @@ export default function TrendingArtists({ onToggleArtist, selectedArtistIds }) {
   }, [posts]);
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
-      <h3 className="text-[#00F5D4] text-xs font-black tracking-widest mb-6 uppercase flex items-center gap-2">
-        <Flame size={16} /> Trending Artists
+    <div className="p-2">
+      <h3 className="text-[#00E5FF] text-xs font-black tracking-[0.2em] mb-6 uppercase flex items-center gap-3 px-4">
+        <Flame size={18} /> Trending Artists
       </h3>
-      <div className="space-y-5">
+      <div className="space-y-4">
         {trendingArtists.length > 0 ? (
           trendingArtists.map((artist, idx) => {
             const isSelected = selectedArtistIds.includes(artist.id);
             return (
-              <div 
-                key={artist.id} 
+              <div
+                key={artist.id}
                 onClick={() => onToggleArtist({ id: artist.id, artistName: artist.name })}
-                className={`flex justify-between items-center group cursor-pointer p-2 rounded-xl transition-all ${
-                  isSelected ? 'bg-[#00F5D4]/10 border border-[#00F5D4]/20' : 'hover:bg-white/5'
-                }`}
+                className={`flex justify-between items-center group cursor-pointer p-4 rounded-2xl transition-all ${isSelected ? 'bg-white/10 border border-white/10' : 'hover:bg-white/5'
+                  }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className={`font-black text-xs w-4 ${isSelected ? 'text-[#00F5D4]' : 'text-gray-500'}`}>0{idx + 1}</span>
-                  <span className={`transition-colors font-bold ${isSelected ? 'text-white' : 'text-gray-200 group-hover:text-[#00F5D4]'}`}>
+                <div className="flex items-center gap-4">
+                  <span className={`font-black text-sm w-5 ${isSelected ? 'text-[#00E5FF]' : 'text-white/40'}`}>0{idx + 1}</span>
+                  <span className={`transition-colors text-[15px] font-black ${isSelected ? 'text-white' : 'text-white group-hover:text-[#00E5FF]'}`}>
                     {artist.name}
                   </span>
                 </div>
-                <span className={`text-[10px] px-3 py-1 rounded-full transition-all ${
-                  isSelected ? 'bg-[#00F5D4] text-black' : 'text-gray-500 bg-white/5 group-hover:bg-[#00F5D4]/10 group-hover:text-[#00F5D4]'
-                }`}>
-                  {artist.count} mentions
+                <span className={`text-[10px] font-black px-3 py-1.5 rounded-full transition-all uppercase tracking-tighter ${isSelected ? 'bg-[#00E5FF] text-black' : 'text-white/40 bg-white/5 group-hover:bg-[#00E5FF]/20 group-hover:text-[#00E5FF]'
+                  }`}>
+                  {artist.count} posts
                 </span>
               </div>
             );
           })
         ) : (
-          <p className="text-gray-600 text-xs italic">No data available</p>
+          <p className="text-white/40 text-xs italic px-4">No data available</p>
         )}
       </div>
     </div>

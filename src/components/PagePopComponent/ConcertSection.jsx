@@ -1,43 +1,53 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Reveal from '../Reveal'; // 📌 เพิ่ม Import Reveal
 
 export default function ConcertSection({ events, artist }) {
     const navigate = useNavigate();
     return (
-        <section className="relative w-full py-24 px-6 bg-transparent border-t border-white/5">
-            <div className="max-w-7xl mx-auto relative z-10">
+        <section className="relative w-full py-28 px-6 md:px-12 bg-transparent border-t border-white/5">
+            <div className="max-w-[1440px] mx-auto relative z-10">
                 {/* 📌 ครอบส่วนหัวด้วย Reveal */}
                 <Reveal effect="fade-up">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-6">
-                        <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-white">Live <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF007F] to-[#00F5D4]">Concerts</span></h3>
-                        <button onClick={() => navigate(`/new-event?artistId=${artist?.id}`)} className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-colors group bg-[#1A1C23] px-6 py-3 rounded-full border border-white/10 shadow-lg mt-4 md:mt-0">
-                            View All Dates
+                        <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-white">CONCERT <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF007F] to-[#00F5D4]">EVENT</span></h3>
+                        <motion.button 
+                            onClick={() => {
+                                const eventId = events.length > 0 ? (events[0].event?.id || events[0].id) : '';
+                                const search = artist?.artistName || artist?.name || "";
+                                navigate(`/nearby-events?search=${encodeURIComponent(search)}${eventId ? `&eventId=${eventId}` : ''}`);
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center gap-3 text-xs font-black text-[#00F5D4] hover:text-white uppercase tracking-[0.2em] transition-all bg-white/5 hover:bg-[#00F5D4]/20 px-6 py-3.5 rounded-2xl border border-white/5 hover:border-[#00F5D4]/30"
+                        >
+                            EXPLORE ALL EVENTS
                             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                        </button>
+                        </motion.button>
                     </div>
                 </Reveal>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                    {events.slice(0, 4).map((item, idx) => {
-                        const evt = item.event || item; 
-                        
-                        // Curated high-quality music/concert images for fallback
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 md:gap-6">
+                    {events.slice(0, 5).map((item, idx) => {
+                        const evt = item.event || item;
                         const FALLBACK_IMAGES = [
                             "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
                             "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
-                            "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1280,h_710/w_79,x_14,y_14,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/ffhns1leympcklq0uorh/%E0%B8%97%E0%B8%B1%E0%B8%A7%E0%B8%A3%E0%B9%8C%E0%B9%80%E0%B8%84%E0%B8%9B%E0%B9%87%E0%B8%AD%E0%B8%9B%E0%B9%83%E0%B8%99%E0%B9%82%E0%B8%8B%E0%B8%A5%E0%B9%81%E0%B8%A5%E0%B8%B0%E0%B9%80%E0%B8%82%E0%B9%89%E0%B8%B2%E0%B8%8A%E0%B8%A1%E0%B9%80%E0%B8%97%E0%B8%A8%E0%B8%81%E0%B8%B2%E0%B8%A5%E0%B8%94%E0%B8%99%E0%B8%95%E0%B8%A3%E0%B8%B5SeoulMusicFestival%E0%B8%AB%E0%B8%99%E0%B8%B6%E0%B9%88%E0%B8%87%E0%B8%A7%E0%B8%B1%E0%B8%99.jpg",
-                            "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop"
+                            "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1540039155733-5bb30b4db4cb?q=80&w=800&auto=format&fit=crop"
                         ];
-
-                        // Selection logic: Strictly use mocked images
                         const displayImage = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
 
 
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => navigate(`/new-event?artistId=${artist?.id}`)}
+                                onClick={() => {
+                                    const search = artist?.artistName || artist?.name || "";
+                                    const eventId = evt.id || evt._id;
+                                    navigate(`/nearby-events?search=${encodeURIComponent(search)}&eventId=${eventId}`);
+                                }}
                                 className="relative rounded-[2.5rem] overflow-hidden group border border-white/10 hover:border-[#00F5D4]/50 transition-all duration-500 cursor-pointer bg-[#1A1C23] shadow-[0_15px_30px_rgba(0,0,0,0.5)]"
                             >
                                 <div className="aspect-[4/5] relative z-10">
@@ -65,7 +75,7 @@ export default function ConcertSection({ events, artist }) {
                     )})}
 
                     {events.length === 0 && (
-                        <div className="col-span-4 bg-[#1A1C23]/50 rounded-[2.5rem] py-20 flex flex-col items-center justify-center text-gray-500 border border-white/5 shadow-inner">
+                        <div className="col-span-5 bg-[#1A1C23]/50 rounded-[2.5rem] py-20 flex flex-col items-center justify-center text-gray-500 border border-white/5 shadow-inner">
                             <svg className="w-16 h-16 mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             <p className="font-black tracking-widest uppercase text-sm">No upcoming events</p>
                         </div>

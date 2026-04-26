@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import { getAllArtists } from '../../api/auth';
+import { getAllArtists } from '../../api/artist';
+import { getImageUrl } from '../../utils/imageUtils';
 
 import { ArtistItem } from '../../icon/SidebarIcons';
 
@@ -19,13 +20,15 @@ export default function DiscoverArtists() {
     return 'text-[#7C4DFF] bg-[#7C4DFF]/10 border-[#7C4DFF]/20';
   };
 
+  const allArtistsRef = useRef([]);
+
   const fetchAndShuffle = async () => {
     try {
       const resp = await getAllArtists();
-      const data = resp.data.artists || [];
+      const data = resp.data?.artists || resp.artists || resp.data || [];
       if (data.length > 0) {
-        const shuffled = [...data].sort(() => 0.5 - Math.random());
-        setDisplayArtists(shuffled.slice(0, 3));
+        allArtistsRef.current = data;
+        shuffleLocal();
       }
     } catch (error) {
       console.error("Failed to discover artists:", error);
@@ -34,9 +37,17 @@ export default function DiscoverArtists() {
     }
   };
 
+  const shuffleLocal = () => {
+    if (allArtistsRef.current.length > 0) {
+      const shuffled = [...allArtistsRef.current].sort(() => 0.5 - Math.random());
+      setDisplayArtists(shuffled.slice(0, 3));
+    }
+  };
+
   useEffect(() => {
     fetchAndShuffle();
-    const interval = setInterval(fetchAndShuffle, 8000);
+    // สุ่มจากข้อมูลเดิมทุก 20 วินาที โดยไม่ต้องยิง API ใหม่
+    const interval = setInterval(shuffleLocal, 20000);
     return () => clearInterval(interval);
   }, []);
 
@@ -56,20 +67,20 @@ export default function DiscoverArtists() {
 
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#7C4DFF] rounded-full blur-[80px] opacity-10" />
+    <div className="p-2 relative overflow-hidden">
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF] rounded-full blur-[80px] opacity-10" />
 
-      <h3 className="text-gray-500 text-[10px] font-black tracking-widest mb-6 uppercase relative z-10 flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+      <h3 className="text-[#00E5FF] text-xs font-black tracking-[0.2em] mb-6 uppercase relative z-10 flex items-center gap-3 px-4">
+        <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
         Discover Artists
       </h3>
 
-      <div className="space-y-3 relative z-10">
+      <div className="space-y-2 relative z-10">
         {loading ? (
           [1, 2, 3].map(i => (
-            <div key={i} className="flex items-center gap-3 animate-pulse">
-              <div className="w-10 h-10 bg-white/5 rounded-xl" />
-              <div className="h-3 bg-white/5 rounded w-24" />
+            <div key={i} className="flex items-center gap-4 px-4 animate-pulse">
+              <div className="w-12 h-12 bg-white/5 rounded-xl" />
+              <div className="h-4 bg-white/5 rounded w-24" />
             </div>
           ))
         ) : (
@@ -82,24 +93,24 @@ export default function DiscoverArtists() {
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.6, delay: idx * 0.1, ease: "easeOut" }}
                 onClick={() => handleArtistClick(artist)}
-                className="cursor-pointer group flex items-center justify-between p-2.5 rounded-2xl hover:bg-white/5 transition-all"
+                className="cursor-pointer group flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-all"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <img
-                    src={artist.profileImage || `https://ui-avatars.com/api/?name=${artist.artistName}`}
-                    className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:scale-110 transition-transform"
+                    src={getImageUrl(artist.profileImage, `https://ui-avatars.com/api/?name=${artist.artistName}`)}
+                    className="w-12 h-12 rounded-xl object-cover border border-white/10 group-hover:scale-110 transition-transform"
                     alt=""
                   />
                   <div>
-                    <p className="text-sm font-black tracking-tight group-hover:text-[#00E5FF] transition-colors line-clamp-1">{artist.artistName}</p>
-                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border inline-block uppercase tracking-wider ${getGenreColor(getArtistCategory(artist.id).route)}`}>
+                    <p className="text-[15px] font-black text-white tracking-tight group-hover:text-[#00E5FF] transition-colors line-clamp-1">{artist.artistName}</p>
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border inline-block uppercase tracking-wider mt-1 ${getGenreColor(getArtistCategory(artist.id).route)}`}>
                       {getArtistCategory(artist.id).label}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-gray-600 group-hover:text-white transition-colors">
-                  <Plus size={16} />
+                <div className="text-white/40 group-hover:text-white transition-colors p-2">
+                  <Plus size={18} />
                 </div>
               </motion.div>
             ))}
@@ -109,7 +120,7 @@ export default function DiscoverArtists() {
 
       <button
         onClick={() => navigate('/artists')}
-        className="w-full mt-6 py-3 border border-white/5 rounded-2xl text-[10px] font-black text-gray-500 hover:text-white hover:bg-white/10 transition-all uppercase tracking-widest"
+        className="w-full mt-4 py-4 border border-white/10 rounded-2xl text-[11px] font-black text-white/60 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest"
       >
         View All Artists
       </button>

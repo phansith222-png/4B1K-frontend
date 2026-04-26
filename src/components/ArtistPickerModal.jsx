@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Music4, X, Loader2, Check, Search } from "lucide-react";
+import { Music4, X, Check, Search } from "lucide-react";
 import { motion } from "framer-motion";
-import { getAllArtists } from "../api/auth";
+import { getAllArtists } from "../api/artist";
 
 export default function ArtistPickerModal({ selectedArtists, onSelectionChange, onClose }) {
   const [allArtists, setAllArtists] = useState([]);
@@ -15,8 +15,9 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
     const fetchArtists = async () => {
       try {
         setIsLoading(true);
-        const data = await getAllArtists();
-        if (!cancelled) setAllArtists(data.data.artists ?? []);
+        const res = await getAllArtists();
+        const artists = res?.artists || res?.data?.artists || res?.data || (Array.isArray(res) ? res : []);
+        if (!cancelled) setAllArtists(Array.isArray(artists) ? artists : []);
       } catch (error) {
         console.error("Failed to fetch artists:", error);
       } finally {
@@ -89,9 +90,13 @@ export default function ArtistPickerModal({ selectedArtists, onSelectionChange, 
         {/* Artist list */}
         <div className="px-5 pb-5 overflow-y-auto custom-scrollbar flex-1 space-y-2">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500">
-              <Loader2 size={32} className="animate-spin text-[#7C4DFF]" />
-              <p className="text-[10px] font-bold uppercase tracking-widest">Scanning...</p>
+            <div className="flex flex-col gap-2 py-2">
+              {[0,1,2,3,4,5,6,7].map(i => (
+                <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl animate-pulse">
+                  <div className="w-8 h-8 rounded-full bg-white/5 flex-shrink-0" />
+                  <div className="h-3 bg-white/5 rounded-full flex-1" />
+                </div>
+              ))}
             </div>
           ) : filteredArtists.length > 0 ? (
             <div className="grid grid-cols-1 gap-2">

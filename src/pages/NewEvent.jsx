@@ -9,9 +9,11 @@ import EventSlider from "../components/NewEventComponent/EventSlider";
 import EventCard from "../components/NewEventComponent/EventCard";
 import Pagination from "../components/NewEventComponent/Pagination";
 import BackButton from "../components/BackButton";
+import Reveal from "../components/Reveal";
 
 import { useSearchParams } from "react-router-dom";
 import { getAllArtists } from "../api/artist";
+import { X } from "lucide-react";
 
 export default function NewEventPage() {
     const [searchParams] = useSearchParams();
@@ -21,21 +23,38 @@ export default function NewEventPage() {
     const [allArtists, setAllArtists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
-    const [selectedArtistId, setSelectedArtistId] = useState(initialArtistId || "All");
+    const [selectedArtistIds, setSelectedArtistIds] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 15; // Show 15 items (5 for slider + 10 for grid/2 rows of 5)
+    const itemsPerPage = 15; 
     const gridRef = useRef(null);
-
     const [featuredIndex, setFeaturedIndex] = useState(0);
 
-    const handleArtistSelect = (artistId) => {
-        setSelectedArtistId(artistId);
-        setActiveCategory("All"); // Reset category when picking a specific artist
+    const handleCategorySelect = (category) => {
+        setActiveCategory(category);
+        setSelectedArtistIds([]); 
         setCurrentPage(1);
         setFeaturedIndex(0);
     };
 
+    const handleArtistSelect = (ids) => {
+        setSelectedArtistIds(ids);
+        setActiveCategory("All"); 
+        setCurrentPage(1);
+        setFeaturedIndex(0);
+    };
+
+    // 1. Synchronize URL search params with state (only on mount or when URL changes)
     useEffect(() => {
+        const artistId = searchParams.get('artistId');
+        if (artistId) {
+            setSelectedArtistIds([artistId]);
+        }
+    }, [searchParams]);
+
+    // 2. Fetch Data with improved robustness
+    useEffect(() => {
+        let isMounted = true;
+
         const fetchData = async () => {
             try {
                 setLoading(true);
@@ -44,39 +63,45 @@ export default function NewEventPage() {
                     getAllArtists()
                 ]);
 
-                console.log("📥 Raw Event Response:", eventRes);
-                console.log("📥 Raw Artist Response:", artistRes);
+                if (!isMounted) return;
 
-                const extractArray = (res, key) => {
-                    if (!res) return [];
-                    if (Array.isArray(res)) return res;
-                    if (res[key] && Array.isArray(res[key])) return res[key];
-                    if (res.data) return extractArray(res.data, key);
+                // Robust Extraction Helper (Simplified)
+                const getArray = (res, key) => {
+                    const data = res?.data || res;
+                    if (Array.isArray(data)) return data;
+                    if (data?.[key] && Array.isArray(data[key])) return data[key];
+                    if (data?.result && Array.isArray(data.result)) return data.result;
                     return [];
                 };
 
-                // Robust Events Extraction
-                const eventData = extractArray(eventRes, 'events');
-                eventData.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-                setEvents(eventData);
+                const eventData = getArray(eventRes, 'events');
+                const artistData = getArray(artistRes, 'artists');
 
-                // Robust Artists Extraction
-                const artistData = extractArray(artistRes, 'artists');
+                // Safe Sorting
+                const sortedEvents = [...eventData].sort((a, b) => {
+                    const dateA = new Date(a.startTime || a.date || 0);
+                    const dateB = new Date(b.startTime || b.date || 0);
+                    return dateB - dateA;
+                });
+
+                // Batch updates
+                setEvents(sortedEvents);
                 setAllArtists(artistData);
 
-                console.log("✅ Processed Events:", eventData.length);
-                console.log("✅ Processed Artists:", artistData.length);
-
+                console.log(`✅ Loaded ${sortedEvents.length} events and ${artistData.length} artists`);
             } catch (error) {
                 console.error("❌ Failed to fetch data", error);
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
+
         fetchData();
+        return () => { isMounted = false; };
     }, []);
 
     const categories = useMemo(() => {
+        if (!events.length) return ["All"];
         const uniqueCategories = new Set(events.map(e => e.type || "Concert"));
         return ["All", ...Array.from(uniqueCategories)];
     }, [events]);
@@ -84,7 +109,9 @@ export default function NewEventPage() {
     useEffect(() => {
         setCurrentPage(1);
         setFeaturedIndex(0);
-    }, [activeCategory, selectedArtistId]);
+    }, [activeCategory, selectedArtistIds]);
+
+
 
     const filteredEvents = useMemo(() => {
         let result = events;
@@ -95,15 +122,30 @@ export default function NewEventPage() {
         }
 
         // Apply Artist Filter
-        if (selectedArtistId !== "All") {
+        if (selectedArtistIds.length > 0) {
+            const selectedNames = allArtists
+                .filter(a => selectedArtistIds.includes(String(a.id)))
+                .map(a => a.artistName?.toLowerCase());
+
             result = result.filter(event => {
-                const eArtistId = event.artistId || event.mainArtistId || event.mainArtist?.id || event.artist?.id;
-                return String(eArtistId) === String(selectedArtistId);
+                // Match by ID
+                const eArtistId = String(event.artistId || event.mainArtistId || event.mainArtist?.id || event.artist?.id || "");
+                const matchId = selectedArtistIds.includes(eArtistId);
+                
+                if (matchId) return true;
+
+                // Match by Name fallback
+                const eventArtistName = (event.mainArtistName || event.artistName || event.artist?.artistName || event.mainArtist?.artistName || "")?.toLowerCase();
+                const matchName = selectedNames.some(name => name && eventArtistName.includes(name));
+
+                return matchName;
             });
         }
 
         return result;
-    }, [events, activeCategory, selectedArtistId]);
+    }, [events, activeCategory, selectedArtistIds, allArtists]);
+
+
 
     const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -111,7 +153,12 @@ export default function NewEventPage() {
     const currentEvents = filteredEvents.slice(indexOfFirstItem, indexOfLastItem);
 
     const sliderItems = currentEvents.slice(0, Math.min(5, currentEvents.length));
-    const otherEvents = currentEvents.slice(sliderItems.length);
+    
+    // If artists are selected, show ALL events in the grid (even those in the slider)
+    // Otherwise, keep them separate to avoid redundancy for general browsing
+    const otherEvents = selectedArtistIds.length > 0 
+        ? currentEvents // Show everything including slider items
+        : currentEvents.slice(sliderItems.length); // Original behavior: hide slider items from grid
 
     useEffect(() => {
         if (sliderItems.length > 1) {
@@ -154,12 +201,7 @@ export default function NewEventPage() {
         }
     };
 
-    const renderLoading = () => (
-        <div className="flex flex-col items-center justify-center text-[#00E5FF] z-50">
-            <div className="w-16 h-16 border-4 border-white/5 border-t-[#00E5FF] rounded-full animate-spin"></div>
-            <p className="mt-6 font-black tracking-[0.3em] animate-pulse text-white uppercase text-xs">Loading Events...</p>
-        </div>
-    );
+
 
     return (
         <div className="min-h-screen bg-[#0B0C10] font-sans text-white relative selection:bg-[#00E5FF] selection:text-black overflow-x-hidden pb-24">
@@ -203,71 +245,88 @@ export default function NewEventPage() {
                 />
             </div>
 
-            {loading ? (
-                <div className="min-h-screen flex flex-col items-center justify-center w-full relative z-50">
-                    {renderLoading()}
-                </div>
-            ) : (
-                <main className="max-w-[110rem] mx-auto px-8 md:px-12 pt-16 relative z-10 w-full flex flex-col gap-24">
+            <main className="max-w-[120rem] mx-auto px-6 md:px-24 pt-12 pb-32 relative z-10 w-full flex flex-col gap-16">
                     <HeroSection />
 
-                    <EventSlider
-                        sliderItems={sliderItems}
-                        featuredIndex={featuredIndex}
-                        setFeaturedIndex={setFeaturedIndex}
-                    />
+                    {loading ? (
+                        /* Skeleton — same layout as real content */
+                        <div className="animate-pulse flex flex-col gap-10">
+                            {/* Slider skeleton */}
+                            <div className="h-[40vh] rounded-[3rem] bg-white/5" />
+                            {/* Filter pills skeleton */}
+                            <div className="flex gap-3">
+                                {[0,1,2,3,4].map(i => <div key={i} className="h-10 w-24 rounded-full bg-white/5" />)}
+                            </div>
+                            {/* Grid skeleton */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-4">
+                                {[0,1,2,3,4,5,6,7,8,9].map(i => (
+                                    <div key={i} className="flex flex-col gap-3">
+                                        <div className="aspect-[3/4] rounded-[2rem] bg-white/5" />
+                                        <div className="h-4 rounded-full bg-white/5" />
+                                        <div className="h-3 rounded-full bg-white/5 w-3/4" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                        <EventSlider
+                            sliderItems={sliderItems}
+                            featuredIndex={featuredIndex}
+                            setFeaturedIndex={setFeaturedIndex}
+                        />
 
-                    <CategoryFilters
-                        categories={categories}
-                        activeCategory={activeCategory}
-                        setActiveCategory={setActiveCategory}
-                        allArtists={allArtists}
-                        selectedArtistId={selectedArtistId}
-                        setSelectedArtistId={handleArtistSelect}
-                    />
+                        <CategoryFilters
+                            categories={categories}
+                            activeCategory={activeCategory}
+                            setActiveCategory={handleCategorySelect}
+                            allArtists={allArtists}
+                            selectedArtistIds={selectedArtistIds}
+                            setSelectedArtistIds={handleArtistSelect}
+                        />
 
-                    <AnimatePresence mode="wait">
-                        {currentEvents.length === 0 ? (
-                            <motion.div
-                                key="empty"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="text-center py-40 bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[4rem]"
-                            >
-                                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/10 shadow-inner">
-                                    <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                </div>
-                                <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.3em]">No events found in this category.</p>
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key={`${activeCategory}-${currentPage}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.5 }}
-                                className="flex flex-col gap-16"
-                            >
+                        <AnimatePresence mode="wait">
+                            {otherEvents.length === 0 && sliderItems.length === 0 ? (
+                                <motion.div
+                                    key="empty"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="text-center py-40 bg-white/[0.02] backdrop-blur-2xl border border-white/5 rounded-[4rem]"
+                                >
+                                    <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/10 shadow-inner">
+                                        <svg className="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                    <p className="text-gray-400 font-bold text-lg uppercase tracking-[0.3em]">No events found in this category.</p>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key={`${activeCategory}-${currentPage}`}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.4 }}
+                                    className="flex flex-col gap-16"
+                                >
+                                    {otherEvents.length > 0 && (
+                                        <section ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-4 scroll-mt-24">
+                                            {otherEvents.map((event, index) => (
+                                                <EventCard key={event.id || index} event={event} index={index} />
+                                            ))}
+                                        </section>
+                                    )}
 
-                                {otherEvents.length > 0 && (
-                                    <section ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-4 scroll-mt-24">
-                                        {otherEvents.map((event, index) => (
-                                            <EventCard key={event.id || index} event={event} index={index} />
-                                        ))}
-                                    </section>
-                                )}
-
-                                <Pagination
-                                    totalPages={totalPages}
-                                    currentPage={currentPage}
-                                    paginate={paginate}
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                    <Pagination
+                                        totalPages={totalPages}
+                                        currentPage={currentPage}
+                                        paginate={paginate}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        </>
+                    )}
                 </main>
-            )}
         </div>
     );
 }

@@ -34,11 +34,13 @@ const NAV_COLUMNS = [
   },
 ]
 
+import { API_URL } from '../config/env'
+
 /* ─── Google social icon ─── */
 function GoogleIcon() {
   return (
     <a
-      href="http://localhost:5000/auth/google"
+      href={`${API_URL}/auth/google`}
       aria-label="Sign in with Google"
       className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-gray-400 hover:text-white hover:border-[#00E5FF]/50 hover:bg-[#00E5FF]/8 transition-all duration-300 hover:-translate-y-0.5"
     >

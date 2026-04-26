@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import useUserStore from '../stores/userStore';
+import { SOCKET_URL } from '../config/env';
+import { STORAGE_KEYS } from '../config/constants';
 
 const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);
@@ -12,7 +14,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     console.log("🔍 [SocketDebug] useEffect เริ่มทำงานแล้ว! ข้อมูล User คือ:", user);
 
-    const authData = localStorage.getItem('auth-storage');
+    const authData = localStorage.getItem(STORAGE_KEYS.AUTH);
     let token = null;
 
     if (authData) {
@@ -31,8 +33,8 @@ export const SocketProvider = ({ children }) => {
     }
 
     // สร้างการเชื่อมต่อ
-    console.log("🚀 [SocketDebug] กำลังพยายามเชื่อมต่อกับ http://localhost:5000 ...");
-    const newSocket = io('http://localhost:5000', {
+    console.log(`🚀 [SocketDebug] กำลังพยายามเชื่อมต่อกับ ${SOCKET_URL} ...`);
+    const newSocket = io(SOCKET_URL, {
       auth: { token },
       // transports: ["websocket"],
       reconnection: true,

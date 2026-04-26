@@ -4,7 +4,10 @@ import { motion } from 'framer-motion';
 
 // Hooks
 import useArtistData from '../hooks/useArtistData';
-import useYouTubePlayer from '../hooks/useYouTubePlayer';
+import { getImageUrl } from '../utils/imageUtils';
+import PageLoader from '../components/PageLoader';
+import { usePlayerStore } from '../stores/playerStore';
+import { SkeletonHero } from '../components/Skeleton';
 
 // Constants
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
@@ -16,8 +19,7 @@ import BioSection from '../components/PageClassicComponent/BioSection';
 import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSection';
 import ConcertSection from '../components/PageClassicComponent/ConcertSection';
 import StatsSection from '../components/PageClassicComponent/StatsSection';
-
-const PLAYER_ID = 'yt-player-hidden-classic';
+import Reveal from '../components/Reveal';
 
 export default function PageClassic() {
     const [searchParams] = useSearchParams();
@@ -29,20 +31,24 @@ export default function PageClassic() {
         queryArtistId
     );
 
-    // ── Player ────────────────────────────────────────────────────────────
-    const {
-        isPlaying,
-        currentSongIndex,
-        progress,
-        currentTime,
-        duration,
-        togglePlayPause,
-        changeSong,
-        handleSongSelect,
-        handleProgressClick,
-    } = useYouTubePlayer(songs, PLAYER_ID, {
-        autoplay: searchParams.get('autoplay') === 'true'
-    });
+    // ── Global Player State - Optimized with Selectors ────────────────────
+    const isPlaying = usePlayerStore(state => state.isPlaying);
+    const currentSongIndex = usePlayerStore(state => state.currentSongIndex);
+    const progress = usePlayerStore(state => state.progress);
+    const currentTime = usePlayerStore(state => state.currentTime);
+    const duration = usePlayerStore(state => state.duration);
+    const controls = usePlayerStore(state => state.controls);
+    const playSongs = usePlayerStore(state => state.playSongs);
+    const globalSongs = usePlayerStore(state => state.songs);
+
+    const isCurrentArtist = globalSongs === songs && songs.length > 0;
+
+    // Auto-play when artist loads if requested
+    React.useEffect(() => {
+        if (artist && songs.length > 0 && searchParams.get('autoplay') === 'true') {
+            playSongs(artist, songs, 0);
+        }
+    }, [artist, songs, searchParams, playSongs]);
 
     // ── Neon dust particles (stable random values) ────────────────────────
     const neonDust = useMemo(() => Array.from({ length: 30 }).map((_, i) => ({
@@ -54,55 +60,64 @@ export default function PageClassic() {
         delay: Math.random() * 10,
     })), []);
 
-    // ── States ────────────────────────────────────────────────────────────
-    if (loading) {
-        return (
-            <div className="bg-[#0B0C10] min-h-screen flex flex-col items-center justify-center text-[#d83bb6] relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#d83bb6] opacity-20 blur-[80px] rounded-full animate-pulse" />
-                <div className="w-16 h-16 border-4 border-white/5 border-t-[#d83bb6] rounded-full animate-spin z-10" />
-                <p className="mt-4 font-black tracking-[0.3em] animate-pulse text-white z-10 uppercase text-xs">Loading Classics...</p>
-            </div>
-        );
-    }
-
-    if (!artist) {
-        return (
-            <div className="bg-[#221c38] min-h-screen flex flex-col items-center justify-center text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                <p className="font-bold text-xl text-[#d83bb6] uppercase">No Artists Found.</p>
-                <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
-            </div>
-        );
-    }
-
     // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="bg-[#1c172e] min-h-screen text-[#FFFFFF] overflow-x-hidden selection:bg-[#d83bb6] selection:text-white">
 
-            {/* Stable hidden player container — DO NOT add key or conditional render */}
-            <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
-
-            {/* Animated background */}
+            {/* Animated background - Always renders */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <CategoryBackground keyword="r&b" isPlaying={isPlaying} artist={artist} />
             </div>
 
-            <HeroSection artist={artist} events={events} />
-            <BioSection artist={artist} />
-            <MusicPlayerSection
-                artist={artist}
-                songs={songs}
-                currentSongIndex={currentSongIndex}
-                isPlaying={isPlaying}
-                progress={progress}
-                currentTime={currentTime}
-                duration={duration}
-                togglePlayPause={togglePlayPause}
-                changeSong={changeSong}
-                handleSongSelect={handleSongSelect}
-                handleProgressClick={handleProgressClick}
-            />
-            <ConcertSection events={events} artist={artist} />
-            <StatsSection songs={songs} />
+            {loading && !artist ? (
+                <SkeletonHero />
+            ) : !artist && !loading ? (
+                <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                    <p className="font-bold text-xl text-[#d83bb6] uppercase">No Artists Found.</p>
+                    <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
+                </div>
+            ) : (
+                <div key={artist?.id || 'content'}>
+                    <Reveal>
+                        <HeroSection artist={artist} events={events} />
+                    </Reveal>
+                    <Reveal>
+                        <BioSection artist={artist} />
+                    </Reveal>
+                    <Reveal>
+                        <MusicPlayerSection
+                            artist={artist}
+                            songs={songs}
+                            currentSongIndex={isCurrentArtist ? currentSongIndex : 0}
+                            isPlaying={isCurrentArtist ? isPlaying : false}
+                            progress={isCurrentArtist ? progress : 0}
+                            currentTime={isCurrentArtist ? currentTime : '0:00'}
+                            duration={isCurrentArtist ? duration : '0:00'}
+                            togglePlayPause={() => {
+                                if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                else if (controls?.togglePlayPause) controls.togglePlayPause();
+                            }}
+                            changeSong={(dir) => {
+                                if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                else if (controls?.changeSong) controls.changeSong(dir);
+                            }}
+                            handleSongSelect={(idx) => {
+                                if (!isCurrentArtist) playSongs(artist, songs, idx);
+                                else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
+                            }}
+                            handleProgressClick={(e) => {
+                                if (isCurrentArtist && controls?.handleProgressClick) controls.handleProgressClick(e);
+                            }}
+                        />
+                    </Reveal>
+                    <Reveal>
+                        <ConcertSection events={events} artist={artist} />
+                    </Reveal>
+                    <Reveal>
+                        <StatsSection songs={songs} />
+                    </Reveal>
+                </div>
+            )}
         </div>
     );
 }

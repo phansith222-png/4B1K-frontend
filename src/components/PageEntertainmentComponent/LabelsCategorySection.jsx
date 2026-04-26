@@ -49,7 +49,7 @@ export default function LabelsCategorySection({ topAgencies, indieAgencies, card
 
     return (
         <section id="labels-section" className="relative w-full py-32 px-6 bg-[#0B0C10] z-10">
-            <div className="max-w-7xl mx-auto z-10 relative">
+            <div className="max-w-[1600px] mx-auto z-10 relative">
                 
                 {/* --- CATEGORY 1: THE MAJORS --- */}
                 <div className="mb-24">

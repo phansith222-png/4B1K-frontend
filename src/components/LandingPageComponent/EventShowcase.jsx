@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { getAllEvents } from '../../api/event';
+import { getGenreColorByArtistId } from '../../utils/genreHelpers';
 
 export default function EventShowcase() {
   const navigate = useNavigate();
@@ -29,19 +30,9 @@ export default function EventShowcase() {
       else if (event.artists && event.artists.length > 0) {
         aId = event.artists[0].artistId || event.artists[0].artist?.id;
       }
-
-      aId = Number(aId);
-
-      if (aId) {
-        if ([1, 2, 3, 4, 5].includes(aId)) return "#FF007F"; // Pop
-        if ([6, 7, 8, 9, 10].includes(aId)) return "#D3131F"; // Rock
-        if ([16, 17, 18, 19, 20].includes(aId)) return "#d83bb6"; // R&B / Classic
-        if ([11, 12, 13, 14, 15].includes(aId)) return "#00E5FF"; // Hip Hop
-        if ([21, 22, 23, 24, 25].includes(aId)) return "#7000FF"; // EDM
-      }
-      return "#00E5FF"; // default
+      return getGenreColorByArtistId(aId);
     } catch (err) {
-      return "#00E5FF";
+      return getGenreColorByArtistId(null); // returns DEFAULT
     }
   };
 
@@ -80,7 +71,10 @@ export default function EventShowcase() {
             }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ type: "spring", stiffness: 100, damping: 20, delay: idx * 0.1 }}
-            onClick={() => navigate('/new-event')}
+            onClick={() => {
+              const artistName = event.mainArtistName || event.artistName || (event.artist && (event.artist.artistName || event.artist.name)) || "";
+              navigate(`/nearby-events?search=${encodeURIComponent(artistName)}&eventId=${event.id}`);
+            }}
             className="group cursor-pointer rounded-[2rem] overflow-hidden bg-[#12141A] border border-white/5 relative aspect-[4/5] transition-all shadow-xl"
           >
             <img src={event.posterImage || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"} alt={event.eventName} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import useUserStore from '../stores/userStore';
-
+import { API_URL } from '../config/env';
 
 const mainapi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -69,8 +69,5 @@ export const deleteCommentApi = (postId, commentId) => mainapi.delete(`/posts/${
 // User store
 export const getProfile = () => mainapi.get('/users/me')
 export const editProfile = (body) => mainapi.patch('/users/me',body)
-// Artist 관련 (Artist Store)
-export const getAllArtists = () => mainapi.get('/artists');
-export const getArtistsById = (id) => mainapi.get(`/artists/${id}`);
 
 export default mainapi;

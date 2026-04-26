@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import { getAllArtists } from '../api/auth';
+import { X, SlidersHorizontal } from 'lucide-react';
+import { getAllArtists } from '../api/artist';
 
 
 
 // Separate Components
 import NavigationSidebar from '../components/HomePage/NavigationSidebar';
-import MusicDiscoveryCard from '../components/HomePage/MusicDiscoveryCard';
 import FeedFilter from '../components/HomePage/FeedFilter';
 import TrendingArtists from '../components/HomePage/TrendingArtists';
 import DiscoverArtists from '../components/HomePage/DiscoverArtists';
@@ -38,24 +37,22 @@ export default function CommunityHomePage() {
   };
 
   return (
-    <div id="community-page" className="min-h-screen bg-[#0B0C10] text-white font-sans pt-8 pb-24 px-4 md:px-8">
+    <div id="community-page" className="h-[calc(100vh-64px)] bg-[#0B0C10] text-white font-sans overflow-hidden">
       
-      {/* 🔮 MAIN CONTENT LAYOUT */}
-      <main className="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 mt-4">
+      {/* 🔮 MAIN CONTENT LAYOUT - Scrollable container for the whole viewport area */}
+      <main className="w-full h-full flex flex-col xl:flex-row justify-between items-start relative pt-0 pb-0 overflow-y-auto hide-scrollbar overscroll-contain transform-gpu">
         
-        {/* --- 👈 LEFT SIDEBAR (Navigation & Shortcuts) --- */}
-        <aside className="hidden xl:col-span-3 xl:block space-y-6 h-fit z-20">
+        {/* --- 👈 LEFT SIDEBAR (Locked in place) --- */}
+        <aside className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-hidden">
           <NavigationSidebar />
-          <MusicDiscoveryCard />
-        </aside>
-
-        {/* --- 📱 CENTER FEED (Main Content) --- */}
-        <div className="xl:col-span-6 space-y-4 relative z-10">
-          {/* Post Creator */}
-          <PostCreator />
-
-          {/* Feed Filter Consolidated */}
-          <div className="flex flex-col gap-6">
+          
+          <div className="pt-6">
+            <div className="flex items-center gap-3 px-6 mb-6 group">
+              <div className="w-8 h-8 rounded-lg bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,229,255,0.1)]">
+                <SlidersHorizontal size={16} />
+              </div>
+              <span className="text-xs font-black text-[#00E5FF] uppercase tracking-[0.2em]">Feed Discover</span>
+            </div>
             <FeedFilter 
               activeTab={activeTab} 
               setActiveTab={(tab) => {
@@ -64,10 +61,23 @@ export default function CommunityHomePage() {
               }} 
               onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
               selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
+              vertical={true}
             />
-            
+          </div>
+        </aside>
+
+        {/* --- 📱 CENTER FEED (Primary scroll content) --- */}
+        <div className="flex-1 max-w-[720px] min-w-0 relative z-10 w-full group/feed px-6">
+          {/* Subtle Top Fade (Overlay) */}
+          <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#0B0C10] to-transparent z-20 pointer-events-none" />
+          
+          <div className="space-y-4 pt-2 pb-6 transform-gpu will-change-transform">
+            {/* Post Creator */}
+            <PostCreator />
+
+            {/* Selected Artists Tags */}
             {selectedArtists.length > 0 && (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 pb-2">
                 {selectedArtists.map(artist => (
                   <motion.div 
                     key={artist.id}
@@ -75,38 +85,32 @@ export default function CommunityHomePage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex items-center gap-3 bg-gradient-to-r from-[#7C4DFF]/15 to-[#00E5FF]/5 border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg group hover:border-[#00E5FF]/30 transition-all"
                   >
-                    <img 
-                      src={artist.profileImage || `https://ui-avatars.com/api/?name=${artist.artistName}`} 
-                      className="w-7 h-7 rounded-full border border-white/10" 
-                      alt="" 
-                    />
-                    <span className="text-white text-sm font-bold">{artist.artistName}</span>
+                    <span className="text-white text-sm font-bold uppercase tracking-tight">{artist.artistName}</span>
                     <button 
                       onClick={() => setSelectedArtists(prev => prev.filter(a => a.id !== artist.id))}
-                      className="text-gray-500 hover:text-red-500 transition-colors"
+                      className="flex items-center justify-center ml-1 p-0.5 hover:bg-white/10 rounded-md transition-all"
                     >
-                      <X size={14} />
+                      <X size={15} className="text-white" strokeWidth={3} />
                     </button>
                   </motion.div>
                 ))}
               </div>
             )}
-          </div>
 
-          <AnimatePresence mode="wait">
-              <PostContainer activeTab={activeTab} selectedArtistIds={selectedArtists.map(a => a.id)} />
-          </AnimatePresence>
+            <AnimatePresence mode="wait">
+                <PostContainer activeTab={activeTab} selectedArtistIds={selectedArtists.map(a => a.id)} />
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* --- 👉 RIGHT SIDEBAR (Trending & Discover) --- */}
-        <aside className="xl:col-span-3 space-y-8 h-fit z-20">
+        {/* --- 👉 RIGHT SIDEBAR (Locked in place) --- */}
+        <aside className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-hidden">
           <TrendingArtists 
             onToggleArtist={toggleArtist} 
             selectedArtistIds={selectedArtists.map(a => a.id)} 
           />
           <DiscoverArtists />
         </aside>
-
 
       </main>
 
@@ -130,8 +134,9 @@ function ArtistTagSelector({ selectedArtistId, onSelect }) {
   useEffect(() => {
     const fetchArtists = async () => {
       try {
-        const resp = await getAllArtists();
-        setArtists(resp.data.artists || []);
+        const res = await getAllArtists();
+        const artistData = res?.artists || res?.data?.artists || res?.data || (Array.isArray(res) ? res : []);
+        setArtists(Array.isArray(artistData) ? artistData : []);
       } catch (err) { console.error(err); }
     };
     fetchArtists();

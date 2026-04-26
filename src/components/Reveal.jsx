@@ -1,40 +1,28 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, useInView, useAnimation } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { UI_CONFIG } from '../config/constants';
 
-export default function Reveal({ children, delay = 0, yOffset = 50, overflow = "hidden" }) {
-    const ref = useRef(null);
-    const isInView = useInView(ref, { once: true, amount: 0.3 }); // แอนิเมชันทำงานครั้งเดียวเมื่อเลื่อนมาเห็น 30%
-    const mainControls = useAnimation();
-
-    useEffect(() => {
-        if (isInView) {
-            mainControls.start("visible");
-        }
-    }, [isInView, mainControls]);
+export default function Reveal({ children, delay = 0, yOffset = 20, overflow = "visible" }) {
+    const variants = {
+        hidden: { opacity: 0, y: yOffset },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: UI_CONFIG.REVEAL_ANIMATION_DURATION / 1000,
+                ease: [0.25, 0.46, 0.45, 0.94],
+                delay,
+            },
+        },
+    };
 
     return (
-        <div ref={ref} style={{ position: "relative", overflow }}>
+        <div style={{ position: "relative", overflow }}>
             <motion.div
-                variants={{
-                    hidden: { 
-                        opacity: 0, 
-                        y: yOffset, 
-                        scale: 0.98,
-                    },
-                    visible: { 
-                        opacity: 1, 
-                        y: 0, 
-                        scale: 1,
-                        transition: { 
-                            duration: 0.8, 
-                            ease: [0.16, 1, 0.3, 1], 
-                            delay: delay 
-                        } 
-                    },
-                }}
-                style={{ willChange: 'transform, opacity' }}
+                variants={variants}
                 initial="hidden"
-                animate={mainControls}
+                animate="visible"
+                style={{ opacity: 1, willChange: 'transform, opacity' }}
             >
                 {children}
             </motion.div>

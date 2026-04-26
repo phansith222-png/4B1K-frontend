@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 
 export default function HeroSection({ navigate }) {
     return (
-        <section className="relative w-full min-h-screen flex flex-col justify-center items-center py-20 px-6 z-10 overflow-hidden">
-            <div className="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+        <section className="relative w-full min-h-screen flex flex-col justify-center items-center py-20 px-6 md:px-12 z-10 overflow-hidden mx-auto">
+            <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
                 
                 <motion.div 
                     initial={{ opacity: 0, x: -50 }}
