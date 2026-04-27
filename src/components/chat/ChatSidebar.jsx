@@ -161,29 +161,8 @@ export default function ChatSidebar({
 
       {/* ── Room List ── */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2" style={{ scrollbarWidth: "thin", scrollbarColor: "#ffffff05 transparent" }}>
-        {filteredContacts.length > 0 ? (
-          filteredContacts.map((room) => {
-            const isRoomGroup = room.isGroup;
-            const otherUser = !isRoomGroup ? room.users?.find((u) => u.userId !== myUserId)?.user : null;
-            const displayName = isRoomGroup ? (room.name || `กลุ่ม ${room.id}`) : (otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName || ''}`.trim() : otherUser?.username || "กำลังโหลด...");
-            const unread = unreadCounts[room.id] || 0;
-            const isActive = activeChat === room.id;
-
-            return (
-              <button key={room.id} onClick={() => openChat(room.id)}
-                className={`w-full flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 group
-                  ${isActive ? "bg-blue-600 text-white shadow-2xl shadow-blue-600/20" : "hover:bg-white/5 text-gray-400 hover:text-gray-200"}`}>
-                <div className="relative shrink-0">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-extrabold overflow-hidden shadow-lg border border-white/5
-                    ${isActive ? "bg-white/20" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
-                    <img src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)} 
-                      className="w-full h-full object-cover" alt="" />
-                  </div>
-                  {isActive && <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-full" />}
-                </div>
-              </motion.div>
-            ))
-          ) : filteredContacts.length > 0 ? (
+        <AnimatePresence>
+          {filteredContacts.length > 0 ? (
             filteredContacts.map((room, idx) => {
               const isRoomGroup = room.isGroup;
               const otherUser = !isRoomGroup ? room.users?.find((u) => u.userId !== myUserId)?.user : null;

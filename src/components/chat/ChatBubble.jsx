@@ -81,7 +81,6 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
             </div>
           )}
         </div>
-      )}
 
         {/* Timestamp & Status */}
         <div className={`flex items-center gap-2 mt-1.5 px-1 opacity-40 group-hover:opacity-100 transition-all duration-300 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
@@ -92,52 +91,7 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
             </div>
           )}
         </div>
-
-        <div className={`flex flex-col max-w-[85%] md:max-w-[75%] ${isMe ? "items-end" : "items-start"}`}>
-          {/* Sender Name */}
-          {showAvatar && !isMe && (
-            <span className="text-[11px] font-black text-gray-400 mb-1.5 ml-1 tracking-[0.12em] uppercase">{senderName}</span>
-          )}
-
-          <div className={`flex items-end gap-2.5 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-            {/* Message Bubble */}
-            <motion.div 
-              whileHover={{ scale: msg.fileUrl ? 1.02 : 1.01 }}
-              className={`relative group/msg shadow-2xl break-words transition-all duration-300
-                ${isMe
-                  ? "bg-gradient-to-br from-[#7000FF] to-[#8220FF] text-white rounded-[20px] rounded-br-none border border-white/10"
-                  : "bg-[#1A1C23]/80 backdrop-blur-md text-gray-100 rounded-[20px] rounded-bl-none border border-white/5"}
-                ${msg.fileUrl ? "p-1.5 cursor-pointer" : "px-4.5 py-3 text-[14px] leading-relaxed"}`}
-              onClick={() => msg.fileUrl && onImageClick?.(msg.fileUrl)}
-            >
-              {msg.fileUrl ? (
-                <div className="relative overflow-hidden rounded-[16px]">
-                  <img 
-                    src={msg.fileUrl} 
-                    className="max-w-[240px] md:max-w-[320px] max-h-[400px] object-cover transition-transform duration-500 group-hover/msg:scale-110" 
-                    alt="Message Content" 
-                    onLoad={() => {
-                        // Optional: trigger scroll if container ref was available
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/msg:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                msg.content
-              )}
-            </motion.div>
-
-            {/* Metadata (Time & Read Status) beside the bubble */}
-            <div className={`flex flex-col mb-1 ${isMe ? "items-end" : "items-start"} min-w-fit opacity-60 transition-opacity duration-500 group-hover:opacity-100`}>
-              <span className="text-[9px] font-bold text-gray-500/60 leading-none tabular-nums uppercase">{displayTime}</span>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
