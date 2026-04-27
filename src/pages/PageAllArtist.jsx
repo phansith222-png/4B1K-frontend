@@ -7,7 +7,8 @@ import CategorySection from '../components/PageAllArtistComponent/CategorySectio
 import BottomTextSection from '../components/PageAllArtistComponent/BottomTextSection';
 import Reveal from '../components/Reveal';
 import BackButton from '../components/BackButton';
-import ArtistPageSkeleton from '../components/Skeleton/ArtistPageSkeleton';
+import PageLoader from '../components/PageLoader';
+import { SkeletonHero, SkeletonGrid } from '../components/Skeleton';
 
 export default function PageAllArtist() {
     const navigate = useNavigate();
@@ -20,10 +21,11 @@ export default function PageAllArtist() {
         const fetchArtists = async () => {
             try {
                 setLoading(true);
-                const response = await getAllArtists();
-                const data = response?.artists || response?.data || response || [];
-                setArtists(data);
-                
+                const res = await getAllArtists();
+                const data = res?.artists || res?.data?.artists || res?.data || (Array.isArray(res) ? res : []);
+                const finalData = Array.isArray(data) ? data : [];
+                setArtists(finalData);
+
                 // Pick a random spotlight artist
                 if (data.length > 0) {
                     const randomArtist = data[Math.floor(Math.random() * data.length)];
@@ -44,7 +46,7 @@ export default function PageAllArtist() {
             const interval = setInterval(() => {
                 const randomArtist = artists[Math.floor(Math.random() * artists.length)];
                 setSpotlightArtist(randomArtist);
-            }, 5000);
+            }, 20000); // Increased from 5s to 20s to reduce re-renders
             return () => clearInterval(interval);
         }
     }, [artists]);
@@ -107,25 +109,22 @@ export default function PageAllArtist() {
         });
     }, [artists]);
 
-    // สร้างข้อมูลตัวโน้ตดนตรีลอยๆ
-    const floatingNotes = useMemo(() => Array.from({ length: 20 }).map((_, i) => ({
+    // Optimized floating notes (Reduced count from 20 to 8 for performance)
+    const floatingNotes = useMemo(() => Array.from({ length: 8 }).map((_, i) => ({
         id: i,
         symbol: ['♪', '♫', '♬', '♩'][Math.floor(Math.random() * 4)],
         size: Math.random() * 20 + 15,
-        left: (Math.random() - 1) * 800, // Wider range for scattering
-        delay: Math.random() * 3,
-        duration: Math.random() * 6 + 6, // Much slower
+        left: (Math.random() - 1) * 800,
+        delay: Math.random() * 5,
+        duration: Math.random() * 10 + 10, // Slower duration for better performance
         color: ['#FF00FF', '#00E5FF', '#7000FF', '#FFFFFF'][Math.floor(Math.random() * 4)],
-        blur: Math.random() * 1.5,
+        blur: Math.random() * 1,
         sway: (Math.random() - 0.5) * 80,
         swaySpeed: Math.random() * 3 + 1,
     })), []);
 
 
-    if (loading) {
-        return <ArtistPageSkeleton />;
-    }
-
+    // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden relative">
             <BackButton color="#00F5D4" glowColor="rgba(0, 245, 212, 0.3)" />
@@ -139,7 +138,7 @@ export default function PageAllArtist() {
                 }
             `}</style>
 
-            {/* Unified Foundation Layer */}
+            {/* Unified Foundation Layer - Always Renders */}
             <div className="fixed inset-0 bg-[#0B0C10] z-[-1]" />
 
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -156,23 +155,33 @@ export default function PageAllArtist() {
 
             <div className="dark-grain" />
 
-            <Reveal>
-                <HeroSection floatingNotes={floatingNotes} spotlightArtist={spotlightArtist} />
-            </Reveal>
-
-            {/* ================= CONTENT ================= */}
-            <div id="artists-content" className="relative z-10">
-                {sections.map((section, sIdx) => section.artists.length > 0 && (
-                    <Reveal key={sIdx}>
-                        <CategorySection section={section} navigate={navigate} />
+            {loading ? (
+                <div className="pt-20">
+                    <SkeletonHero />
+                    <div className="px-6 md:px-12">
+                        <SkeletonGrid count={5} />
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <Reveal>
+                        <HeroSection floatingNotes={floatingNotes} spotlightArtist={spotlightArtist} />
                     </Reveal>
-                ))}
-            </div>
 
-            <Reveal>
-                <BottomTextSection />
-            </Reveal>
+                    {/* ================= CONTENT ================= */}
+                    <div id="artists-content" className="relative z-10">
+                        {sections.map((section, sIdx) => section.artists.length > 0 && (
+                            <Reveal key={sIdx}>
+                                <CategorySection section={section} navigate={navigate} />
+                            </Reveal>
+                        ))}
+                    </div>
 
+                    <Reveal>
+                        <BottomTextSection />
+                    </Reveal>
+                </>
+            )}
         </div>
     );
 }

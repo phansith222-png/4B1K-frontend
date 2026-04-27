@@ -8,6 +8,11 @@ import { HEX_COLORS } from './constants';
 export default function EventPopup({ events = [], onClose }) {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Reset index when events list changes (e.g. due to filtering)
+  React.useEffect(() => {
+    setCurrentIndex(0);
+  }, [events]);
 
   if (!events || events.length === 0) return null;
 
@@ -117,7 +122,10 @@ export default function EventPopup({ events = [], onClose }) {
               className="flex flex-col gap-4"
             >
               <div>
-                <h3 className="font-black text-white text-xl leading-tight tracking-tight mb-2 line-clamp-2 min-h-[3rem]">
+                <h2 className="text-2xl md:text-3xl font-black text-[#00E5FF] leading-none mb-1.5 drop-shadow-[0_0_15px_rgba(0,229,255,0.4)] truncate">
+                  {currentEvent.artist}
+                </h2>
+                <h3 className="font-bold text-gray-300 text-sm md:text-base leading-tight mb-3 line-clamp-1">
                   {currentEvent.title}
                 </h3>
                 <div className="flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider">
@@ -145,7 +153,7 @@ export default function EventPopup({ events = [], onClose }) {
 
               <div className="flex gap-2 pt-2">
                 <button 
-                  onClick={() => navigate('/new-event')}
+                  onClick={() => window.open(currentEvent.ticketUrl, '_blank')}
                   className="flex-1 bg-[#00E5FF] text-black font-black py-3 rounded-2xl text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-[0_8px_20px_rgba(0,229,255,0.3)]"
                 >
                   Join Event <ExternalLink size={14} />

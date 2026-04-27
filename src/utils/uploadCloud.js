@@ -1,4 +1,5 @@
 import axios from "axios";
+import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET } from "../config/env";
 
 /**
  * Upload a single File object to Cloudinary.
@@ -13,11 +14,11 @@ export const uploadToCloudinary = async (file) => {
 
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "4B1K_unsigned");
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
   try {
     const resp = await axios.post(
-      "https://api.cloudinary.com/v1_1/dvpcypwok/image/upload",
+      CLOUDINARY_UPLOAD_URL,
       formData,
       {
         // Do NOT set Content-Type manually for FormData – let axios handle it

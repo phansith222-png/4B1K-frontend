@@ -76,11 +76,11 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                     />
                 ))}
 
-                {/* 🫧 New Bubble Field - Reacts to Music */}
-                {[...Array(20)].map((_, i) => {
-                    const size = Math.random() * 30 + 15;
+                {/* 🫧 New Bubble Field - Focus: High Density & Impact */}
+                {[...Array(40)].map((_, i) => {
+                    const size = Math.random() * 40 + 20;
                     return (
-                        <motion.div key={`field-${i}`} className="absolute rounded-full border-2 border-white/20 bg-white/5 shadow-[inset_0_0_8px_rgba(255,255,255,0.2)]"
+                        <motion.div key={`field-${i}`} className="absolute rounded-full border-2 border-white/30 bg-white/10 shadow-[inset_0_0_12px_rgba(255,255,255,0.3)]"
                             style={{ 
                                 width: size, 
                                 height: size, 
@@ -88,16 +88,16 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                                 bottom: `${10 + Math.random() * 80}%` 
                             }}
                             animate={{ 
-                                y: isPlaying ? [0, -30, 0] : [0, -150, 0],
-                                x: isPlaying ? 0 : [0, (Math.random() - 0.5) * 40, 0],
-                                opacity: isPlaying ? [0.2, 0.6, 0.2] : [0.1, 0.4, 0.1],
-                                scale: isPlaying ? [1, 1.15, 1] : [1, 1.1, 1]
+                                y: isPlaying ? [0, -40, 0] : [0, -200, 0],
+                                x: isPlaying ? 0 : [0, (Math.random() - 0.5) * 60, 0],
+                                opacity: isPlaying ? [0.3, 0.7, 0.3] : [0.2, 0.5, 0.2],
+                                scale: isPlaying ? [1, 1.2, 1] : [1, 1.15, 1]
                             }}
                             transition={{ 
-                                duration: isPlaying ? 0.6 : (Math.random() * 10 + 10), 
+                                duration: isPlaying ? 0.5 : (Math.random() * 12 + 10), 
                                 repeat: Infinity, 
                                 ease: isPlaying ? "easeInOut" : "linear",
-                                delay: isPlaying ? (i * 0.05) : (i * 0.5)
+                                delay: isPlaying ? (i * 0.03) : (i * 0.3)
                             }}
                         />
                     );
@@ -124,28 +124,29 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                     />
                 </div>
 
-                {/* Rising Embers - Natural Flow */}
-                {[...Array(30)].map((_, i) => (
+                {/* Rising Embers (สเก็ตไฟ - Focus: High Density Fire Particles) */}
+                {[...Array(70)].map((_, i) => (
                     <motion.div key={`ember-${i}`} className="absolute rounded-full"
                         style={{ 
-                            width: Math.random() * 3 + 1, 
-                            height: Math.random() * 3 + 1, 
+                            width: Math.random() * 4 + 1.5, 
+                            height: Math.random() * 4 + 1.5, 
                             left: `${Math.random() * 100}%`, 
                             bottom: '-5%', 
-                            backgroundColor: '#D3131F',
-                            boxShadow: '0 0 8px #D3131F, 0 0 12px rgba(211, 19, 31, 0.4)',
-                            filter: 'blur(0.5px)'
+                            backgroundColor: '#FF3D00',
+                            boxShadow: '0 0 10px #FF3D00, 0 0 15px rgba(255, 61, 0, 0.5)',
+                            filter: 'blur(0.3px)'
                         }}
                         animate={{ 
                             bottom: '110%',
-                            x: [0, Math.sin(i) * 50, Math.cos(i) * 50],
-                            opacity: [0, 0.8, 0.8, 0]
+                            x: [0, Math.sin(i) * 80, Math.cos(i) * 80],
+                            opacity: [0, 1, 1, 0],
+                            rotate: 360
                         }}
                         transition={{ 
-                            duration: Math.random() * 8 + 7, 
+                            duration: Math.random() * 6 + 5, 
                             repeat: Infinity, 
                             ease: "linear",
-                            delay: Math.random() * 10
+                            delay: Math.random() * 8
                         }}
                     />
                 ))}
@@ -173,68 +174,34 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                     className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(216,59,182,0.1)_0%,transparent_70%)] blur-[100px]"
                 />
 
-                {/* Fireflies (Natural Drifting - Magical Warm Glow) */}
-                {[...Array(35)].map((_, i) => (
+                {/* Fireflies (Focus: High Density & Magical Warm Glow) */}
+                {[...Array(90)].map((_, i) => (
                     <motion.div key={`firefly-${i}`} className="absolute rounded-full"
                         style={{ 
-                            width: Math.random() * 3 + 2, 
-                            height: Math.random() * 3 + 2, 
+                            width: Math.random() * 4 + 2, 
+                            height: Math.random() * 4 + 2, 
                             left: `${Math.random() * 100}%`, 
                             top: `${Math.random() * 100}%`, 
                             backgroundColor: '#e2ffad',
-                            boxShadow: '0 0 10px #e2ffad, 0 0 15px rgba(226, 255, 173, 0.3)',
-                            filter: 'blur(1.2px)',
-                            opacity: 0.2
+                            boxShadow: '0 0 12px #e2ffad, 0 0 18px rgba(226, 255, 173, 0.4)',
+                            filter: 'blur(1px)',
+                            opacity: 0.3
                         }}
                         animate={{ 
-                            opacity: [0.2, 0.7, 0.2],
-                            x: [0, Math.random() * 100 - 50, 0],
-                            y: [0, Math.random() * 100 - 50, 0],
+                            opacity: [0.3, 0.8, 0.3],
+                            x: [0, Math.random() * 150 - 75, 0],
+                            y: [0, Math.random() * 150 - 75, 0],
                         }}
                         transition={{ 
-                            duration: Math.random() * 8 + 12, 
+                            duration: Math.random() * 10 + 15, 
                             repeat: Infinity, 
                             ease: "easeInOut",
-                            delay: Math.random() * 10
+                            delay: Math.random() * 15
                         }}
                     />
                 ))}
 
-                {/* Realistic Shooting Stars (Organic Diagonal Flow) */}
-                {[...Array(2)].map((_, i) => (
-                    <motion.div key={`star-${i}`} 
-                        className="absolute pointer-events-none"
-                        style={{ 
-                            top: -100, 
-                            left: -100, 
-                            rotate: '38deg',
-                            opacity: 0,
-                        }}
-                        animate={{ 
-                            top: ['-10%', '90%'],
-                            left: ['-5%', '95%'],
-                            opacity: [0, 1, 0.8, 0]
-                        }}
-                        transition={{ 
-                            duration: 4.5, 
-                            repeat: Infinity, 
-                            repeatDelay: 10, // 10 seconds gap between appearances
-                            delay: Math.random() * 15 + (i * 8),
-                            ease: [0.16, 1, 0.3, 1] 
-                        }}
-                    >
-                        {/* The Streak (Tapered Tail) */}
-                        <div 
-                            className="w-[450px] h-[1px] bg-gradient-to-r from-transparent via-white/50 to-[#f9c1db]"
-                            style={{ filter: 'blur(0.5px)' }}
-                        />
-                        {/* The Head (Glowing Core) */}
-                        <div 
-                            className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full"
-                            style={{ boxShadow: '0 0 10px 2px #fff, 0 0 20px 4px rgba(249, 193, 219, 0.4)' }}
-                        />
-                    </motion.div>
-                ))}
+
 
                 {/* Drifting Soul Clouds */}
                 <motion.div 
@@ -257,18 +224,29 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                 {/* Digital Grid Pulse */}
                 <div className={`absolute inset-0 bg-[linear-gradient(rgba(0,229,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,229,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] transition-all duration-300 ${isPlaying ? 'opacity-100 scale-105' : 'opacity-40 scale-100'}`} />
                 
-                {/* Laser Beams */}
+                {/* Laser Beams - REDUCED COUNT */}
                 {[...Array(isPlaying ? 8 : 4)].map((_, i) => (
                     <motion.div key={i} 
-                        className="absolute w-full h-[1px] bg-[#00E5FF] blur-[2px]"
-                        style={{ top: `${20 + i * (isPlaying ? 10 : 20)}%` }}
-                        animate={{ x: ['-100%', '100%'], opacity: isPlaying ? [0, 0.8, 0] : [0, 0.5, 0] }}
-                        transition={{ duration: isPlaying ? 0.5 + i * 0.1 : 2 + i, repeat: Infinity, delay: i * 0.2, ease: "linear" }}
+                        className="absolute w-full h-[1px]"
+                        style={{ 
+                            top: `${10 + i * (isPlaying ? 5 : 10)}%`,
+                            background: `linear-gradient(90deg, transparent, #00E5FF, transparent)`,
+                            opacity: isPlaying ? 0.8 : 0.3
+                        }}
+                        animate={{ 
+                            x: ['-100%', '100%']
+                        }}
+                        transition={{ 
+                            duration: isPlaying ? 0.8 + (i * 0.1) : 4 + (i * 0.3), 
+                            repeat: Infinity, 
+                            delay: i * 0.1, 
+                            ease: "linear" 
+                        }}
                     />
                 ))}
 
-                {/* Center Glow Pulse */}
-                <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(112,0,255,0.4)_0%,transparent_70%)] ${isPlaying ? 'animate-[pulse_0.5s_infinite]' : 'animate-pulse'}`} />
+                {/* Center Glow Pulse - SUBTLE & SLEEK */}
+                <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(112,0,255,0.1)_0%,transparent_70%)] ${isPlaying ? 'animate-[pulse_0.4s_infinite]' : 'animate-pulse'}`} />
             </div>
         );
     }
@@ -286,31 +264,35 @@ export default function CategoryBackground({ keyword, isPlaying = false, artist 
                     className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#FF00FF]/20 rounded-full blur-[150px]" 
                 />
 
-                {/* Floating Platform Theme Shimmers */}
+                {/* Floating Shimmers - REDUCED TO 15 FOR CLARITY */}
                 {[...Array(15)].map((_, i) => (
                     <motion.div key={i} className="absolute"
                         style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
                         animate={{ 
-                            y: isPlaying ? [0, -50, 0] : [0, -20, 0],
-                            rotate: isPlaying ? [0, 180, 0] : [0, 45, 0],
-                            opacity: [0, 1, 0],
-                            scale: isPlaying ? [0.5, 1.5, 0.5] : [0.5, 1, 0.5]
+                            y: isPlaying ? [0, -60, 0] : [0, -20, 0],
+                            opacity: isPlaying ? [0.2, 0.9, 0.2] : [0.1, 0.5, 0.1],
+                            scale: [0.3, 1.2, 0.3],
+                            rotate: [0, 180, 360]
                         }}
-                        transition={{ duration: isPlaying ? 0.8 : Math.random() * 3 + 2, repeat: Infinity, delay: Math.random() * 2 }}
+                        transition={{ 
+                            duration: isPlaying ? 1 : 6, 
+                            repeat: Infinity, 
+                            delay: Math.random() * 4 
+                        }}
                     >
                         <div 
-                            className="w-4 h-4 rotate-45" 
+                            className="w-6 h-6 rotate-45" 
                             style={{ 
-                                background: i % 2 === 0 ? '#00E5FF' : '#7000FF',
-                                boxShadow: `0 0 20px ${i % 2 === 0 ? '#00E5FF' : '#7000FF'}`,
-                                borderRadius: '2px'
+                                background: i % 2 === 0 ? '#00E5FF' : '#FF00FF',
+                                boxShadow: `0 0 25px ${i % 2 === 0 ? '#00E5FF80' : '#FF00FF80'}`,
+                                borderRadius: '3px'
                             }} 
                             />
                     </motion.div>
                 ))}
 
-                {/* Platform Theme Light Streaks */}
-                {[...Array(8)].map((_, i) => (
+                {/* Platform Theme Light Streaks - REDUCED COUNT */}
+                {[...Array(4)].map((_, i) => (
                     <motion.div key={i} 
                         className="absolute h-[1px] w-full"
                         style={{ 

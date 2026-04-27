@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Reveal from '../Reveal';
 import { getCategoryStyle } from '../../utils/eventStyles';
 
 export default function EventCard({ event, index }) {
+    const navigate = useNavigate();
     
     // Curated high-quality music/concert images ไม่ได้ใช้ แต่เก็บไว้ก่อน
     const FALLBACK_IMAGES = [
@@ -37,7 +39,7 @@ export default function EventCard({ event, index }) {
     return (
         <Reveal key={index} delay={(index % 5) * 0.1} effect="fade-up">
             <div
-                onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')}
+                onClick={() => navigate(`/nearby-events?search=${encodeURIComponent(artistName)}&eventId=${event.id}`)}
                 className="group cursor-pointer flex flex-col bg-[#12141A]/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-4 hover:bg-[#1A1C23]/60 hover:border-[#7000FF]/40 transition-all duration-500 shadow-xl hover:shadow-[0_0_40px_rgba(112,0,255,0.1)] hover:-translate-y-3 h-full relative overflow-hidden"
             >
                 {/* Subtle Glow behind card on hover */}
@@ -88,7 +90,9 @@ export default function EventCard({ event, index }) {
                     </div>
 
                     <div className="mt-6">
-                        <div className="w-full bg-white/5 group-hover:bg-white text-white group-hover:text-black py-3.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 text-center border border-white/10 group-hover:border-white shadow-xl group-hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                        <div 
+                            className="w-full bg-white/5 group-hover:bg-white text-white group-hover:text-black py-3.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 text-center border border-white/10 group-hover:border-white shadow-xl group-hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                        >
                             JOIN EVENT
                         </div>
                     </div>

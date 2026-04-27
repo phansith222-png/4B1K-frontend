@@ -1,190 +1,269 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { extractYouTubeID, formatTime, loadYouTubeAPI } from '../utils/youtube';
 
-const FALLBACK_VIDEO_ID = 'dQw4w9WgXcQ';
+const FALLBACK_YOUTUBE_ID = 'dQw4w9WgXcQ';
 
-/**
- * useYouTubePlayer
- * Manages the YouTube IFrame Player API lifecycle, playback, and progress.
- */
+const extractYouTubeID = (url) => {
+    if (!url) return null;
+    // Enhanced regex to handle shorts, embeds, and various param orders
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+};
+
 const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
-    const { autoplay = false } = options;
+    const { 
+        autoplay = false,
+        artist = null,
+        onSongEnded = null,
+        initialIndex = 0,
+        isPlaying: externalIsPlaying = false,
+        onProgressUpdate = null // New callback to sync with store
+    } = options;
 
-    // --- State ---
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentSongIndex, setCurrentSongIndex] = useState(0);
+    const [isPlaying, setIsPlaying]         = useState(false);
+    const [progress, setProgress]           = useState(0);
+    const [currentTime, setCurrentTime]     = useState('0:00');
+    const [duration, setDuration]           = useState('0:00');
     const [isPlayerReady, setIsPlayerReady] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [progress, setProgress] = useState(0);
 
     // --- Refs ---
     const playerRef = useRef(null);
-    const progressBarRef = useRef(null);
-    const currentTimeRef = useRef(null);
-    const durationRef = useRef(null);
+    const lastVideoIdRef = useRef(null);
+    const lastArtistIdRef = useRef(null);
 
-    // Single stable ref object — always up-to-date, safe inside closures
-    const stableRef = useRef({
-        songs,
-        index: 0,
-        isPlaying: false,
-        isReady: false,
-        getVideoId: null,
-        handleSongSelect: null,
-    });
+    // Guarded setStates to prevent loops
+    const safeSetIsPlaying = (val) => setIsPlaying(prev => prev !== val ? val : prev);
 
-    // Keep stable ref in sync every render
-    stableRef.current.songs = songs;
-    stableRef.current.index = currentSongIndex;
-    stableRef.current.isPlaying = isPlaying;
-    stableRef.current.isReady = isPlayerReady;
-
-    // --- Helpers ---
-    const getVideoId = useCallback((index) => {
-        const song = stableRef.current.songs[index];
-        return extractYouTubeID(song?.streamUrl) || FALLBACK_VIDEO_ID;
-    }, []);
-    stableRef.current.getVideoId = getVideoId;
-
-    // --- Actions (defined early so they can be referenced in init) ---
-    const handleSongSelect = useCallback((index, e) => {
-        if (e) e.stopPropagation();
-        const player = playerRef.current;
-        if (!player || typeof player.loadVideoById !== 'function') return;
-        player.loadVideoById(stableRef.current.getVideoId(index));
-        setCurrentSongIndex(index);
-        setIsPlaying(true);
-    }, []);
-    stableRef.current.handleSongSelect = handleSongSelect;
-
-    const togglePlayPause = useCallback((e) => {
-        if (e) e.stopPropagation();
-        if (!playerRef.current || !stableRef.current.isReady) return;
-        if (stableRef.current.isPlaying) {
-            playerRef.current.pauseVideo();
-        } else {
-            playerRef.current.playVideo();
-        }
-    }, []);
-
-    const changeSong = useCallback((direction, e) => {
-        if (e) e.stopPropagation();
-        const total = stableRef.current.songs.length;
-        if (total === 0) return;
-        stableRef.current.handleSongSelect(
-            (stableRef.current.index + direction + total) % total
-        );
-    }, []);
-
-    const handleProgressClick = useCallback((e) => {
-        if (e) e.stopPropagation();
-        if (!playerRef.current) return;
-        const rect = e.currentTarget.getBoundingClientRect();
-        const pct = (e.clientX - rect.left) / rect.width;
-        const dur = playerRef.current.getDuration();
-        if (dur > 0) playerRef.current.seekTo(dur * pct, true);
-    }, []);
-
-    // --- RAF Progress Update Loop (DOM-only, no state = no lag) ---
+    // ── 1. API & Player Initialization ──
     useEffect(() => {
-        let rafId;
-        const update = () => {
-            const player = playerRef.current;
-            if (stableRef.current.isPlaying && player && typeof player.getCurrentTime === 'function') {
-                const cur = player.getCurrentTime();
-                const dur = player.getDuration();
-                if (dur > 0) {
-                    const pct = (cur / dur) * 100;
-                    // Direct DOM manipulation — no React re-render
-                    if (progressBarRef.current) progressBarRef.current.style.width = `${pct}%`;
-                    if (currentTimeRef.current) currentTimeRef.current.innerText = formatTime(cur);
-                    if (durationRef.current) durationRef.current.innerText = formatTime(dur);
+        const init = () => {
+            if (window.YT && window.YT.Player && !playerRef.current) {
+                initPlayer();
+            }
+        };
+
+        const interval = setInterval(() => {
+            if (window.YT && window.YT.Player) {
+                init();
+                clearInterval(interval);
+            }
+        }, 300);
+
+        if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+        }
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // ── 2. Artist Change Logic ──
+    useEffect(() => {
+        const currentId = artist?.id || artist?._id;
+        if (lastArtistIdRef.current !== currentId) {
+            lastArtistIdRef.current = currentId;
+            lastVideoIdRef.current = null; // Reset tracking
+        }
+    }, [artist]);
+
+    // ── 3. Video Loading Logic ──
+    useEffect(() => {
+        if (!songs?.length || !isPlayerReady || !playerRef.current) return;
+
+        // Safety: ensure index is within bounds
+        const targetIdx = (initialIndex >= 0 && initialIndex < songs.length) ? initialIndex : 0;
+        const song = songs[targetIdx];
+        if (!song) return;
+
+        const videoId = extractYouTubeID(song.streamUrl) || FALLBACK_YOUTUBE_ID;
+
+        // If same video, just restart it for responsiveness
+        if (lastVideoIdRef.current === videoId) {
+            if (playerRef.current.seekTo) playerRef.current.seekTo(0, true);
+            if (playerRef.current.playVideo) playerRef.current.playVideo();
+            return;
+        }
+
+        try {
+            if (playerRef.current.loadVideoById) {
+                playerRef.current.loadVideoById(videoId);
+                lastVideoIdRef.current = videoId;
+                
+                // Aggressive autoplay: attempt immediate play + a small delayed play
+                if (playerRef.current.unMute) playerRef.current.unMute();
+                if (playerRef.current.playVideo) playerRef.current.playVideo();
+                
+                setTimeout(() => {
+                    if (playerRef.current && playerRef.current.playVideo) {
+                        playerRef.current.playVideo();
+                    }
+                }, 150);
+                
+                safeSetIsPlaying(true);
+            }
+        } catch (err) {
+            console.error("YouTube Load Error:", err);
+        }
+    }, [songs, isPlayerReady, initialIndex, artist]);
+
+    // ── 4. Global Play/Pause Sync ──
+    useEffect(() => {
+        if (!playerRef.current || !isPlayerReady) return;
+
+        try {
+            const pState = typeof playerRef.current.getPlayerState === 'function' 
+                ? playerRef.current.getPlayerState() 
+                : -1;
+
+            if (externalIsPlaying) {
+                // If store says PLAYING but player is not playing (1) or buffering (3)
+                if (pState !== 1 && pState !== 3) {
+                    playerRef.current.playVideo();
+                }
+            } else {
+                // If store says PAUSED but player is not paused (2)
+                if (pState !== 2) {
+                    playerRef.current.pauseVideo();
                 }
             }
-            rafId = requestAnimationFrame(update);
-        };
-        rafId = requestAnimationFrame(update);
-        return () => cancelAnimationFrame(rafId);
-    }, []);
+        } catch (e) {
+            console.warn("YouTube Sync Error:", e);
+        }
+    }, [externalIsPlaying, isPlayerReady]);
 
-    // --- Player Initialization ---
+    // ── 5. Periodic Sync Guard (Fixes "stuck" play button) ──
     useEffect(() => {
-        let isMounted = true;
+        if (!playerRef.current || !isPlayerReady) return;
 
-        const onPlayerReady = (event) => {
-            if (!isMounted) return;
-            event.target.unMute();
-            event.target.setVolume(100);
-            setIsPlayerReady(true);
-            stableRef.current.isReady = true; // Immediate update for same-tick access
-            if (autoplay) event.target.playVideo();
-        };
+        const interval = setInterval(() => {
+            try {
+                const pState = typeof playerRef.current.getPlayerState === 'function' 
+                    ? playerRef.current.getPlayerState() 
+                    : -1;
+                
+                // If store says playing, but player is idle/ended/paused
+                if (externalIsPlaying && (pState === 2 || pState === 5 || pState === 0)) {
+                    playerRef.current.playVideo();
+                }
+            } catch (e) {}
+        }, 1000);
 
-        const onPlayerStateChange = (event) => {
-            if (!isMounted) return;
-            const S = window.YT.PlayerState;
-            if (event.data === S.PLAYING) {
-                setIsPlaying(true);
-                stableRef.current.isPlaying = true;
-            } else if (event.data === S.PAUSED || event.data === S.BUFFERING) {
-                setIsPlaying(false);
-                stableRef.current.isPlaying = false;
-            } else if (event.data === S.ENDED) {
-                const nextIdx = (stableRef.current.index + 1) % stableRef.current.songs.length;
-                stableRef.current.handleSongSelect(nextIdx); // Use stable ref — no stale closure
+        return () => clearInterval(interval);
+    }, [externalIsPlaying, isPlayerReady]);
+
+    // ── Interaction Listener ──
+    useEffect(() => {
+        if (!isPlayerReady) return;
+        const handleInteraction = () => {
+            if (playerRef.current && isPlaying) {
+                if (playerRef.current.unMute) playerRef.current.unMute();
+                if (playerRef.current.playVideo) playerRef.current.playVideo();
             }
+            window.removeEventListener('mousedown', handleInteraction);
         };
+        window.addEventListener('mousedown', handleInteraction);
+        return () => window.removeEventListener('mousedown', handleInteraction);
+    }, [isPlayerReady, isPlaying]);
 
-        const init = () => {
-            if (!isMounted || !window.YT || playerRef.current) return;
-            const el = document.getElementById(playerId);
-            if (!el) return;
-
-            playerRef.current = new window.YT.Player(playerId, {
-                height: '1',
-                width: '1',
-                videoId: stableRef.current.getVideoId(0),
-                playerVars: {
-                    autoplay: autoplay ? 1 : 0,
-                    controls: 0,
-                    rel: 0,
-                    enablejsapi: 1,
-                    origin: window.location.origin,
+    const initPlayer = () => {
+        if (!window.YT || !window.YT.Player) return;
+        
+        playerRef.current = new window.YT.Player(playerId, {
+            height: '0', width: '0',
+            playerVars: { 
+                autoplay: 1, controls: 0, disablekb: 1, fs: 0, 
+                iv_load_policy: 3, modestbranding: 1, rel: 0, showinfo: 0,
+                origin: window.location.origin,
+                enablejsapi: 1
+            },
+            events: {
+                onReady: () => setIsPlayerReady(true),
+                onStateChange: (event) => {
+                    const state = event.data;
+                    if (state === window.YT.PlayerState.PLAYING) safeSetIsPlaying(true);
+                    else if (state === window.YT.PlayerState.PAUSED) safeSetIsPlaying(false);
+                    else if (state === window.YT.PlayerState.ENDED) {
+                        safeSetIsPlaying(false);
+                        if (onSongEnded) onSongEnded();
+                    }
                 },
-                events: {
-                    onReady: onPlayerReady,
-                    onStateChange: onPlayerStateChange,
-                },
-            });
-        };
+                onError: (e) => console.error("YT Player Error:", e)
+            },
+        });
+    };
 
-        loadYouTubeAPI(init);
+    const togglePlayPause = useCallback(() => {
+        if (!playerRef.current || !isPlayerReady) return;
+        if (isPlaying) {
+            if (playerRef.current.pauseVideo) playerRef.current.pauseVideo();
+        } else {
+            if (playerRef.current.playVideo) playerRef.current.playVideo();
+            if (playerRef.current.unMute) playerRef.current.unMute();
+        }
+    }, [isPlaying, isPlayerReady]);
 
-        return () => {
-            isMounted = false;
-            if (playerRef.current) {
-                try { playerRef.current.destroy(); } catch (_) {}
-                playerRef.current = null;
+    const handleProgressClick = useCallback((percent) => {
+        if (!playerRef.current || !isPlayerReady || !playerRef.current.getDuration) return;
+        const time = (percent / 100) * playerRef.current.getDuration();
+        if (playerRef.current.seekTo) playerRef.current.seekTo(time, true);
+    }, [isPlayerReady]);
+
+    const setVolume = useCallback((val) => {
+        if (playerRef.current && isPlayerReady && playerRef.current.setVolume) {
+            playerRef.current.setVolume(val);
+        }
+    }, [isPlayerReady]);
+
+    // Time update loop
+    useEffect(() => {
+        let interval;
+        if (isPlaying && isPlayerReady) {
+            interval = setInterval(() => {
+                if (playerRef.current?.getCurrentTime) {
+                    const current = playerRef.current.getCurrentTime();
+                    const total   = playerRef.current.getDuration();
+                    if (total > 0) {
+                        const pct = (current / total) * 100;
+                        const fmt = (s) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+                        const fCur = fmt(current);
+                        const fDur = fmt(total);
+                        setProgress(pct);
+                        setCurrentTime(fCur);
+                        setDuration(fDur);
+                        if (onProgressUpdate) {
+                            onProgressUpdate({
+                                progress: pct,
+                                currentTime: fCur,
+                                duration: fDur
+                            });
+                        }
+                    }
+                }
+            }, 500);
+        }
+        return () => clearInterval(interval);
+    }, [isPlaying, isPlayerReady]);
+
+    // ── 8. Seek Function ──
+    const seekTo = useCallback((percent) => {
+        if (!playerRef.current || !isPlayerReady) return;
+        try {
+            const duration = playerRef.current.getDuration();
+            if (duration > 0) {
+                const targetTime = (percent / 100) * duration;
+                playerRef.current.seekTo(targetTime, true);
+                // Also update local state immediately for responsiveness
+                setProgress(percent);
             }
-        };
-    }, [playerId, autoplay]);
+        } catch (e) {
+            console.error("Seek Error:", e);
+        }
+    }, [isPlayerReady]);
 
     return {
-        isPlaying,
-        currentSongIndex,
-        isPlayerReady,
-        currentTime,
-        duration,
-        progress,
-        progressBarRef,
-        currentTimeRef,
-        durationRef,
-        playerRef,
-        togglePlayPause,
-        changeSong,
-        handleSongSelect,
-        handleProgressClick,
+        isPlaying, progress, currentTime, duration,
+        isPlayerReady, togglePlayPause, handleProgressClick, setVolume, seekTo
     };
 };
 

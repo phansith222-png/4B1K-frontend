@@ -10,9 +10,9 @@ export default function NavigationSidebar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
-      <div className="flex items-center gap-2 mb-6">
-        <Compass size={14} className="text-[#00E5FF] animate-pulse" />
+    <div className="p-2">
+      <div className="flex items-center gap-3 mb-6 px-4">
+        <Compass size={18} className="text-[#00E5FF] animate-pulse" />
         <h3 className="text-[#00E5FF] text-xs font-black tracking-[0.2em] uppercase">Navigation</h3>
       </div>
       <ul className="space-y-3">
@@ -24,7 +24,7 @@ export default function NavigationSidebar() {
           iconColor="text-[#00E5FF]"
           onClick={() => {
             if (isActive('/home') || isActive('/')) {
-              window.location.reload();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
               navigate('/home');
             }

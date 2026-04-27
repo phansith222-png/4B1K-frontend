@@ -1,147 +1,181 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { createCommentApi, createPostApi, deleteCommentApi, deletePostApi, editCommentApi, editPostApi, getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
 
-const usePostStore = create(
-    persist(
-        (set,get) => ({
-            posts : [],
-            comments : [],
-            currentPost : null,
-            currentLikes : [],
-    
-    getAllPosts : async () => {
+// ─── Helper: merge updated post into list without full refetch ────────────────
+const updatePostInList = (posts, postId, updater) =>
+    posts.map((p) => (p.id === postId ? updater(p) : p));
+
+const usePostStore = create((set, get) => ({
+    posts: [],
+    comments: [],
+    currentPost: null,
+    currentLikes: [],
+
+    // ── Full fetch (initial load only) ──────────────────────────────────────
+    getAllPosts: async () => {
         try {
-            console.log('get all posts')
-        const resp = await getAllPostsApi()
-        set ({ posts : resp.data.posts})
-        // console.log('get all poststore',resp)
-        console.log('get all posts',resp)
-        return resp
-        
-        }catch(error) {
-            console.error("Failed to fetch posts:", error)
+            const resp = await getAllPostsApi();
+            set({ posts: resp.data.posts });
+            return resp;
+        } catch (error) {
+            console.error("Failed to fetch posts:", error);
         }
     },
 
-    getAllLikes : async (postId) => {
+    getAllLikes: async (postId) => {
         try {
-        const resp = await getAllLikePostApi(postId)
-
-        // console.log('get all like',resp)
-        set ((state) => ({
-            posts : state.posts.map((post) => post.id === postId ? 
-            {...post,totalLikes: resp.data.totalLikes || 0 } : post
-        )
-        }))
-
-        return resp
-        }catch(error) {
-        console.dir("Failed to get like", error)
-        }
-    },
-
-    likePost : async (postId) => {
-        try {
-            const resp = await likePostApi(postId)
-            set ({currentLikes : resp.data})
-            get().getAllPosts()
-
-            // console.log(resp)
-            return resp
-
-        }catch(error) {
-            console.dir('like post fail',error)
-        }
-    },
-    unlikePost : async (postId) => {
-        try {
-            const resp = await unlikePostApi(postId)
-            set ({currentLikes : resp.data})
-            get().getAllPosts()
-            return resp
-        }catch(error) {
-            console.dir('unlike Post fail',error)
-        }
-    },
-    createPost : async (body) => {
-        try {
-            const resp = await createPostApi(body)
-            console.log(resp)
-            get().getAllPosts()
-            return resp
-        }catch(error) {
-            console.log('create Post fail',error)
-        }
-    },
-    editPost : async (postId,body) => {
-        try {
-            const resp = await editPostApi(postId,body)
-            get().getAllPosts()
-            return resp
-        }catch(error) {
-            console.dir('edit post fail',error)
-        }
-    },
-    deletePost : async (postId) => {
-        try {
-            const resp = await deletePostApi(postId)
-            get().getAllPosts()
-            return resp
-        }catch(error) {
-            console.dir('delete Post fail',error)
-        }
-    },
-    createComment : async (postId,body) => {
-        try {
-            const resp = await createCommentApi(postId,body)
-            get().getAllPosts()
-            return resp
-        }catch(error) {
-            console.log('create post fail',error)
-        }
-    },
-    editComment : async (postId, commentId, body) => {
-        try {
-            const resp = await editCommentApi(postId, commentId, body)
-
-            // Optimistic update: Update comment in local store immediately
-            // So that images and text display without waiting for getAllPosts()
+            const resp = await getAllLikePostApi(postId);
             set((state) => ({
-                posts: state.posts.map((post) =>
-                    post.id === postId
-                        ? {
-                            ...post,
-                            comments: post.comments.map((c) =>
-                                c.id === commentId ? { ...c, ...body } : c
-                            ),
-                          }
-                        : post
-                ),
-            }))
-
-            get().getAllPosts()
-            return resp
-        }catch (error) {
-            console.log('edit comment fail',error)
+                posts: updatePostInList(state.posts, postId, (p) => ({
+                    ...p,
+                    totalLikes: resp.data.totalLikes || 0,
+                })),
+            }));
+            return resp;
+        } catch (error) {
+            console.error("Failed to get likes:", error);
         }
     },
-    deleteComment : async (postId, commentId) => {
+
+    // ── Optimistic like/unlike — no full refetch ─────────────────────────────
+    likePost: async (postId) => {
+        const userId = get().currentLikes?.userId;
+        // Optimistic update: add like immediately
+        set((state) => ({
+            posts: updatePostInList(state.posts, postId, (p) => ({
+                ...p,
+                likes: [...(p.likes || []), { userId: state._userId }],
+            })),
+        }));
         try {
-            const resp = await deleteCommentApi(postId, commentId)
-            console.log(resp)
-            get().getAllPosts()
-            return resp
-        }catch(error) {
-            console.log('delete comment fail',error)
+            const resp = await likePostApi(postId);
+            set({ currentLikes: resp.data });
+            // Sync accurate data silently
+            const fresh = await getAllPostsApi();
+            set({ posts: fresh.data.posts });
+            return resp;
+        } catch (error) {
+            console.error("Like failed:", error);
+            // Rollback optimistic update
+            get().getAllPosts();
         }
-    }
-}),
+    },
 
-    {
-        name : "post-storage"
-    }
+    unlikePost: async (postId) => {
+        // Optimistic update: remove like immediately
+        set((state) => ({
+            posts: updatePostInList(state.posts, postId, (p) => ({
+                ...p,
+                likes: (p.likes || []).slice(0, -1),
+            })),
+        }));
+        try {
+            const resp = await unlikePostApi(postId);
+            set({ currentLikes: resp.data });
+            const fresh = await getAllPostsApi();
+            set({ posts: fresh.data.posts });
+            return resp;
+        } catch (error) {
+            console.error("Unlike failed:", error);
+            get().getAllPosts();
+        }
+    },
 
-))
+    // ── Create post — optimistic prepend ────────────────────────────────────
+    createPost: async (body) => {
+        try {
+            const resp = await createPostApi(body);
+            // Fetch to get full post with relations
+            const fresh = await getAllPostsApi();
+            set({ posts: fresh.data.posts });
+            return resp;
+        } catch (error) {
+            console.error("Create post failed:", error);
+        }
+    },
 
-export default usePostStore
+    // ── Edit post — optimistic local update ─────────────────────────────────
+    editPost: async (postId, body) => {
+        // Optimistic update
+        set((state) => ({
+            posts: updatePostInList(state.posts, postId, (p) => ({
+                ...p,
+                ...body,
+                updatedAt: new Date().toISOString(),
+            })),
+        }));
+        try {
+            const resp = await editPostApi(postId, body);
+            return resp;
+        } catch (error) {
+            console.error("Edit post failed:", error);
+            get().getAllPosts(); // rollback
+        }
+    },
+
+    // ── Delete post — optimistic local removal ───────────────────────────────
+    deletePost: async (postId) => {
+        // Optimistic remove
+        set((state) => ({
+            posts: state.posts.filter((p) => p.id !== postId),
+        }));
+        try {
+            const resp = await deletePostApi(postId);
+            return resp;
+        } catch (error) {
+            console.error("Delete post failed:", error);
+            get().getAllPosts(); // rollback
+        }
+    },
+
+    // ── Comments ─────────────────────────────────────────────────────────────
+    createComment: async (postId, body) => {
+        try {
+            const resp = await createCommentApi(postId, body);
+            // Fetch fresh to get comment with user data
+            const fresh = await getAllPostsApi();
+            set({ posts: fresh.data.posts });
+            return resp;
+        } catch (error) {
+            console.error("Create comment failed:", error);
+        }
+    },
+
+    editComment: async (postId, commentId, body) => {
+        // Optimistic update
+        set((state) => ({
+            posts: updatePostInList(state.posts, postId, (p) => ({
+                ...p,
+                comments: p.comments.map((c) =>
+                    c.id === commentId ? { ...c, ...body } : c
+                ),
+            })),
+        }));
+        try {
+            const resp = await editCommentApi(postId, commentId, body);
+            return resp;
+        } catch (error) {
+            console.error("Edit comment failed:", error);
+            get().getAllPosts();
+        }
+    },
+
+    deleteComment: async (postId, commentId) => {
+        // Optimistic remove
+        set((state) => ({
+            posts: updatePostInList(state.posts, postId, (p) => ({
+                ...p,
+                comments: p.comments.filter((c) => c.id !== commentId),
+            })),
+        }));
+        try {
+            const resp = await deleteCommentApi(postId, commentId);
+            return resp;
+        } catch (error) {
+            console.error("Delete comment failed:", error);
+            get().getAllPosts();
+        }
+    },
+}));
+
+export default usePostStore;

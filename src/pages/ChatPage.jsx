@@ -17,8 +17,7 @@ export default function ChatPage() {
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
   const { showToast } = useCyberToast();
-  const myUserId = user?.id;
-  const messageImageInputRef = useRef(null);
+  const myUserId = user?.id || user?._id;
 
   const [activeChat, setActiveChat] = useState(null);
   const [contacts, setContacts] = useState([]);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Heart,
@@ -15,7 +15,7 @@ import PostModal from "./PostModal";
 import EditPostModal from "./EditPostModal";
 import TimeAgo from 'react-timeago'
 
-function PostItem({ post, index }) {
+function PostItemInner({ post, index }) {
   const user = useUserStore((state) => state.user);
   const likePost = usePostStore((state) => state.likePost);
   const unlikePost = usePostStore((state) => state.unlikePost);
@@ -27,7 +27,8 @@ function PostItem({ post, index }) {
 
   // const currentLikes = usePostStore(state => state.currentLikes) || []
 
-  const haveLiked = post.likes?.some((el) => el.userId === user?.id);
+  const myId = user?.id || user?._id;
+  const haveLiked = post.likes?.some((el) => el.userId === myId);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditPostOpen, setIsEditPostOpen] = useState(false);
@@ -64,13 +65,13 @@ function PostItem({ post, index }) {
   return (
     <>
       <motion.div
-        key={post.id || index}
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
+        key={post.id}
+        layout={false}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{
-          delay: index * 0.1,
-          duration: 0.5,
-          ease: [0.22, 1, 0.36, 1],
+          duration: 0.3,
+          ease: 'easeOut',
         }}
         className="bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
       >
@@ -116,8 +117,8 @@ function PostItem({ post, index }) {
               </div>
             </div>
 
-            {/* 3-dot menu button */}
-            {user?.id === post.userId && (
+            {/* ปุ่ม จุด 3 จุด */}
+            {(user?.id === post.userId || user?._id === post.userId) && (
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle menu
@@ -217,20 +218,24 @@ function PostItem({ post, index }) {
         {post.postImages && post.postImages.length > 0 && (
           <div
             className={`px-6 mb-4 grid gap-2 ${
-              post.postImages.length === 1 ? "grid-cols-1" : "grid-cols-2"
+              post.postImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
             }`}
           >
             {post.postImages.map((el, idx) => (
-              <img
-                key={el.id || index}
-                src={el.url}
-                className={`w-full object-contain bg-black/20 rounded-2xl border border-white/10 shadow-inner ${
-                  post.postImages.length === 1
-                    ? "h-auto max-h-[500px]"
-                    : "h-[150px] sm:h-[200px]"
+              <div
+                key={el.id || idx}
+                className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 ${
+                  post.postImages.length === 1 ? 'min-h-[200px] max-h-[500px]' : 'h-[150px] sm:h-[200px]'
                 }`}
-                alt={`Post content ${idx}`}
-              />
+              >
+                <img
+                  src={el.url}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-contain"
+                  alt={`Post content ${idx}`}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -339,5 +344,17 @@ function PostItem({ post, index }) {
     </>
   );
 }
+
+
+// Custom comparator: only re-render when the post's own data changes
+const PostItem = memo(PostItemInner, (prev, next) => {
+    return (
+        prev.post.id === next.post.id &&
+        prev.post.likes?.length === next.post.likes?.length &&
+        prev.post.comments?.length === next.post.comments?.length &&
+        prev.post.content === next.post.content &&
+        prev.post.updatedAt === next.post.updatedAt
+    );
+});
 
 export default PostItem;

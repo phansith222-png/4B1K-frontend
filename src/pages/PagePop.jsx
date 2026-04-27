@@ -4,8 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 // Hooks
 import { useArtists } from '../hooks/useArtists';
 import { useArtistDetail } from '../hooks/useArtistDetail';
-import { getFilteredRandomArtistId } from '../utils/artistHelper'
-import useYouTubePlayer from '../hooks/useYouTubePlayer';
+import { getFilteredRandomArtistId } from '../utils/artistHelper';
+import { usePlayerStore } from '../stores/playerStore';
+import PageLoader from '../components/PageLoader';
+import { SkeletonHero } from '../components/Skeleton';
 
 // Constants
 import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
@@ -19,8 +21,6 @@ import ConcertSection from '../components/PagePopComponent/ConcertSection';
 import StatsSection from '../components/PagePopComponent/StatsSection';
 import Reveal from '../components/Reveal';
 
-const PLAYER_ID = 'yt-player-hidden-pop';
-
 export default function PagePop() {
     const [searchParams] = useSearchParams();
     const queryArtistId = searchParams.get('artistId');
@@ -30,91 +30,119 @@ export default function PagePop() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+        return getFilteredRandomArtistId(artists, 'pop', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
 
     const loading = loadingAll || loadingDetail;
 
-    // ── Player ────────────────────────────────────────────────────────────
-    // The hidden div (#PLAYER_ID) below is a stable DOM node — it must never
-    // be conditionally rendered or given a changing key. The hook detects
-    // when songs change (new artist) and calls cueVideoById() internally.
-    const {
-        isPlaying,
-        currentSongIndex,
-        progressBarRef,
-        currentTimeRef,
-        durationRef,
-        togglePlayPause,
-        changeSong,
-        handleSongSelect,
-        handleProgressClick,
-    } = useYouTubePlayer(songs, PLAYER_ID, {
-        autoplay: searchParams.get('autoplay') === 'true'
-    });
+    // ── Global Player State - Optimized with Selectors ────────────────────
+    const isPlaying = usePlayerStore(state => state.isPlaying);
+    const currentSongIndex = usePlayerStore(state => state.currentSongIndex);
+    const progress = usePlayerStore(state => state.progress);
+    const currentTime = usePlayerStore(state => state.currentTime);
+    const duration = usePlayerStore(state => state.duration);
+    const controls = usePlayerStore(state => state.controls);
+    const playSongs = usePlayerStore(state => state.playSongs);
+    const globalArtist = usePlayerStore(state => state.artist);
+    const isCurrentArtist = React.useMemo(() => {
+        if (!globalArtist || !artist) return false;
+        const gId = String(globalArtist.id || globalArtist._id || '');
+        const aId = String(artist.id || artist._id || '');
+        const gName = String(globalArtist.artistName || '').toLowerCase().trim();
+        const aName = String(artist.artistName || '').toLowerCase().trim();
+        
+        // Match by ID or Name for maximum reliability
+        return (gId !== '' && gId === aId) || (gName !== '' && gName === aName);
+    }, [globalArtist, artist]);
 
-    // ── Render (always render player div first — it must exist before YouTube API fires) ──
+    // Auto-play when artist loads if requested
+    React.useEffect(() => {
+        if (artist && songs.length > 0 && searchParams.get('autoplay') === 'true') {
+            playSongs(artist, songs, 0);
+        }
+    }, [artist, songs, searchParams, playSongs]);
+
+    // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans selection:bg-[#FF007F] selection:text-white">
 
-            {/* Stable hidden player container — ALWAYS rendered, never conditional */}
-            <div id={PLAYER_ID} className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" />
+            {/* Animated background - Always renders */}
+            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+                <CategoryBackground keyword="pop" isPlaying={isPlaying} artist={artist} />
 
-            {loading ? (
-                <div className="min-h-screen flex flex-col items-center justify-center text-[#FF007F] relative overflow-hidden">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#00E5FF] opacity-10 blur-[80px] rounded-full animate-pulse" />
-                    <div className="w-16 h-16 border-4 border-white/10 border-t-[#00E5FF] rounded-full animate-spin z-10" />
-                    <p className="mt-4 font-bold tracking-widest animate-pulse text-white z-10 uppercase text-sm">Loading Pop Star...</p>
-                </div>
-            ) : !artist ? (
-                <div className="min-h-screen flex flex-col items-center justify-center text-white">
+                {/* Digital Grid Overlay */}
+                <div
+                    className="absolute inset-0 opacity-[0.05]"
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
+                        backgroundSize: '100px 100px'
+                    }}
+                />
+            </div>
+
+            {loading && !artist ? (
+                <SkeletonHero />
+            ) : !artist && !loading ? (
+                <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-white">
                     <p className="font-bold text-xl text-[#00E5FF]">No Pop Artists Found.</p>
                     <p className="text-gray-500 mt-2">Please run seed to inject data into database.</p>
                 </div>
             ) : (
-                <>
-                    {/* Animated background */}
-                    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                        <div className="absolute inset-0 bg-[#0B0C10]" />
-                        <CategoryBackground keyword="pop" isPlaying={isPlaying} />
-                        <div
-                            className="absolute inset-0 opacity-[0.05]"
-                            style={{
-                                backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
-                                backgroundSize: '100px 100px'
-                            }}
-                        />
-                    </div>
-
+                <div key={artist?.id || 'content'}>
                     <style>{`
-                        @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                        @keyframes panGrid { 0% { transform: translateY(0); } 100% { transform: translateY(50px); } }
                         .cd-rotate { animation: rotateCD 12s linear infinite; }
                         @keyframes eqRun { 0%, 100% { height: 15%; } 50% { height: 90%; } }
                         .eq-bar { animation: eqRun 1.5s ease-in-out infinite; }
                         .group:hover .tooltip-box { opacity: 1; transform: translateY(0); }
                     `}</style>
 
-                    <Reveal><HeroSection artist={artist} events={events} /></Reveal>
-                    <Reveal><BioSection artist={artist} /></Reveal>
-                    <MusicPlayerSection
-                        artist={artist}
-                        songs={songs}
-                        currentSongIndex={currentSongIndex}
-                        isPlaying={isPlaying}
-                        progressBarRef={progressBarRef}
-                        currentTimeRef={currentTimeRef}
-                        durationRef={durationRef}
-                        togglePlayPause={togglePlayPause}
-                        changeSong={changeSong}
-                        handleSongSelect={handleSongSelect}
-                        handleProgressClick={handleProgressClick}
-                        currentSong={songs[currentSongIndex]}
-                    />
-                    <Reveal><ConcertSection events={events} artist={artist} /></Reveal>
-                    <Reveal><StatsSection songs={songs} /></Reveal>
-                </>
+                    <Reveal>
+                        <HeroSection artist={artist} events={events} />
+                    </Reveal>
+                    <Reveal>
+                        <BioSection artist={artist} />
+                    </Reveal>
+                    <Reveal>
+                        <MusicPlayerSection
+                            artist={artist}
+                            songs={songs}
+                            currentSongIndex={isCurrentArtist ? currentSongIndex : 0}
+                            isPlaying={isCurrentArtist ? isPlaying : false}
+                            progress={isCurrentArtist ? progress : 0}
+                            currentTime={isCurrentArtist ? currentTime : '0:00'}
+                            duration={isCurrentArtist ? duration : '0:00'}
+                            togglePlayPause={() => {
+                                if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                else if (controls?.togglePlayPause) controls.togglePlayPause();
+                            }}
+                            changeSong={(dir) => {
+                                if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                else if (controls?.changeSong) controls.changeSong(dir);
+                            }}
+                            handleSongSelect={(idx) => {
+                                if (!isCurrentArtist) playSongs(artist, songs, idx);
+                                else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
+                            }}
+                            handleProgressClick={(e) => {
+                                if (isCurrentArtist && controls?.handleProgressClick) {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                                    controls.handleProgressClick(percent);
+                                }
+                            }}
+                            currentSong={songs[isCurrentArtist ? currentSongIndex : 0]}
+                        />
+                    </Reveal>
+                    <Reveal>
+                        <ConcertSection events={events} artist={artist} />
+                    </Reveal>
+                    <Reveal>
+                        <StatsSection songs={songs} />
+                    </Reveal>
+                </div>
             )}
         </div>
     );

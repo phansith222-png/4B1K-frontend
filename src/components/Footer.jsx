@@ -34,6 +34,8 @@ const NAV_COLUMNS = [
   },
 ]
 
+import { API_URL } from '../config/env'
+
 /* ─── Google social icon ─── */
 function GoogleIcon() {
   const getGoogleAuthUrl = () => {

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from 'axios';
-import { getAllArtists, getArtistsById } from "../api/auth";
+import { getAllArtists, getArtistById } from "../api/artist";
 import { toast } from "react-toastify";
 
 const useContentStore = create((set, get) => ({
@@ -27,7 +27,7 @@ const useContentStore = create((set, get) => ({
   getArtistsById: async (artistId) => {
     set({ loading: true, error: null });
     try {
-      const res = await getArtistsById(artistId);
+      const res = await getArtistById(artistId);
       console.log('res', res)
       // const artistData = res.data.artist || res.data.result || res.data;
       // set({ currentArtist: artistData, loading: false });

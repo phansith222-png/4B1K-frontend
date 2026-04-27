@@ -2,13 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { getAllArtists } from '../../../api/artist';
+import { getArtistPathById, getGenreColorByName } from '../../../utils/genreHelpers';
 
-// ข้อมูลจำลองเผื่อ API โหลดช้า
-const getMockArtists = () => Array.from({ length: 7 }).map((_, i) => ({
+// ── Configuration Constants ───────────────────────────────────────────────────
+const MOCK_ARTISTS = Array.from({ length: 7 }).map((_, i) => ({
     id: `mock-${i}`,
     artistName: `Loading...`,
     profileImage: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400&auto=format&fit=crop'
 }));
+
+const getMockArtists = () => MOCK_ARTISTS;
+
+const FAN_LAYOUT_CONFIG = {
+    // scale: [center, abs=1, abs=2]
+    scaleMap: [1, 0.85, 0.7],
+    // Y offset: [center, abs=1, abs=2]
+    yMap: [-40, 20, 90],
+    // X spread (desktop): [center, abs=1, abs=2]
+    xMapDesktop: [0, 340, 640],
+    // X spread (mobile): [center, abs=1, abs=2]
+    xMapMobile: [0, 140, 0], // mobile only shows abs=1
+    // rotation degrees: [center, abs=1, abs=2]
+    rotateMap: [0, 15, 35]
+};
 
 export default function HeroVideoShowcase({ artists = [] }) {
     const navigate = useNavigate();
@@ -32,23 +48,7 @@ export default function HeroVideoShowcase({ artists = [] }) {
             setCurrentIndex((prev) => (prev + 1) % displayArtists.length);
         }, 3500); // เปลี่ยนศิลปินทุกๆ 3.5 วินาที
         return () => clearInterval(timer);
-    }, [displayArtists, isHovered]);
-
-    const getArtistPath = (artist) => {
-        return artist.path || '/artists';
-    };
-
-    const getGenreColor = (genresArray) => {
-        if (!genresArray || !genresArray.length) return "#00E5FF";
-        const gName = (genresArray[0]?.genre?.name || "").toLowerCase();
-
-        if (gName.includes("pop")) return "#FF007F";
-        if (gName.includes("rock")) return "#D3131F";
-        if (gName.includes("r&b") || gName.includes("classic")) return "#da45ffff";
-        if (gName.includes("hip hop") || gName.includes("rap")) return "#00E5FF";
-        if (gName.includes("edm") || gName.includes("electronic")) return "#7000FF";
-        return "#00E5FF"; // default
-    };
+    }, [artists, isHovered]);
 
     const getGenreName = (genresArray) => {
         if (!genresArray || !genresArray.length) return "Featured Artist";
@@ -57,7 +57,7 @@ export default function HeroVideoShowcase({ artists = [] }) {
 
     if (displayArtists.length === 0) return <div className="h-[40vh] w-full"></div>;
 
-    // คำนวณตำแหน่งให้เรียงเป็น "เส้นโค้งสายรุ้ง" แบบมีองศาการเอียง (ตามภาพตัวอย่าง JoyJam)
+    // คำนวณตำแหน่งให้เรียงเป็น "เส้นโค้งสายรุ้ง" แบบมีองศาการเอียง
     const getLayout = (distance) => {
         const mobile = isMobile.current;
         const abs = Math.abs(distance);
@@ -66,25 +66,13 @@ export default function HeroVideoShowcase({ artists = [] }) {
         // ซ่อนตัวที่อยู่ไกลๆ เพื่อไม่ให้รกบนมือถือ
         if (mobile && abs > 1) return { opacity: 0, scale: 0.5, x: sign * 150, y: 80, rotate: sign * 20, zIndex: 0 };
 
-        // ขนาด: ปรับให้เล็กลงเพื่อให้มีพื้นที่ตรงกลางสำหรับข้อความ
-        const scale = abs === 0 ? 1 : abs === 1 ? 0.8 : 0.65;
-
-        // แกน Y: โค้งแบบกว้างๆ ให้ตรงกลางอยู่สูงขึ้น
-        const y = abs === 0 ? -40 : abs === 1 ? 30 : 100;
-
-        // แกน X: ระยะห่างซ้ายขวากว้างขึ้น
-        let x = 0;
-        if (abs === 1) x = sign * (mobile ? 130 : 280);
-        if (abs === 2) x = sign * 520;
-
-        // องศาการเอียง (Rotate Z)
-        const rotate = sign * (abs === 1 ? 15 : abs === 2 ? 35 : 0);
+        const { scaleMap, yMap, xMapDesktop, xMapMobile, rotateMap } = FAN_LAYOUT_CONFIG;
 
         return {
-            x,
-            y,
-            scale,
-            rotate,
+            x: sign * (isMobile.current ? xMapMobile[abs] : xMapDesktop[abs]),
+            y: yMap[abs],
+            scale: scaleMap[abs],
+            rotate: sign * rotateMap[abs],
             zIndex: 10 - abs,
             opacity: abs === 0 ? 1 : abs === 1 ? 0.9 : 0.5
         };
@@ -96,7 +84,7 @@ export default function HeroVideoShowcase({ artists = [] }) {
             {/* แสงสว่างด้านหลัง */}
             <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[700px] h-[300px] bg-gradient-to-tr from-[#00E5FF]/10 via-[#7000FF]/15 to-[#FF007F]/10 blur-[90px] rounded-full pointer-events-none"></div>
 
-            <div className="relative w-full max-w-6xl flex justify-center items-center h-full">
+            <div className="relative w-full flex justify-center items-center h-full">
                 <AnimatePresence mode="popLayout">
                     {displayArtists.map((artist, idx) => {
                         // คำนวณระยะห่างจากตัวตรงกลางแบบวงกลม
@@ -124,12 +112,12 @@ export default function HeroVideoShowcase({ artists = [] }) {
                                 }}
                                 exit={{ opacity: 0, scale: 0.5, x: Math.sign(distance) * -200, y: 100, rotate: Math.sign(distance) * -30 }}
                                 transition={{ type: "spring", stiffness: 90, damping: 20, mass: 1 }}
-                                // ปรับให้ภาพมีความกว้าง/สูง สมส่วน เล็กลงเพื่อโชว์ข้อความด้านล่าง
-                                className={`absolute w-40 h-40 md:w-56 md:h-56 lg:w-[18rem] lg:h-[18rem] cursor-pointer ${isCenter ? 'shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-[2rem] lg:rounded-[2.5rem]' : 'rounded-[1.5rem] lg:rounded-[2rem]'}`}
+                                // กลับมาใช้ขนาดรูปสี่เหลี่ยมจัตุรัสแบบเดิม และปรับการ์ดด้านหลังให้พอดี
+                                className={`absolute w-40 h-40 md:w-56 md:h-56 lg:w-[20rem] lg:h-[20rem] cursor-pointer ${isCenter ? 'shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-[2rem] lg:rounded-[2.5rem]' : 'rounded-[1.5rem] lg:rounded-[2rem]'}`}
                                 style={{ transformStyle: "preserve-3d" }}
                                 onClick={() => {
                                     if (isCenter) {
-                                        const path = getArtistPath(artist);
+                                        const path = getArtistPathById(artist.id);
                                         if (path !== '#') navigate(`${path}?artistId=${artist.id}`);
                                     } else {
                                         // ถ้าคลิกตัวข้างๆ ให้เลื่อนมาตรงกลาง
@@ -157,16 +145,16 @@ export default function HeroVideoShowcase({ artists = [] }) {
                                             loading="lazy"
                                             className="w-full h-full object-cover opacity-90 transition-transform duration-[2s] hover:scale-110"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end justify-center pb-6 pointer-events-none">
-                                            <span className="text-white font-black text-xl md:text-2xl tracking-widest drop-shadow-[0_5px_5px_rgba(0,0,0,1)] text-center px-4">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end justify-center pb-4 md:pb-6 pointer-events-none">
+                                            <span className="text-white font-black text-lg md:text-2xl tracking-widest drop-shadow-[0_5px_5px_rgba(0,0,0,1)] text-center px-4">
                                                 {artist.artistName}
                                             </span>
                                         </div>
                                     </div>
 
-                                    {/* ด้านหลัง: ข้อมูลศิลปิน (พลิกมาเจออันนี้ออกแบบใหม่ให้สวยขึ้น) */}
+                                    {/* ด้านหลัง: ข้อมูลศิลปิน */}
                                     <div
-                                        className="absolute inset-0 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden border-2 border-[#00E5FF]/40 bg-[#0B0C10] flex flex-col p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]"
+                                        className="absolute inset-0 rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden border-2 border-[#00E5FF]/40 bg-[#0B0C10] flex flex-col p-3 md:p-4 lg:p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]"
                                         style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
                                     >
                                         {/* พื้นหลังเบลอจากรูปศิลปิน */}
@@ -176,51 +164,44 @@ export default function HeroVideoShowcase({ artists = [] }) {
                                         </div>
 
                                         {/* เนื้อหาด้านหลัง */}
-                                        <div className="relative z-10 flex flex-col h-full">
-                                            {/* รูปโปรไฟล์วงกลมและชื่อ */}
-                                            <div className="flex flex-col items-center mt-2">
+                                        <div className="relative z-10 flex flex-col h-full justify-between">
+                                            
+                                            {/* ส่วนบน: รูปโปรไฟล์และชื่อ */}
+                                            <div className="flex flex-col items-center mt-1">
                                                 <div
-                                                    className="w-20 h-20 md:w-24 md:h-24 rounded-full p-1 bg-gradient-to-tr shadow-lg mb-3"
+                                                    className="hidden md:block w-12 h-12 lg:w-16 lg:h-16 rounded-full p-0.5 lg:p-1 bg-gradient-to-tr shadow-lg mb-1 lg:mb-2 flex-shrink-0"
                                                     style={{
-                                                        backgroundImage: `linear-gradient(to top right, ${getGenreColor(artist.genres)}, #111)`,
-                                                        boxShadow: `0 0 20px ${getGenreColor(artist.genres)}60`
+                                                        backgroundImage: `linear-gradient(to top right, ${getGenreColorByName(artist.genres)}, #111)`,
+                                                        boxShadow: `0 0 15px ${getGenreColorByName(artist.genres)}60`
                                                     }}
                                                 >
-                                                    <img src={artist.profileImage} alt={artist.artistName} loading="lazy" className="w-full h-full object-cover rounded-full border-2 border-black" />
+                                                    <img src={artist.profileImage} alt={artist.artistName} className="w-full h-full object-cover rounded-full border border-black" />
                                                 </div>
-                                                <h3 className="text-xl md:text-2xl font-black text-white text-center leading-tight mb-1 line-clamp-1 w-full px-2">{artist.artistName}</h3>
+                                                <h3 className="text-base md:text-lg lg:text-xl font-black text-white text-center leading-tight mb-0 line-clamp-1 w-full px-1">{artist.artistName}</h3>
                                                 <span
-                                                    className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em]"
-                                                    style={{ color: getGenreColor(artist.genres) }}
+                                                    className="text-[8px] lg:text-[9px] font-bold uppercase tracking-[0.2em] flex-shrink-0 mt-0.5"
+                                                    style={{ color: getGenreColorByName(artist.genres) }}
                                                 >
                                                     {getGenreName(artist.genres)}
                                                 </span>
                                             </div>
 
-                                            {/* ข้อมูลเพลง / อีเวนต์ */}
-                                            <div className="flex-grow flex flex-col justify-center gap-3 w-full mt-4">
-                                                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-md flex items-center gap-3 transition-colors hover:bg-white/10">
-                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d000ff]/20 to-[#d000ff]/10 border border-[#d000ff]/30 flex items-center justify-center text-[#d000ff] text-lg">🎵</div>
+                                            {/* ส่วนกลาง: ข้อมูลเพลง / อีเวนต์ (ซ่อนบนมือถือที่จอเล็กเกินไป w-40 h-40) */}
+                                            <div className="hidden md:flex flex-grow flex-col justify-center gap-1.5 lg:gap-2 w-full mt-2 lg:mt-3">
+                                                <div className="bg-white/5 border border-white/10 rounded-lg lg:rounded-xl p-1.5 lg:p-2 backdrop-blur-md flex items-center gap-2 transition-colors hover:bg-white/10">
+                                                    <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md lg:rounded-lg bg-gradient-to-br from-[#d000ff]/20 to-[#d000ff]/10 border border-[#d000ff]/30 flex items-center justify-center text-[#d000ff] text-[10px] lg:text-xs flex-shrink-0">🎵</div>
                                                     <div className="flex flex-col text-left flex-1 min-w-0">
-                                                        <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Top Track</span>
-                                                        <span className="text-sm md:text-base text-white font-medium line-clamp-1">{artist.songs?.[0]?.title || "Explore Music"}</span>
+                                                        <span className="text-[6px] lg:text-[7px] text-gray-400 uppercase tracking-widest font-bold">Top Track</span>
+                                                        <span className="text-[10px] lg:text-xs text-white font-medium line-clamp-1">{artist.songs?.[0]?.title || "Explore Music"}</span>
                                                     </div>
                                                 </div>
 
-                                                <div className="bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-md flex items-center gap-3 transition-colors hover:bg-white/10">
-                                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00E5FF]/20 to-[#00E5FF]/10 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] text-lg">🎫</div>
+                                                <div className="bg-white/5 border border-white/10 rounded-lg lg:rounded-xl p-1.5 lg:p-2 backdrop-blur-md flex items-center gap-2 transition-colors hover:bg-white/10">
+                                                    <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md lg:rounded-lg bg-gradient-to-br from-[#00E5FF]/20 to-[#00E5FF]/10 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] text-[10px] lg:text-xs flex-shrink-0">🎫</div>
                                                     <div className="flex flex-col text-left flex-1 min-w-0">
-                                                        <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Live Events</span>
-                                                        <span className="text-sm md:text-base text-white font-medium line-clamp-1">{artist.events?.[0]?.eventName || "Upcoming Concerts"}</span>
+                                                        <span className="text-[6px] lg:text-[7px] text-gray-400 uppercase tracking-widest font-bold">Live Events</span>
+                                                        <span className="text-[10px] lg:text-xs text-white font-medium line-clamp-1">{artist.events?.[0]?.eventName || "Upcoming Concerts"}</span>
                                                     </div>
-                                                </div>
-                                            </div>
-
-                                            {/* ปุ่มกด */}
-                                            <div className="mt-auto pt-4">
-                                                <div className="w-full py-3 md:py-4 bg-gradient-to-r from-[#00E5FF] to-[#d000ff] rounded-2xl text-white font-black text-xs md:text-sm uppercase tracking-widest hover:shadow-[0_0_25px_rgba(0,229,255,0.6)] transition-all flex justify-center items-center gap-2 group-hover:scale-[1.02]">
-                                                    Explore Profile
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                                 </div>
                                             </div>
                                         </div>

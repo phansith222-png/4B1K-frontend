@@ -9,9 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getAllEvents } from '../api/event';
 import BackButton from '../components/BackButton';
 import { useCyberToast } from '../components/CyberToast';
-
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+import { MAPBOX_TOKEN } from '../config/env';
+import { useLocation } from 'react-router-dom';
 
 
 export default function PageNearbyEvents() {
@@ -24,6 +23,17 @@ export default function PageNearbyEvents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
+  const location = useLocation();
+
+  // Read search query from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const search = params.get('search');
+    if (search) {
+      setSearchQuery(search);
+    }
+  }, [location.search]);
 
   // Fetch events from backend
   useEffect(() => {
@@ -86,14 +96,13 @@ export default function PageNearbyEvents() {
             0
           );
 
-          // Image URL formatting (Strictly use mocked images)
-          const imageUrl = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-
-
+          // Image URL formatting (Prefer actual poster image from backend)
+          const imageUrl = event.posterImage || event.image || event.eventImage || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
 
           return {
             id: event.id || Math.random(),
             title: event.eventName || event.title || event.name || 'Untitled Event',
+            artist: event.mainArtistName || event.artistName || event.artist?.artistName || event.mainArtist?.artistName || "Artist",
             category: event.type || event.category || event.genre || 'All',
             date: event.startTime ? new Date(event.startTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (event.date || 'Date TBA'),
             time: event.startTime ? `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (event.time || 'Time TBA'),
@@ -102,6 +111,7 @@ export default function PageNearbyEvents() {
             lng: lng,
             attendees: event.attendeesCount || event.attendees || event.capacity || 0,
             price: event.price || '฿0',
+            ticketUrl: event.ticketUrl || event.ticket_url || 'https://www.thaiticketmajor.com/',
             image: imageUrl,
             hot: event.isHot || event.hot || event.is_hot || false
           };
@@ -121,17 +131,23 @@ export default function PageNearbyEvents() {
 
   // Animation ตอนโหลดแผนที่เสร็จ
   const onMapLoad = () => {
-    setTimeout(() => {
-      mapRef.current?.flyTo({
-        center: [100.5528, 13.7405],
-        zoom: 13.5,
-        pitch: 60,
-        bearing: -15,
-        duration: 4000,
-        essential: true,
-        curve: 1.2,
-      });
-    }, 800);
+    const params = new URLSearchParams(location.search);
+    const hasSpecialTarget = params.get('search') || params.get('eventId');
+
+    // ถ้าไม่มีการระบุศิลปินหรือกิจกรรมมา ให้บินไปจุดเริ่มต้นปกติ
+    if (!hasSpecialTarget) {
+      setTimeout(() => {
+        mapRef.current?.flyTo({
+          center: [100.5528, 13.7405],
+          zoom: 13.5,
+          pitch: 60,
+          bearing: -15,
+          duration: 4000,
+          essential: true,
+          curve: 1.2,
+        });
+      }, 800);
+    }
   };
 
   // ดึงตำแหน่งปัจจุบันของผู้ใช้
@@ -154,8 +170,10 @@ export default function PageNearbyEvents() {
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchCategory = activeCategory === 'All' || event.category === activeCategory;
-      const matchSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchSearch = 
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (event.artist && event.artist.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchCategory && matchSearch;
     });
   }, [events, activeCategory, searchQuery]);
@@ -220,6 +238,60 @@ export default function PageNearbyEvents() {
       });
     }
   };
+  
+  // 🔄 Update Selected Event Popup content when filters change
+  useEffect(() => {
+    if (selectedEvent) {
+      // Use the first event to identify the location
+      const location = Array.isArray(selectedEvent) ? selectedEvent[0] : selectedEvent;
+      const key = `${location.lat.toFixed(5)},${location.lng.toFixed(5)}`;
+      
+      // Find if there are still any events at this location that match current filters
+      const updatedGroup = groupedEvents.find(group => {
+        const first = group[0];
+        return `${first.lat.toFixed(5)},${first.lng.toFixed(5)}` === key;
+      });
+
+      if (updatedGroup) {
+        // Update the popup with matching events at this location
+        setSelectedEvent(updatedGroup);
+      } else {
+        // If no events at this location match anymore, close the popup
+        setSelectedEvent(null);
+      }
+    }
+  }, [groupedEvents]); // Dependency on groupedEvents covers category/search changes
+
+  // 3. Handle Auto-select Event from URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const eventId = params.get('eventId');
+    
+    // Ensure map is ready, events are loaded, and we have an eventId to target
+    if (mapReady && events.length > 0 && !loading && eventId) {
+      const targetGroup = groupedEvents.find(group => 
+        group.some(e => String(e.id) === String(eventId))
+      );
+
+      if (targetGroup) {
+        const timer = setTimeout(() => {
+          setSelectedEvent(targetGroup);
+          const event = targetGroup[0];
+          
+          mapRef.current?.flyTo({
+            center: [event.lng, event.lat - 0.005],
+            zoom: 16,
+            pitch: 55,
+            bearing: -10,
+            duration: 3500,
+            curve: 1.2,
+            essential: true
+          });
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [events.length, loading, location.search, groupedEvents, mapReady]);
 
 
   const handleMapClick = () => {
@@ -248,18 +320,16 @@ export default function PageNearbyEvents() {
     <div className="relative w-full h-[calc(100vh-72px)] bg-black text-white overflow-hidden font-sans">
       <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
 
-      {/* 🔄 Loading Overlay */}
+      {/* 🔄 Loading Bar — thin top bar instead of full-screen overlay */}
       <AnimatePresence>
         {loading && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm"
-          >
-            <div className="w-12 h-12 border-4 border-[#00E5FF]/20 border-t-[#00E5FF] rounded-full animate-spin mb-4" />
-            <p className="text-[#00E5FF] font-black tracking-widest text-xs uppercase animate-pulse">Syncing Cyber Events...</p>
-          </motion.div>
+            style={{ originX: 0 }}
+            className="absolute top-0 left-0 right-0 z-[100] h-1 bg-gradient-to-r from-[#00E5FF] via-[#7000FF] to-[#00E5FF] animate-pulse"
+          />
         )}
       </AnimatePresence>
 
@@ -276,6 +346,7 @@ export default function PageNearbyEvents() {
             bearing: 0
           }}
           onLoad={onMapLoad}
+          onIdle={() => setMapReady(true)}
           onClick={handleMapClick} // จับ Event คลิกพื้นแผนที่
           onZoom={(e) => {
             // Track zoom boolean to avoid 60fps re-renders during scroll

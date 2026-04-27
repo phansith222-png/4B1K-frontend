@@ -1,8 +1,8 @@
+import { API_URL } from "../../../config/env";
+
 export function GoogleButton() {
   const handleClick = () => {
-    let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1)
-    window.location.href = `${apiUrl}/auth/google`
+    window.location.href = `${API_URL}/auth/google`
   }
 
   return (

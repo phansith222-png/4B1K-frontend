@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react'
-import { motion, AnimatePresence, aspectRatio } from 'framer-motion';
+import React, { useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion';
 import usePostStore from '../stores/postStore';
-import { Heart, MessageCircle, MoreHorizontal, Share2, Verified } from 'lucide-react';
-import { ActionButton } from '../icon/SidebarIcons';
 import PostItem from './PostItems';
 
 
@@ -12,9 +10,10 @@ function PostContainer({ activeTab, selectedArtistIds }) {
     const [visibleCount, setVisibleCount] = React.useState(5);
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
 
-    useEffect(() => {
-        getAllPosts();
-    }, [getAllPosts]);
+    // Stable ref to prevent effect from re-running on every render
+    const fetchPosts = useCallback(() => { getAllPosts(); }, []);
+    useEffect(() => { fetchPosts(); }, [fetchPosts]);
+
 
     // Reset count when tab or artist changes
     useEffect(() => {
@@ -59,15 +58,41 @@ function PostContainer({ activeTab, selectedArtistIds }) {
     const visiblePosts = filteredPosts.slice(0, visibleCount);
 
     if (!posts || posts.length === 0) {
-        return <div className="text-gray-500 text-center py-10 italic">Loading community vibes...</div>;
+        return (
+            <div className="flex flex-col gap-6">
+                {[0,1,2,3].map(i => (
+                    <div key={i} className="animate-pulse bg-white/[0.02] border border-white/5 rounded-3xl p-5 flex flex-col gap-4">
+                        {/* Header */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white/5 flex-shrink-0" />
+                            <div className="flex flex-col gap-2 flex-1">
+                                <div className="h-3 bg-white/5 rounded-full w-32" />
+                                <div className="h-2 bg-white/5 rounded-full w-20" />
+                            </div>
+                        </div>
+                        {/* Content lines */}
+                        <div className="flex flex-col gap-2">
+                            <div className="h-3 bg-white/5 rounded-full w-full" />
+                            <div className="h-3 bg-white/5 rounded-full w-4/5" />
+                            <div className="h-3 bg-white/5 rounded-full w-3/5" />
+                        </div>
+                        {/* Actions */}
+                        <div className="flex gap-4 pt-2">
+                            <div className="h-6 bg-white/5 rounded-full w-16" />
+                            <div className="h-6 bg-white/5 rounded-full w-16" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
     }
 
     return (
         <div className="flex flex-col gap-6">
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="sync">
                 {visiblePosts.map((post, index) => (
                     <PostItem
-                        key={post.id || index}
+                        key={post.id}
                         post={post}
                         index={index}
                     />

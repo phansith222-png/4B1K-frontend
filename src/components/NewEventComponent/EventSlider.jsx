@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Reveal from '../Reveal';
 import { getCategoryStyle } from '../../utils/eventStyles';
 
 export default function EventSlider({ sliderItems, featuredIndex, setFeaturedIndex }) {
+    const navigate = useNavigate();
     if (sliderItems.length === 0) return null;
 
     const featuredEvent = sliderItems[featuredIndex] || sliderItems[0];
@@ -12,7 +14,11 @@ export default function EventSlider({ sliderItems, featuredIndex, setFeaturedInd
     return (
         <Reveal delay={0.3} effect="fade-up">
             <section
-                onClick={() => window.open('https://www.thaiticketmajor.com/', '_blank')}
+                onClick={() => {
+                    const artistName = featuredEvent.mainArtistName || "Artist";
+                    const eventId = featuredEvent.id;
+                    navigate(`/nearby-events?search=${encodeURIComponent(artistName)}&eventId=${eventId}`);
+                }}
                 className="mb-24 bg-[#11131A] border border-white/5 rounded-[3rem] cursor-pointer group hover:border-[#00E5FF]/40 transition-all duration-500 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden relative"
             >
                 <AnimatePresence mode="wait">
@@ -83,7 +89,6 @@ export default function EventSlider({ sliderItems, featuredIndex, setFeaturedInd
                             </div>
 
                             <button
-                                onClick={(e) => { e.stopPropagation(); window.open('https://www.thaiticketmajor.com/', '_blank'); }}
                                 className="relative overflow-hidden w-full md:w-fit group bg-gradient-to-r from-white to-gray-200 text-black px-10 py-4 rounded-full font-black tracking-widest uppercase text-[11px] transition-all duration-500 hover:scale-105 shadow-[0_10px_30px_rgba(255,255,255,0.2)] hover:shadow-[0_15px_40px_rgba(255,255,255,0.5)] border border-white/50"
                             >
                                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>

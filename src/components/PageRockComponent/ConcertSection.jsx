@@ -1,34 +1,47 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Reveal from '../Reveal'; // Add Import
+import { motion } from 'framer-motion';
+import Reveal from '../Reveal'; // 📌 เพิ่ม Import
 
 export default function ConcertSection({ events, artist }) {
     const navigate = useNavigate();
     return (
-        <section className="relative w-full py-24 px-6 bg-transparent overflow-hidden">
-            <div className="max-w-7xl mx-auto relative z-10">
+        <section className="relative w-full py-28 px-6 md:px-12 bg-transparent overflow-hidden">
+            <div className="max-w-[1440px] mx-auto relative z-10">
 
                 <Reveal effect="fade-up">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-5 mb-14">
                         <div className="flex items-center gap-4">
                             <h3 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-white">
-                                LIVE <span className="text-[#D3131F]">CONCERTS</span>
+                                CONCERT <span className="text-[#D3131F]">EVENT</span>
                             </h3>
                         </div>
-                        <button onClick={() => navigate(`/new-event?artistId=${artist?.id}`)} className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-widest transition-colors mt-4 md:mt-0 group bg-[#111] px-5 py-2.5 rounded border border-white/5">
-                            VIEW ALL SHOWS
+                        <motion.button
+                            onClick={() => {
+                                const eventId = events.length > 0 ? (events[0].event?.id || events[0].id) : '';
+                                const search = artist?.artistName || artist?.name || "";
+                                navigate(`/nearby-events?search=${encodeURIComponent(search)}${eventId ? `&eventId=${eventId}` : ''}`);
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center gap-2 text-xs font-bold text-[#D3131F] hover:text-white uppercase tracking-widest transition-all mt-4 md:mt-0 group bg-[#D3131F]/5 hover:bg-[#D3131F]/20 px-6 py-3 rounded-full border border-[#D3131F]/20 hover:border-[#D3131F]/40 shadow-lg"
+                        >
+                            JOIN ARTIST EVENT
                             <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
-                        </button>
+                        </motion.button>
                     </div>
                 </Reveal>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                    {events.slice(0, 4).map((item, idx) => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 md:gap-6">
+                    {events.slice(0, 5).map((item, idx) => {
                         const evt = item.event || item; 
                         return (
                         <Reveal key={idx} delay={idx * 0.1} effect="fade-up">
                             <div 
-                                onClick={() => navigate(`/new-event?artistId=${artist?.id}`)}
+                                onClick={() => {
+                                    const search = artist?.artistName || artist?.name || "";
+                                    const eventId = evt.id || evt._id;
+                                    navigate(`/nearby-events?search=${encodeURIComponent(search)}&eventId=${eventId}`);
+                                }}
                                 className="flex flex-col group cursor-pointer"
                             >
                                 <div className="aspect-[4/5] relative rounded-xl overflow-hidden border border-white/5 group-hover:border-[#D3131F]/50 transition-colors duration-500 shadow-xl mb-4 bg-[#111]">
@@ -55,7 +68,7 @@ export default function ConcertSection({ events, artist }) {
                         </Reveal>
                     )})}
                     {events.length === 0 && (
-                        <p className="text-gray-500 py-10 col-span-4 text-center font-bold tracking-widest uppercase border border-white/5 bg-[#111] rounded-2xl">No upcoming events for this artist.</p>
+                        <p className="text-gray-500 py-10 col-span-5 text-center font-bold tracking-widest uppercase border border-white/5 bg-[#111] rounded-2xl">No upcoming events for this artist.</p>
                     )}
                 </div>
             </div>

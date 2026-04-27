@@ -69,47 +69,45 @@ export default function NavSearchBar({ navigate }) {
         // Wrapper must NOT have overflow:hidden so dropdown can escape
         <div ref={wrapRef} className="flex items-center xl:ml-8 relative z-[100]">
 
-            {/* 💊 แถบค้นหาแบบ Pill Shape ที่ขยายออกได้เมื่อกดเปิด */}
+            {/* 💊 แถบค้นหาแบบ Pill Shape ที่เป็นช่องค้นหาปกติเสมอ (ไม่มีเอฟเฟคขยาย) */}
             <div
                 className={[
-                    'transition-all duration-500 ease-in-out flex items-center',
-                    'bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border',
+                    'flex items-center bg-[#1A1C23]/80 backdrop-blur-sm rounded-full border',
+                    'w-full xl:w-64', // ความกว้างคงที่ ไม่ขยับ
                     isOpen
-                        ? 'w-full xl:w-80 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] opacity-100'
-                        : 'w-0 border-transparent opacity-0 pointer-events-none',
+                        ? 'border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)]'
+                        : 'border-white/10 hover:border-white/30',
                 ].join(' ')}
             >
-                {/* Mobile Close Button (Inside Pill) */}
-                {isOpen && (
-                    <button
-                        type="button"
-                        onClick={closeSearch}
-                        className="xl:hidden pl-4 text-gray-500 hover:text-red-400 transition-colors flex-shrink-0"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                )}
+                {/* Search Icon (Always visible on the left) */}
+                <div className="pl-4 text-gray-400 flex-shrink-0 pointer-events-none">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                
+                {/* Input Field */}
                 <input
                     ref={inputRef}
                     type="text"
                     value={query}
                     onChange={(e) => { setQuery(e.target.value); setShowDrop(true); }}
-                    onFocus={() => setShowDrop(true)}
+                    onFocus={() => { globalOpenSearch(); setShowDrop(true); }}
                     onBlur={() => setTimeout(() => setShowDrop(false), 200)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Artist, Song, Event, Label..."
-                    className="w-full text-[14px] bg-transparent outline-none text-white placeholder:text-gray-500 px-5 py-2.5 min-w-0"
+                    placeholder="Artist, Song, Event..."
+                    className="w-full text-[14px] bg-transparent outline-none text-white placeholder:text-gray-500 px-3 py-2 min-w-0"
                 />
-                {isOpen && (
+
+                {/* Clear Button (Shown only when typing) */}
+                {query.length > 0 && (
                     <button
                         type="button"
-                        onMouseDown={(e) => { e.preventDefault(); executeSearch(); }}
-                        className="pr-4 text-gray-400 hover:text-[#00E5FF] transition-colors flex-shrink-0"
+                        onClick={() => { setQuery(''); inputRef.current?.focus(); }}
+                        className="pr-4 text-gray-500 hover:text-white transition-colors flex-shrink-0"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 )}
@@ -123,34 +121,6 @@ export default function NavSearchBar({ navigate }) {
                 isOpen={dropVisible}
                 anchorRef={wrapRef}
             />
-
-            {/* Icon buttons (Shown when closed) */}
-            {!isOpen && (
-                <button
-                    type="button"
-                    onClick={openSearch}
-                    className="p-2.5 rounded-full transition-all duration-300 flex-shrink-0 z-10 text-gray-400 hover:text-[#00E5FF] bg-[#1A1C23] hover:bg-[#252830]"
-                    aria-label="Open search"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
-            )}
-
-            {/* Desktop Close Button (Outside Pill) */}
-            {isOpen && (
-                <button
-                    type="button"
-                    onClick={closeSearch}
-                    className="hidden xl:flex p-2.5 rounded-full transition-all duration-300 absolute -right-10 text-gray-500 hover:text-red-400 flex-shrink-0"
-                    aria-label="Close search"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            )}
         </div>
     );
 }
