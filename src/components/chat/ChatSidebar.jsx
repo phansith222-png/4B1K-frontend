@@ -69,7 +69,7 @@ export default function ChatSidebar({
           filteredContacts.map((room) => {
             const isRoomGroup = room.isGroup;
             const otherUser = !isRoomGroup ? room.users?.find((u) => u.userId !== myUserId)?.user : null;
-            const displayName = isRoomGroup ? (room.name || `กลุ่ม ${room.id}`) : (otherUser?.username || otherUser?.firstName || "กำลังโหลด...");
+            const displayName = isRoomGroup ? (room.name || `กลุ่ม ${room.id}`) : (otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName || ''}`.trim() : otherUser?.username || "กำลังโหลด...");
             const unread = unreadCounts[room.id] || 0;
             const isActive = activeChat === room.id;
 
@@ -80,7 +80,7 @@ export default function ChatSidebar({
                 <div className="relative shrink-0">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-extrabold overflow-hidden shadow-lg border border-white/5
                     ${isActive ? "bg-white/20" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
-                    <img src={avatarUrl(displayName, isRoomGroup ? room.profileImage : otherUser?.profileImage)} 
+                    <img src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)} 
                       className="w-full h-full object-cover" alt="" />
                   </div>
                   {isActive && <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-full" />}

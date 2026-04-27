@@ -37,7 +37,9 @@ export default function ChatArea({
   startPrivateChat,
   scrollRef,
   emojiRef,
-  inputRef
+  inputRef,
+  messageImageInputRef,
+  handleMessageImageChange
 }) {
   return (
     <main className={`flex-1 flex flex-col min-w-0 bg-[#0B0C10] ${!showSidebar || activeChat ? "flex" : "hidden"} md:flex h-full relative overflow-hidden`}>
@@ -98,7 +100,7 @@ export default function ChatArea({
                     msg={msg} 
                     isMe={msg.isMe}
                     showAvatar={msg.showAvatar}
-                    senderName={msg.sender?.username || msg.sender?.firstName || "Member"}
+                    senderName={msg.sender?.firstName ? `${msg.sender.firstName} ${msg.sender.lastName || ''}`.trim() : msg.sender?.username || "Member"}
                     onAvatarClick={startPrivateChat} 
                   />
                 ))}
@@ -118,7 +120,15 @@ export default function ChatArea({
               )}
             </div>
             
-            <form onSubmit={send} className="max-w-4xl mx-auto flex items-end gap-3 bg-[#1c1e26]/90 backdrop-blur-xl border border-white/10 p-2 rounded-[24px] shadow-2xl focus-within:border-blue-500/40 transition-all">
+            <form onSubmit={send} className="max-w-4xl mx-auto flex items-end gap-2 bg-[#1c1e26]/90 backdrop-blur-xl border border-white/10 p-1.5 rounded-[22px] shadow-2xl focus-within:border-blue-500/40 transition-all">
+              <input type="file" ref={messageImageInputRef} className="hidden" accept="image/*" onChange={handleMessageImageChange} />
+              <button type="button" onClick={() => messageImageInputRef.current?.click()}
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+              
               <div className="flex-1 relative flex items-center" ref={emojiRef}>
                 {showEmoji && (
                   <div className="absolute bottom-full mb-4 right-0">
@@ -145,7 +155,7 @@ export default function ChatArea({
                   }}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); e.target.style.height = 'auto'; } }}
                   placeholder="Message..."
-                  className="w-full bg-transparent px-4 py-2.5 pr-12 text-sm text-gray-100 placeholder-gray-600 outline-none resize-none"
+                  className="w-full bg-transparent px-4 py-2 pr-12 text-[14px] text-gray-100 placeholder-gray-600 outline-none resize-none"
                 />
                 <button type="button" onClick={() => setShowEmoji((v) => !v)} 
                   className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all ${
@@ -155,9 +165,9 @@ export default function ChatArea({
                 </button>
               </div>
               <button type="submit" disabled={!inputText.trim() || !connected}
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all
+                className={`w-10 h-10 rounded-[18px] flex items-center justify-center shrink-0 transition-all
                   ${inputText.trim() && connected ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30" : "bg-white/5 text-gray-700"}`}>
-                <svg className="w-6 h-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                <svg className="w-5 h-5 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
               </button>
             </form>
           </footer>

@@ -7,12 +7,12 @@ import { avatarUrl } from "../utils/chatUtils";
 // Import new modular components
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatArea from "../components/chat/ChatArea";
-import BackButton from "../components/BackButton";
 
 export default function ChatPage() {
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
   const myUserId = user?.id;
+  const messageImageInputRef = useRef(null);
 
   const [activeChat, setActiveChat] = useState(null);
   const [contacts, setContacts] = useState([]);
@@ -45,14 +45,18 @@ export default function ChatPage() {
   // เชื่อใจค่า isGroup จาก DB เป็นหลัก
   const isGroup = activeRoom?.isGroup ?? false;
   const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
-  const roomName = isGroup ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`) : (other?.username || other?.firstName || "กำลังโหลด...");
-  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.profileImage : other?.profileImage);
-  const myName = user?.username || user?.firstName || "U";
+  const roomName = isGroup ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`) : (other?.firstName ? `${other.firstName} ${other.lastName || ''}`.trim() : other?.username || "กำลังโหลด...");
+  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.coverImage : other?.profileImage);
+  const myName = (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user?.username) || "U";
   const myAvatar = avatarUrl(myName, user?.profileImage);
 
   const handleAvatarClick = () => {
     if (isGroup) {
-      fileInputRef.current?.click();
+      if (activeRoom?.creatorId === myUserId) {
+        fileInputRef.current?.click();
+      } else {
+        alert("เฉพาะผู้สร้างห้องเท่านั้นที่สามารถเปลี่ยนรูปได้");
+      }
     }
   };
 
@@ -60,19 +64,23 @@ export default function ChatPage() {
     const file = e.target.files[0];
     if (!file || !activeChat) return;
 
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      await mainapi.patch(`/chats/rooms/${activeChat}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const res = await mainapi.get("/chats/rooms");
-      setContacts(res.data);
-    } catch (err) {
-      console.error("Failed to update avatar:", err);
-      alert("ไม่สามารถเปลี่ยนรูปโปรไฟล์ได้ในขณะนี้");
-    }
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result;
+      
+      try {
+        await mainapi.patch(`/chats/rooms/${activeChat}/avatar`, {
+          coverImage: base64String
+        });
+        const res = await mainapi.get("/chats/rooms");
+        setContacts(res.data);
+      } catch (err) {
+        console.error("Failed to update avatar:", err);
+        alert("ไม่สามารถเปลี่ยนรูปโปรไฟล์ได้ในขณะนี้");
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleCreateRoom = async (e) => {
@@ -280,12 +288,58 @@ export default function ChatPage() {
       id: `tmp-${Date.now()}`, chatRoomId: activeChat, senderId: myUserId,
       content: text, createdAt: new Date().toISOString(),
       isOptimistic: true, isSent: false, isRead: false,
-      sender: { username: user?.username || user?.firstName, profileImage: user?.profileImage },
+      sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
     };
     setMessages((ms) => [...ms, payload]);
     setInputText("");
     scrollToBottom("smooth");
     socket.emit("send_message", payload);
+  };
+
+  const handleMessageImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeChat || !connected) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const base64Data = reader.result;
+        // Temporary optimistic payload
+        const payload = {
+          id: `tmp-${Date.now()}`, chatRoomId: activeChat, senderId: myUserId,
+          content: "[IMAGE]:" + base64Data, createdAt: new Date().toISOString(),
+          isOptimistic: true, isSent: false, isRead: false,
+          sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
+        };
+        setMessages((ms) => [...ms, payload]);
+        scrollToBottom("smooth");
+
+        // Upload to backend
+        const res = await mainapi.post(`/chats/rooms/${activeChat}/messages/image`, { image: base64Data });
+        const imageUrl = res.data.imageUrl;
+
+        // Emit real message
+        const realPayload = {
+          ...payload,
+          content: "[IMAGE]:" + imageUrl,
+        };
+
+        // Update the optimistic message in state so that handleReceive can filter it out by matching content
+        setMessages((ms) => ms.map(m => m.id === payload.id ? { ...m, content: "[IMAGE]:" + imageUrl } : m));
+
+        socket.emit("send_message", realPayload);
+        
+        // Let handleReceive update the temporary payload when server acknowledges
+      } catch (err) {
+        console.error("Failed to upload image:", err);
+        alert("ไม่สามารถส่งรูปภาพได้");
+        // Remove temporary message on failure
+        setMessages((ms) => ms.filter(m => !(m.isOptimistic && m.content.startsWith("[IMAGE]:") && m.id > payload.id - 100)));
+      }
+    };
+    reader.readAsDataURL(file);
+    // clear input
+    if (messageImageInputRef.current) messageImageInputRef.current.value = "";
   };
 
   const onInput = (e) => {
@@ -320,7 +374,6 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-[#13141a] text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
       <ChatSidebar
         showSidebar={showSidebar}
         connected={connected}
@@ -366,44 +419,58 @@ export default function ChatPage() {
         scrollRef={scrollRef}
         emojiRef={emojiRef}
         inputRef={inputRef}
+        messageImageInputRef={messageImageInputRef}
+        handleMessageImageChange={handleMessageImageChange}
       />
 
       {/* ── Create Room Modal ── */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-sm bg-[#1c1e26] border border-white/10 rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold text-gray-100 mb-1">สร้างห้องชุมชนใหม่</h3>
-            <p className="text-sm text-gray-500 mb-6">สร้างพื้นที่สำหรับพูดคุยกับสมาชิกคนอื่นๆ</p>
-
-            <form onSubmit={handleCreateRoom}>
-              <div className="mb-6">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">ชื่อห้อง</label>
-                <input
-                  autoFocus
-                  value={newRoomName}
-                  onChange={(e) => setNewRoomName(e.target.value)}
-                  placeholder="เช่น คนรักเสียงเพลง, กิจกรรมวันหยุด..."
-                  className="w-full bg-[#2a2d35] border border-white/5 rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-sm relative group animate-in zoom-in-90 slide-in-from-bottom-8 duration-500 ease-out">
+            {/* Grand Glowing Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 rounded-[20px] blur opacity-40 group-hover:opacity-70 transition duration-1000"></div>
+            
+            <div className="relative bg-[#13141a]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-7 shadow-2xl">
+              <div className="mb-8 text-center">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-tr from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-purple-500/30 transform rotate-3">
+                  <span className="text-3xl filter drop-shadow-md -rotate-3">🚀</span>
+                </div>
+                <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 tracking-tight mb-2">
+                  Create Community
+                </h3>
+                <p className="text-[13px] text-gray-400 font-medium">Start a new space for conversations and connections.</p>
               </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => { setIsCreateModalOpen(false); setNewRoomName(""); }}
-                  className="flex-1 py-3 rounded-xl text-sm font-bold text-gray-400 hover:bg-white/5 transition-all"
-                >
-                  ยกเลิก
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newRoomName.trim() || isCreating}
-                  className="flex-1 py-3 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:shadow-none transition-all"
-                >
-                  {isCreating ? "กำลังสร้าง..." : "สร้างห้อง"}
-                </button>
-              </div>
-            </form>
+              <form onSubmit={handleCreateRoom}>
+                <div className="mb-8">
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Community Name</label>
+                  <input
+                    autoFocus
+                    value={newRoomName}
+                    onChange={(e) => setNewRoomName(e.target.value)}
+                    placeholder="e.g., Gaming Lounge, Tech Talk..."
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-gray-100 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder-gray-600 font-medium"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => { setIsCreateModalOpen(false); setNewRoomName(""); }}
+                    className="flex-1 py-3.5 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!newRoomName.trim() || isCreating}
+                    className="flex-1 py-3.5 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-purple-600/25 disabled:opacity-50 disabled:shadow-none transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    {isCreating ? "Creating..." : "Create"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
