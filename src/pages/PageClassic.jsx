@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 // Hooks
-import useArtistData from '../hooks/useArtistData';
+import { useArtists } from '../hooks/useArtists';
+import { useArtistDetail } from '../hooks/useArtistDetail';
+import { getFilteredRandomArtistId } from '../utils/artistHelper';
 import { getImageUrl } from '../utils/imageUtils';
 import PageLoader from '../components/PageLoader';
 import { usePlayerStore } from '../stores/playerStore';
@@ -30,7 +32,7 @@ export default function PageClassic() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+        return getFilteredRandomArtistId(artists, 'classic', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);

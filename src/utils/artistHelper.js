@@ -30,20 +30,34 @@ export const getArtistInfo = (artist) => {
 
 /**
  * Selects a random artist ID from a specific genre or fallback to any artist.
- * Priority: Query Param > Genre Filter > Random Fallback
+ * Priority: Query Param > Genre ID Match > Genre Name Match > Random Fallback
  * 
  * @param {Array} artists - List of all artists.
- * @param {Array} genreArtistIds - List of allowed artist IDs for a genre.
+ * @param {string} genreKey - The genre key (pop, rock, classic, etc).
  * @param {string|number} queryArtistId - Specific artist ID from query params.
  * @returns {number|null} The selected artist ID.
  */
-export const getFilteredRandomArtistId = (artists, genreArtistIds, queryArtistId) => {
+export const getFilteredRandomArtistId = (artists, genreKey, queryArtistId) => {
     if (queryArtistId) return Number(queryArtistId);
 
-    // Filter by allowed genre IDs
-    const filtered = artists.filter((a) => genreArtistIds?.includes(a.id));
+    const allowedIds = GENRE_ARTIST_IDS[genreKey] || [];
     
-    // Fallback: If no match, select from the entire pool
+    // 1. Try filtering by exact IDs first
+    let filtered = artists.filter((a) => allowedIds.includes(Number(a.id)));
+    
+    // 2. If no ID matches, try filtering by genre name keywords
+    if (filtered.length === 0) {
+        filtered = artists.filter(a => {
+            const gs = a.genres?.map(g => g.genre?.name?.toLowerCase() ?? '') ?? [];
+            if (genreKey === 'pop') return gs.some(g => g.includes('pop'));
+            if (genreKey === 'rock') return gs.some(g => g.includes('rock'));
+            if (genreKey === 'classic') return gs.some(g => g.includes('classic') || g.includes('r&b') || g.includes('rnb'));
+            if (genreKey === 'etc') return gs.some(g => g.includes('hip') || g.includes('rap') || g.includes('edm') || g.includes('electronic'));
+            return false;
+        });
+    }
+    
+    // Fallback: If still no match, select from the entire pool
     const pool = filtered.length > 0 ? filtered : artists;
     
     if (pool.length === 0) return null;

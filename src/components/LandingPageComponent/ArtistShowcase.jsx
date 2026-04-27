@@ -5,11 +5,16 @@ import { getAllArtists } from '../../api/artist';
 import { getImageUrl } from '../../utils/imageUtils';
 import { GENRE_ARTIST_IDS } from '../../constants/genreArtistIds';
 
-export default function ArtistShowcase({ artists = [] }) {
+export default function ArtistShowcase({ artists: initialArtists = [] }) {
   const navigate = useNavigate();
   const [artists, setArtists] = useState([]);
 
   useEffect(() => {
+    if (initialArtists && initialArtists.length > 0) {
+      setArtists(initialArtists);
+      return;
+    }
+
     const fetchRandomArtists = async () => {
       try {
         const res = await getAllArtists();
@@ -28,7 +33,7 @@ export default function ArtistShowcase({ artists = [] }) {
       }
     };
     fetchRandomArtists();
-  }, []);
+  }, [initialArtists]);
 
   const getArtistPath = (artist) => {
     const aId = Number(artist.id);
@@ -58,7 +63,7 @@ export default function ArtistShowcase({ artists = [] }) {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-12">
         {artists.map((artist, idx) => {
-          const randomSong = artist._randomSong;
+          const randomSong = artist._randomSong || artist.randomSong;
 
           return (
             <motion.div

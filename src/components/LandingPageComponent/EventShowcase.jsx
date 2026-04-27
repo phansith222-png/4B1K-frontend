@@ -4,11 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { getAllEvents } from '../../api/event';
 import { getGenreColorByArtistId } from '../../utils/genreHelpers';
 
-export default function EventShowcase({ events = [] }) {
+export default function EventShowcase({ events: initialEvents = [] }) {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
+    if (initialEvents && initialEvents.length > 0) {
+      setEvents(initialEvents);
+      return;
+    }
+
     const fetchRandomEvents = async () => {
       try {
         const res = await getAllEvents();
@@ -20,7 +25,7 @@ export default function EventShowcase({ events = [] }) {
       }
     };
     fetchRandomEvents();
-  }, []);
+  }, [initialEvents]);
 
   const getEventColor = (event) => {
     try {
@@ -58,40 +63,43 @@ export default function EventShowcase({ events = [] }) {
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event, idx) => (
-          <motion.div
-            key={event.id}
-            // 📌 การ์ดเด้งขึ้นมาจากด้านล่างแบบนุ่มๆ
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            whileHover={{
-              y: -8,
-              borderColor: `${event.color}60`,
-              boxShadow: `0 20px 40px ${event.color}20`
-            }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ type: "spring", stiffness: 100, damping: 20, delay: idx * 0.1 }}
-            onClick={() => {
-              const artistName = event.mainArtistName || event.artistName || (event.artist && (event.artist.artistName || event.artist.name)) || "";
-              navigate(`/nearby-events?search=${encodeURIComponent(artistName)}&eventId=${event.id}`);
-            }}
-            className="group cursor-pointer rounded-[2rem] overflow-hidden bg-[#12141A] border border-white/5 relative aspect-[4/5] transition-all shadow-xl"
-          >
-            <img src={event.posterImage || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"} alt={event.eventName} loading="lazy" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/60 to-transparent"></div>
-
-            <div className="absolute bottom-0 left-0 w-full p-6">
-              <span
-                className="text-black px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 inline-block"
-                style={{ backgroundColor: event.color, boxShadow: `0 0 10px ${event.color}80` }}
-              >
-                {event.type || "Concert"}
-              </span>
-              <h3 className="text-xl font-black text-white leading-tight mb-2 line-clamp-2">{event.eventName}</h3>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider line-clamp-1">{event.venue?.name || "Location TBA"}</p>
-            </div>
-          </motion.div>
-        ))}
+        {events.map((event, idx) => {
+          const color = event.color || getEventColor(event);
+          return (
+            <motion.div
+              key={event.id}
+              // 📌 การ์ดเด้งขึ้นมาจากด้านล่างแบบนุ่มๆ
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              whileHover={{
+                y: -8,
+                borderColor: `${color}60`,
+                boxShadow: `0 20px 40px ${color}20`
+              }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: idx * 0.1 }}
+              onClick={() => {
+                const artistName = event.mainArtistName || event.artistName || (event.artist && (event.artist.artistName || event.artist.name)) || "";
+                navigate(`/nearby-events?search=${encodeURIComponent(artistName)}&eventId=${event.id}`);
+              }}
+              className="group cursor-pointer rounded-[2rem] overflow-hidden bg-[#12141A] border border-white/5 relative aspect-[4/5] transition-all shadow-xl"
+            >
+              <img src={event.posterImage || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"} alt={event.eventName} loading="lazy" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/60 to-transparent"></div>
+  
+              <div className="absolute bottom-0 left-0 w-full p-6">
+                <span
+                  className="text-black px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 inline-block"
+                  style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}80` }}
+                >
+                  {event.type || "Concert"}
+                </span>
+                <h3 className="text-xl font-black text-white leading-tight mb-2 line-clamp-2">{event.eventName}</h3>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider line-clamp-1">{event.venue?.name || "Location TBA"}</p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       <button onClick={() => navigate('/new-event')} className="mt-8 w-full text-center text-xs font-bold text-[#00E5FF] border border-[#00E5FF]/20 hover:bg-[#00E5FF]/10 rounded-full py-4 uppercase tracking-widest sm:hidden transition-colors">

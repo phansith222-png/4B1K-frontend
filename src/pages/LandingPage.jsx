@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 
 // Lazy load heavy components
-const BackgroundEffects = lazy(() => import('../components/LandingPageComponent/BackgroundEffects'));
+import BackgroundEffects from '../components/LandingPageComponent/BackgroundEffects';
 import HeroSection from '../components/LandingPageComponent/HeroSection';
 import FeatureSection from '../components/LandingPageComponent/FeatureSection';
 import EventShowcase from '../components/LandingPageComponent/EventShowcase';
@@ -69,12 +69,11 @@ export default function LandingPage() {
   }, [events]);
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-white font-sans selection:bg-[#00E5FF] selection:text-black overflow-x-hidden relative">
-
-      {/* 1. Background Effects (Lasers & Particles) */}
-      <Suspense fallback={null}>
-        <BackgroundEffects />
-      </Suspense>
+    <div className="min-h-screen bg-transparent text-white font-sans selection:bg-[#00E5FF] selection:text-black overflow-x-hidden relative">
+      {/* Background Effects (Lasers & Particles) - Persistent Layer */}
+      <div className="fixed inset-0 z-5 mix-blend-plus-lighter pointer-events-none">
+        <BackgroundEffects intensity={2.0} />
+      </div>
 
       {/* 2. Hero Section */}
       <HeroSection artists={processedArtists} events={processedEvents} />
@@ -87,7 +86,6 @@ export default function LandingPage() {
 
       {/* 5. Features Section (How to use) Moved to bottom */}
       <FeatureSection />
-
     </div>
   );
 }

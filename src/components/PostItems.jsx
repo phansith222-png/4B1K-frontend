@@ -119,8 +119,6 @@ function PostItemInner({ post, index }) {
 
             {/* ปุ่ม จุด 3 จุด */}
             {(user?.id === post.userId || user?._id === post.userId) && (
-            {/* 3-dot menu button */}
-            {user?.id === post.userId && (
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle menu
@@ -346,6 +344,7 @@ function PostItemInner({ post, index }) {
     </>
   );
 }
+
 
 // Custom comparator: only re-render when the post's own data changes
 const PostItem = memo(PostItemInner, (prev, next) => {

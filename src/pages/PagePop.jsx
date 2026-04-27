@@ -2,7 +2,9 @@ import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 // Hooks
-import useArtistData from '../hooks/useArtistData';
+import { useArtists } from '../hooks/useArtists';
+import { useArtistDetail } from '../hooks/useArtistDetail';
+import { getFilteredRandomArtistId } from '../utils/artistHelper';
 import { usePlayerStore } from '../stores/playerStore';
 import PageLoader from '../components/PageLoader';
 import { SkeletonHero } from '../components/Skeleton';
@@ -28,7 +30,7 @@ export default function PagePop() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+        return getFilteredRandomArtistId(artists, 'pop', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);

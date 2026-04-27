@@ -26,7 +26,7 @@ const FAN_LAYOUT_CONFIG = {
     rotateMap: [0, 15, 35]
 };
 
-export default function HeroVideoShowcase() {
+export default function HeroVideoShowcase({ artists = [] }) {
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
@@ -69,7 +69,7 @@ export default function HeroVideoShowcase() {
         const { scaleMap, yMap, xMapDesktop, xMapMobile, rotateMap } = FAN_LAYOUT_CONFIG;
 
         return {
-            x: sign * (isMobile ? xMapMobile[abs] : xMapDesktop[abs]),
+            x: sign * (isMobile.current ? xMapMobile[abs] : xMapDesktop[abs]),
             y: yMap[abs],
             scale: scaleMap[abs],
             rotate: sign * rotateMap[abs],

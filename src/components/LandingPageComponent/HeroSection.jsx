@@ -12,11 +12,11 @@ export default function HeroSection({ artists, events }) {
             <div className="w-full relative z-10 -mb-20 md:-mb-32 lg:-mb-40">
                 <HeroVideoShowcase artists={artists} />
             </div>
-            
+
             {/* ข้อความและปุ่ม ซ้อนทับขึ้นไปใต้ส่วนโค้งของรูปภาพให้เป็นหนึ่งเดียวกัน */}
             <div className="w-full max-w-[1400px] mx-auto flex flex-col items-center relative z-20 px-4">
                 <HeroHeadline />
-                
+
                 {/* 🗺️ Mini Map Section (Playable from Landing) */}
                 <div className="w-full max-w-5xl mt-12 mb-8 relative z-30 min-h-[400px]">
                     <Suspense fallback={<div className="w-full h-[400px] md:h-[450px] bg-white/5 animate-pulse rounded-3xl" />}>

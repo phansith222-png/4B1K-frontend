@@ -27,41 +27,53 @@ export default function BackgroundEffects() {
           100% { transform: translate(-50%, -50%) rotate(35deg); }
         }
 
-        .laser-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen; overflow: hidden; }
+        .laser-container { position: fixed; inset: 0; z-index: 99; pointer-events: none; mix-blend-mode: plus-lighter; overflow: hidden; }
         
         .laser-beam {
-          position: absolute; top: 40%; width: 60px; height: 150vh;
-          filter: blur(50px); /* ความฟุ้งเบลอของแสง */
+          position: absolute; top: -10%; width: 120px; height: 160vh;
+          filter: blur(60px); 
           transform-origin: top center; 
-          opacity: 0.15; /* 📌 ล็อกความสว่างให้จางๆ คงที่ตลอดเวลา จะไม่มีจังหวะแสงดับหรือกะพริบ */
+          opacity: 0.6; /* 📌 บูสต์ความสว่างขึ้นอย่างมาก */
         }
       `}</style>
 
-      {/* Dynamic Crowd Particles (คงเดิม) */}
+      {/* Cyber Grid Background */}
+      <div className="cyber-grid" />
+
+      {/* Dynamic Crowd Particles (เพิ่ม Interactivity ตามคำขอ) */}
       <Particles
         id="tsparticles"
         init={particlesInit}
         options={{
-          fullScreen: { enable: true, zIndex: 0 },
+          fullScreen: { enable: true, zIndex: 20 },
           particles: {
-            number: { value: 30, density: { enable: true, area: 1000 } },
-            color: { value: ["#00E5FF", "#d000ff", "#ffffff"] },
-            opacity: { value: 0.15 },
-            size: { value: { min: 1, max: 2 } },
-            move: { enable: true, speed: 0.4, direction: "top", random: true, straight: false },
+            number: { value: 100, density: { enable: true, area: 800 } },
+            color: { value: ["#00E5FF", "#d000ff", "#ffffff", "#7000FF"] },
+            opacity: { value: 0.6, random: true },
+            size: { value: { min: 1, max: 3 } },
+            move: { enable: true, speed: 1.2, direction: "top", random: true, straight: false },
+            shadow: {
+              enable: true,
+              color: "#00E5FF",
+              blur: 5
+            }
           },
-          interactivity: { events: {} }
+          interactivity: {
+            events: { onHover: { enable: true, mode: "bubble" } },
+            modes: { bubble: { distance: 250, size: 6, duration: 2, opacity: 0.8 } }
+          }
         }}
         className="fixed inset-0 pointer-events-none"
       />
 
-      {/* 📌 Ambient Multi-Color Lasers (ใช้ alternate เพื่อให้แกว่งไปและแกว่งกลับทันที) */}
+      {/* 📌 Ambient Multi-Color Lasers (ปรับจุดเริ่มต้นเป็นด้านบน) */}
       <div className="laser-container">
-        <div className="laser-beam" style={{ left: '20%', animation: 'laser-swing 8s infinite alternate ease-in-out', background: 'linear-gradient(to bottom, transparent, rgba(208,0,255,0.8) 50%, transparent)' }}></div>
-        <div className="laser-beam" style={{ left: '50%', animation: 'laser-swing 11s infinite alternate-reverse ease-in-out', background: 'linear-gradient(to bottom, transparent, rgba(0,229,255,0.7) 50%, transparent)' }}></div>
-        <div className="laser-beam" style={{ left: '80%', animation: 'laser-swing 9s infinite alternate ease-in-out', background: 'linear-gradient(to bottom, transparent, rgba(198,255,0,0.6) 50%, transparent)' }}></div>
-        <div className="laser-beam" style={{ left: '35%', animation: 'laser-swing 14s infinite alternate-reverse ease-in-out', background: 'linear-gradient(to bottom, transparent, rgba(255,0,127,0.6) 50%, transparent)' }}></div>
+        <div className="laser-beam" style={{ left: '20%', animation: 'laser-swing 8s infinite alternate ease-in-out', background: 'linear-gradient(to bottom, rgba(208,0,255,0.8), transparent)' }}></div>
+        <div className="laser-beam" style={{ left: '50%', animation: 'laser-swing 11s infinite alternate-reverse ease-in-out', background: 'linear-gradient(to bottom, rgba(0,229,255,0.7), transparent)' }}></div>
+        <div className="laser-beam" style={{ left: '80%', animation: 'laser-swing 9s infinite alternate ease-in-out', background: 'linear-gradient(to bottom, rgba(198,255,0,0.6), transparent)' }}></div>
+        <div className="laser-beam" style={{ left: '35%', animation: 'laser-swing 14s infinite alternate-reverse ease-in-out', background: 'linear-gradient(to bottom, rgba(255,0,127,0.6), transparent)' }}></div>
       </div>
+
 
       {/* Mouse Glow (Zero Re-render DOM Mutation) */}
       <div 
