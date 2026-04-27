@@ -44,16 +44,13 @@ export default function BackgroundEffects() {
         options={{
           fullScreen: { enable: true, zIndex: 0 },
           particles: {
-            number: { value: 80, density: { enable: true, area: 1000 } },
-            color: { value: ["#00E5FF", "#00E5FF", "#d000ff", "#ffffff"] },
-            opacity: { value: { min: 0.05, max: 0.3 }, animation: { enable: true, speed: 0.5 } },
-            size: { value: { min: 1, max: 3 } },
-            move: { enable: true, speed: 0.5, direction: "top", random: true, straight: false },
+            number: { value: 30, density: { enable: true, area: 1000 } },
+            color: { value: ["#00E5FF", "#d000ff", "#ffffff"] },
+            opacity: { value: 0.15 },
+            size: { value: { min: 1, max: 2 } },
+            move: { enable: true, speed: 0.4, direction: "top", random: true, straight: false },
           },
-          interactivity: {
-            events: { onHover: { enable: true, mode: "bubble" } },
-            modes: { bubble: { distance: 250, size: 5, duration: 2, opacity: 0.6 } }
-          }
+          interactivity: { events: {} }
         }}
         className="fixed inset-0 pointer-events-none"
       />

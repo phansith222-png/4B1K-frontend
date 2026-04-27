@@ -49,7 +49,7 @@ export default function PageEntertainment() {
                 }
 
                 const allArtistsList = allArtistsRes?.artists || allArtistsRes?.data || allArtistsRes || [];
-                console.log("Total Artists found:", allArtistsList.length);
+                // Logs removed
 
                 // ── Fetch Songs for Top Charts (Database Only) ─────────────
                 const chartArtists = allArtistsList.slice(0, 12);

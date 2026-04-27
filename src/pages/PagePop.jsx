@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 // Hooks
@@ -24,10 +24,16 @@ export default function PagePop() {
     const queryArtistId = searchParams.get('artistId');
 
     // ── Data ─────────────────────────────────────────────────────────────
-    const { artist, songs, events, loading } = useArtistData(
-        GENRE_ARTIST_IDS.pop,
-        queryArtistId
-    );
+    const { artists, loading: loadingAll } = useArtists();
+
+    const targetId = useMemo(() => {
+        if (loadingAll) return null;
+        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+    }, [artists, loadingAll, queryArtistId]);
+
+    const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
+
+    const loading = loadingAll || loadingDetail;
 
     // ── Global Player State - Optimized with Selectors ────────────────────
     const isPlaying = usePlayerStore(state => state.isPlaying);

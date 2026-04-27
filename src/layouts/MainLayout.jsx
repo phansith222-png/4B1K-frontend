@@ -5,11 +5,11 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PageTransition from '../components/PageTransition';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
-import useSearchStore from '../stores/searchStore';
+import SectionErrorFallback from "../components/SectionErrorFallback";
+import { ErrorBoundary } from "react-error-boundary";
 
 export default function MainLayout() {
     const location = useLocation();
-    const { isSearchOpen } = useSearchStore();
 
     return (
         <div className="min-h-screen bg-[#0B0C10] flex flex-col relative overflow-hidden">

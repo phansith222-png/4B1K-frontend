@@ -11,7 +11,7 @@ const useContentStore = create((set, get) => ({
   loading: false,
   error: null,
 
-  // --- Actions for Artists (ข้อ 17-23) ---
+  // --- Actions for Artists ---
   getAllArtists: async () => {
     set({ loading: true , error: null});
     try {
@@ -20,7 +20,7 @@ const useContentStore = create((set, get) => ({
       set({ artists: res.data.artists, loading: false });
     } catch (err) {
       set({ error: err.message, loading: false });
-      toast.error("ไม่สามารถโหลดข้อมูลศิลปินได้"); // แจ้งเตือนถ้า API พัง
+      toast.error("Failed to load artists data"); // Alert if API fails
     }
   },
 
@@ -35,7 +35,7 @@ const useContentStore = create((set, get) => ({
       set({ error: err.message, loading: false });
     }
   },
-  // Helper: ล้างค่า Error หรือ Reset ข้อมูล
+  // Helper: Clear Error or Reset Data
   clearError: () => set({ error: null }),
   resetCurrents: () => set({ currentArtist: null, currentEvent: null, currentNews: null })
 }));

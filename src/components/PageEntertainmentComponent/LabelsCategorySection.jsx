@@ -3,25 +3,25 @@ import { motion } from 'framer-motion';
 
 export default function LabelsCategorySection({ topAgencies, indieAgencies, cardColors, navigate }) {
     
-    // 📌 ฟังก์ชันสำหรับเช็คว่าศิลปินอยู่หน้าไหน แล้วสั่งเปลี่ยนหน้าพร้อมเลื่อนขึ้นบนสุด
+    // Function to check artist category and navigate with scroll to top
     const handleArtistClick = (e, artist) => {
-        e.stopPropagation(); // ป้องกันไม่ให้การกดปุ่มไปกระทบการกดการ์ดค่ายเพลง
+        e.stopPropagation(); // Prevent click propagation
         
         const aId = Number(artist.id);
-        let targetPath = '/artists'; // หน้า Default ถ้าหาหมวดไม่เจอจริงๆ
+        let targetPath = '/artists'; // Default fallback route
 
         const popIds = [1, 2, 3, 4, 5];
         const rockIds = [6, 7, 8, 9, 10];
         const classicIds = [16, 17, 18, 19, 20];
         const etcIds = [11, 12, 13, 14, 15, 21, 22, 23, 24, 25];
 
-        // เช็ค 1: ตรวจสอบจาก ID ว่าอยู่กลุ่มไหน
+        // Check 1: Verify group from ID
         if (popIds.includes(aId)) targetPath = '/pop';
         else if (rockIds.includes(aId)) targetPath = '/rock';
         else if (classicIds.includes(aId)) targetPath = '/classic';
         else if (etcIds.includes(aId)) targetPath = '/etc';
         else {
-            // เช็ค 2: ถ้าไม่ได้อยู่ใน ID ด้านบน ให้ตรวจจากแนวเพลง (Genres) ในฐานข้อมูล
+            // Check 2: Verify from genre if not in ID groups
             const isPop = artist.genres?.some(g => g.genre?.name?.toLowerCase().includes('pop'));
             const isRock = artist.genres?.some(g => g.genre?.name?.toLowerCase().includes('rock'));
             const isClassic = artist.genres?.some(g => {
@@ -33,17 +33,17 @@ export default function LabelsCategorySection({ topAgencies, indieAgencies, card
                 return gName.includes('hip hop') || gName.includes('rap') || gName.includes('edm') || gName.includes('electronic');
             });
 
-            // กำหนดหน้าที่จะไปตามแนวเพลง
+            // Assign destination based on genre
             if (isPop) targetPath = '/pop';
             else if (isRock) targetPath = '/rock';
             else if (isClassic) targetPath = '/classic';
             else if (isEtc) targetPath = '/etc';
         }
 
-        // เลื่อนหน้าจอขึ้นบนสุด
+        // Scroll to top
         window.scrollTo(0, 0);
 
-        // สั่งเปลี่ยนหน้า พร้อมส่ง ID ไปด้วยเพื่อให้หน้าปลายทางโชว์คนนี้เลย
+        // Navigate and pass artistId
         navigate(`${targetPath}?artistId=${aId}`);
     };
 
@@ -86,7 +86,7 @@ export default function LabelsCategorySection({ topAgencies, indieAgencies, card
                                     {agency.artists.map(a => (
                                         <button 
                                             key={a.id}
-                                            onClick={(e) => handleArtistClick(e, a)} // 📌 นำฟังก์ชันมาใส่ตรงนี้
+                                            onClick={(e) => handleArtistClick(e, a)} // Add function here
                                             className="text-xs md:text-sm font-bold text-gray-300 bg-white/5 hover:bg-white/20 hover:text-white px-4 py-2 rounded-full transition-all border border-white/5 hover:border-white/30 shadow-sm hover:scale-105"
                                         >
                                             {a.artistName}
@@ -137,7 +137,7 @@ export default function LabelsCategorySection({ topAgencies, indieAgencies, card
                                         {agency.artists.slice(0, 5).map(a => (
                                             <button 
                                                 key={a.id}
-                                                onClick={(e) => handleArtistClick(e, a)} // 📌 นำฟังก์ชันมาใส่ตรงนี้ด้วย
+                                                onClick={(e) => handleArtistClick(e, a)} // Add function here as well
                                                 className="text-[10px] font-bold text-gray-400 bg-white/5 hover:bg-white/10 hover:text-white px-2.5 py-1.5 rounded transition-colors z-10 relative"
                                             >
                                                 {a.artistName}

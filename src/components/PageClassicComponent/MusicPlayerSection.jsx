@@ -10,13 +10,16 @@ export default function MusicPlayerSection({
 
     return (
         <section className="relative w-full py-32 px-6 overflow-hidden z-10">
+            {/* Background Glow */}
             <div className="absolute inset-0 opacity-[0.15] pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[800px] bg-gradient-to-r from-[#9b2d96] via-transparent to-[#b266c5] rounded-[100%] blur-[80px]" style={{ willChange: 'transform, opacity' }}></div>
             </div>
 
             <div className="max-w-7xl mx-auto relative z-10 px-2 md:px-6">
                 <Reveal effect="fade-up">
-                    <h3 className="text-center font-classic font-bold text-2xl md:text-4xl text-[#f9c1db] mb-20 tracking-[0.2em] uppercase drop-shadow-[0_0_15px_rgba(249,193,219,0.3)]">The Essential Selection</h3>
+                    <h3 className="text-center font-classic font-bold text-2xl md:text-4xl text-[#f9c1db] mb-20 tracking-[0.2em] uppercase drop-shadow-[0_0_15px_rgba(249,193,219,0.3)]">
+                        The Essential Selection
+                    </h3>
                 </Reveal>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-28">
@@ -44,7 +47,7 @@ export default function MusicPlayerSection({
                                     )}
                                 </div>
                                 <div>
-                                    <h4 className={`font-classic font-bold text-xl md:text-2xl uppercase tracking-wider line-clamp-1 transition-colors ${currentSongIndex === idx ? 'text-white' : 'text-[#f9c1db]/70 group-hover:text-white'}`}>
+                                    <h4 className={`font-classic font-bold text-xl md:text-2xl uppercase tracking-wider line-clamp-1 ${currentSongIndex === idx ? 'text-white' : 'text-[#f9c1db]/70 group-hover:text-white'}`}>
                                         {item.title}
                                     </h4>
                                     <div className="flex items-center gap-3 text-[10px] font-black tracking-wider uppercase mt-1.5">
@@ -69,11 +72,9 @@ export default function MusicPlayerSection({
                             </motion.button>
                         </Reveal>
                     ))}
-                    {songs.length === 0 && (
-                        <p className="text-[#f9c1db]/50 font-classic col-span-2 text-center py-16 bg-[#30294e]/20 rounded-3xl border border-[#9b2d96]/20">No tracks available at the moment.</p>
-                    )}
                 </div>
 
+                {/* Main Player */}
                 {songs.length > 0 && currentSong && (
                     <Reveal delay={0.2} effect="fade-up">
                         <div className="w-full max-w-5xl mx-auto bg-[#1c172e]/90 backdrop-blur-3xl rounded-[2.5rem] p-6 md:p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-10 border border-[#b266c5]/20 shadow-[0_30px_60px_rgba(48,41,78,0.9)] relative overflow-hidden">

@@ -26,6 +26,7 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
     const [duration, setDuration]           = useState('0:00');
     const [isPlayerReady, setIsPlayerReady] = useState(false);
 
+    // --- Refs ---
     const playerRef = useRef(null);
     const lastVideoIdRef = useRef(null);
     const lastArtistIdRef = useRef(null);

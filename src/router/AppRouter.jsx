@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react"; 
+import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   Navigate,
@@ -8,7 +8,8 @@ import useUserStore from "../stores/userStore";
 import MainLayout from "../layouts/MainLayout";
 import UserLayout from "../layouts/UserLayout";
 import OAuthCallback from "../pages/OAuthCallback";
-
+import { ErrorBoundary } from "react-error-boundary";
+import ErrorPage from "../pages/ErrorPage";
 // Pages (หน้าเดิมที่มีอยู่)
 const LandingPage = lazy(() => import("../pages/LandingPage"));
 const Login = lazy(() => import("../pages/Login"));
@@ -26,6 +27,12 @@ const PageEtc = lazy(() => import("../pages/PageEtc"));
 const PageEntertainment = lazy(() => import("../pages/PageEntertainment"));
 const AllArtist = lazy(() => import("../pages/PageAllArtist"));
 const PageNearbyEvents = lazy(() => import("../pages/PageNearbyEvents"));
+
+// 🏢 Company Pages
+const PageAbout = lazy(() => import("../pages/PageAbout"));
+const PagePrivacy = lazy(() => import("../pages/PagePrivacy"));
+const PageTerms = lazy(() => import("../pages/PageTerms"));
+const PageContact = lazy(() => import("../pages/PageContact"));
 
 const guestRouter = createBrowserRouter([
   {
@@ -47,6 +54,10 @@ const guestRouter = createBrowserRouter([
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
       { path: "nearby-events", element: <PageNearbyEvents /> },
+      { path: "about", element: <PageAbout /> },
+      { path: "privacy", element: <PagePrivacy /> },
+      { path: "terms", element: <PageTerms /> },
+      { path: "contact", element: <PageContact /> },
       { path: "oauth/callback", element: <OAuthCallback /> },
 
       { path: "*", element: <Navigate to="/" replace /> },
@@ -74,6 +85,10 @@ const userRouter = createBrowserRouter([
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
       { path: "nearby-events", element: <PageNearbyEvents /> },
+      { path: "about", element: <PageAbout /> },
+      { path: "privacy", element: <PagePrivacy /> },
+      { path: "terms", element: <PageTerms /> },
+      { path: "contact", element: <PageContact /> },
       { path: "oauth/callback", element: <OAuthCallback /> },
 
       { path: "*", element: <Navigate to="/" replace /> },

@@ -5,11 +5,11 @@ import Footer from '../components/Footer';
 import PageTransition from '../components/PageTransition';
 import NavbarUser from '../components/NavbarUser';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
-import useSearchStore from '../stores/searchStore';
+import { ErrorBoundary } from 'react-error-boundary';
+import SectionErrorFallback from "../components/SectionErrorFallback";
 
 export default function UserLayout() {
     const location = useLocation();
-    const { isSearchOpen } = useSearchStore();
     const isChat = location.pathname === '/chat';
 
     return (
@@ -25,7 +25,7 @@ export default function UserLayout() {
 
             <NavbarUser />
 
-            {/* 📌 2. ใส่ PageTransition ครอบ Outlet โดยห้ามลืมใส่ key={location.pathname} */}
+            {/* 📌 Wrap Outlet with PageTransition and ensure key={location.pathname} is set */}
             <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col h-full overflow-hidden' : ''}`}>
                 <PageTransition key={location.pathname + location.search}>
                     <Outlet />

@@ -125,7 +125,7 @@ export default function CategorySection({ section, navigate }) {
                                 }}
                                 className="flex flex-col gap-5 group w-[280px] md:w-[380px] flex-shrink-0 cursor-pointer"
                             >
-                                {/* รูปการ์ดหลัก */}
+                                {/* Main Card Image */}
                                 <div
                                     className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-black/40 backdrop-blur-xl border border-white/10 transition-all duration-500 shadow-2xl"
                                     style={{ boxShadow: `0 20px 40px -10px ${section.primary}30` }}
@@ -155,7 +155,7 @@ export default function CategorySection({ section, navigate }) {
                                     </div>
                                 </div>
 
-                                {/* แถบข้อมูลด้านล่าง */}
+                                {/* Bottom Info Bar */}
                                 <div className="mx-4 mb-4 px-5 py-3.5 rounded-2xl bg-[#0B0C10]/60 backdrop-blur-md border border-white/5 flex justify-between items-center group-hover:bg-[#12141A]/80 group-hover:border-white/20 transition-all duration-500 overflow-hidden relative shadow-lg group-hover:shadow-2xl">
                                     <div
                                         className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none"

@@ -7,12 +7,14 @@ import { STORAGE_KEYS } from '../config/constants';
 const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const user = useUserStore((state) => state.user);
 
   useEffect(() => {
-    console.log("🔍 [SocketDebug] useEffect เริ่มทำงานแล้ว! ข้อมูล User คือ:", user);
+    console.log("🔍 [SocketDebug] useEffect triggered! User data:", user);
 
     const authData = localStorage.getItem(STORAGE_KEYS.AUTH);
     let token = null;
@@ -21,14 +23,14 @@ export const SocketProvider = ({ children }) => {
       try {
         const parsedData = JSON.parse(authData);
         token = parsedData.state?.token;
-        console.log("🔍 [SocketDebug] พบ Token ใน Storage:", token ? "YES" : "NO");
+        console.log("🔍 [SocketDebug] Token found in Storage:", token ? "YES" : "NO");
       } catch (error) {
         console.error("❌ [SocketDebug] JSON Parse Error:", error);
       }
     }
 
     if (!token) {
-      console.warn("⚠️ [SocketDebug] หยุดทำงาน: ไม่พบ Token ใน localStorage");
+      console.warn("⚠️ [SocketDebug] Execution stopped: No Token found in localStorage");
       return;
     }
 
@@ -36,30 +38,29 @@ export const SocketProvider = ({ children }) => {
     console.log(`🚀 [SocketDebug] กำลังพยายามเชื่อมต่อกับ ${SOCKET_URL} ...`);
     const newSocket = io(SOCKET_URL, {
       auth: { token },
-      // transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
     });
 
     newSocket.on("connect", () => {
-      console.log("✅ [SocketDebug] เชื่อมต่อสำเร็จ! ID:", newSocket.id);
+      console.log("✅ [SocketDebug] Connected successfully! ID:", newSocket.id);
       setSocket(newSocket);
     });
 
     newSocket.on("connect_error", (err) => {
-      console.error("❌ [SocketDebug] การเชื่อมต่อล้มเหลว:", err.message);
+      console.error("❌ [SocketDebug] Connection failed:", err.message);
     });
 
     newSocket.on("disconnect", (reason) => {
-      console.log("🟡 [SocketDebug] หลุดการเชื่อมต่อ:", reason);
+      console.log("🟡 [SocketDebug] Disconnected:", reason);
       setSocket(null);
     });
 
     return () => {
-      console.log("🧹 [SocketDebug] Cleanup: ปิด Socket");
+      console.log("🧹 [SocketDebug] Cleanup: Closing Socket");
       newSocket.disconnect();
     };
-  }, [user]); // ทำงานใหม่ทุกครั้งที่ user เปลี่ยนสถานะ
+  }, [user]);
 
   return (
     <SocketContext.Provider value={socket}>

@@ -17,7 +17,7 @@ export default function StatsSection({ songs }) {
                 <Reveal delay={0.2} effect="fade-up" overflow="visible">
                     <div className="max-w-4xl mx-auto bg-[#111]/80 backdrop-blur-xl p-6 md:p-10 rounded-[3rem] border border-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative">
                         <div className="flex justify-between items-end h-48 md:h-64 gap-2 md:gap-6 border-b border-gray-800 pb-2 relative">
-                            {/* เส้น Grid */}
+                            {/* Grid lines */}
                             <div className="absolute w-full top-1/4 h-px bg-gray-800/50 z-0"></div>
                             <div className="absolute w-full top-2/4 h-px bg-gray-800/50 z-0"></div>
                             <div className="absolute w-full top-3/4 h-px bg-gray-800/50 z-0"></div>

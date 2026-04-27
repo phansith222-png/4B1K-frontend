@@ -26,10 +26,10 @@ const NAV_COLUMNS = [
   {
     heading: 'Company',
     links: [
-      { label: 'About 4B1K',    to: '/' },
-      { label: 'Privacy Policy', to: '/' },
-      { label: 'Terms of Use',   to: '/' },
-      { label: 'Contact Us',     to: '/' },
+      { label: 'About 4B1K',    to: '/about' },
+      { label: 'Privacy Policy', to: '/privacy' },
+      { label: 'Terms of Use',   to: '/terms' },
+      { label: 'Contact Us',     to: '/contact' },
     ],
   },
 ]
@@ -38,9 +38,15 @@ import { API_URL } from '../config/env'
 
 /* ─── Google social icon ─── */
 function GoogleIcon() {
+  const getGoogleAuthUrl = () => {
+    let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1)
+    return `${apiUrl}/auth/google`
+  }
+
   return (
     <a
-      href={`${API_URL}/auth/google`}
+      href={getGoogleAuthUrl()}
       aria-label="Sign in with Google"
       className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-gray-400 hover:text-white hover:border-[#00E5FF]/50 hover:bg-[#00E5FF]/8 transition-all duration-300 hover:-translate-y-0.5"
     >
@@ -147,9 +153,9 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-[11px] text-gray-600 font-semibold">
           <span>© {year} 4B1K. All rights reserved.</span>
           <div className="flex items-center gap-5">
-            <Link to="/" className="hover:text-gray-400 transition-colors">Privacy Policy</Link>
-            <Link to="/" className="hover:text-gray-400 transition-colors">Terms of Use</Link>
-            <Link to="/" className="hover:text-gray-400 transition-colors">Contact</Link>
+            <Link to="/privacy" className="hover:text-gray-400 transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-gray-400 transition-colors">Terms of Use</Link>
+            <Link to="/contact" className="hover:text-gray-400 transition-colors">Contact</Link>
           </div>
         </div>
 

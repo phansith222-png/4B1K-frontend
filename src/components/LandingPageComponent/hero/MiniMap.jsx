@@ -9,10 +9,9 @@ import { getAllEvents } from '../../../api/event';
 import { API_URL, MAPBOX_TOKEN } from '../../../config/env';
 
 
-export default function MiniMap() {
+export default function MiniMap({ events: initialEvents = [] }) {
   const mapRef = React.useRef(null);
   const navigate = useNavigate();
-  const [events, setEvents] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(11);
@@ -75,31 +74,22 @@ export default function MiniMap() {
             imageUrl = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop';
           }
 
-          return {
-            id: event.id || Math.random(),
-            title: event.eventName || event.title || event.name || 'Untitled Event',
-            category: event.type || event.category || event.genre || 'All',
-            date: event.startTime ? new Date(event.startTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (event.date || 'Date TBA'),
-            time: event.startTime ? `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (event.time || 'Time TBA'),
-            location: event.venue?.name || event.location?.name || event.location || 'Location TBA',
-            lat: lat,
-            lng: lng,
-            attendees: event.attendeesCount || event.attendees || event.capacity || 0,
-            price: event.price || '฿0',
-            image: imageUrl,
-            hot: event.isHot || event.hot || event.is_hot || false
-          };
-        }).filter(e => e.lat !== 0 && e.lng !== 0);
-
-        setEvents(mappedEvents);
-      } catch (error) {
-        console.error("❌ Failed to fetch events for minimap:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, []);
+      return {
+        id: event.id || Math.random(),
+        title: event.eventName || event.title || event.name || 'Untitled Event',
+        category: event.type || event.category || event.genre || 'All',
+        date: event.startTime ? new Date(event.startTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (event.date || 'Date TBA'),
+        time: event.startTime ? `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (event.time || 'Time TBA'),
+        location: event.venue?.name || event.location?.name || event.location || 'Location TBA',
+        lat: lat,
+        lng: lng,
+        attendees: event.attendeesCount || event.attendees || event.capacity || 0,
+        price: event.price || '฿0',
+        image: imageUrl,
+        hot: event.isHot || event.hot || event.is_hot || false
+      };
+    }).filter(e => e.lat !== 0 && e.lng !== 0);
+  }, [initialEvents]);
 
 
 
@@ -136,6 +126,16 @@ export default function MiniMap() {
     });
   }, [events]);
 
+  const zoomTimerRef = React.useRef(null);
+
+  // Throttled move handler to prevent expensive re-renders on every pixel move
+  const handleMove = React.useCallback((e) => {
+    clearTimeout(zoomTimerRef.current);
+    zoomTimerRef.current = setTimeout(() => {
+      setZoomLevel(e.viewState.zoom);
+    }, 200);
+  }, []);
+
   return (
     <div className="relative w-full h-[400px] md:h-[450px] rounded-3xl overflow-hidden group">
       
@@ -165,7 +165,7 @@ export default function MiniMap() {
           style={{ width: '100%', height: '100%' }}
           interactive={true}
           scrollZoom={false} // Disable scroll zoom so it doesn't break page scrolling
-          onMove={(e) => setZoomLevel(e.viewState.zoom)}
+          onMove={handleMove}
           onClick={() => setSelectedEvent(null)}
         >
           {/* User Location */}

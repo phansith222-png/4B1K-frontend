@@ -28,31 +28,24 @@ const FAN_LAYOUT_CONFIG = {
 
 export default function HeroVideoShowcase() {
     const navigate = useNavigate();
-    const [artists, setArtists] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const isMobile = React.useRef(window.innerWidth < 768);
 
     useEffect(() => {
-        const fetchArtists = async () => {
-            try {
-                const res = await getAllArtists();
-                let data = res?.artists || res?.data || res || [];
-                // สุ่มลำดับศิลปินให้ไม่ซ้ำเดิม
-                const shuffled = [...data].sort(() => 0.5 - Math.random());
-                setArtists(shuffled.length > 5 ? shuffled : getMockArtists());
-            } catch (err) {
-                console.error("Failed to load artists", err);
-                setArtists(getMockArtists());
-            }
-        };
-        fetchArtists();
+        const handleResize = () => { isMobile.current = window.innerWidth < 768; };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Filter out mock artists if they exist in the passed list
+    const displayArtists = artists.length > 0 ? artists : getMockArtists();
 
     // ระบบเล่นอัตโนมัติ (Pop ขึ้นมาทีละคนช้าๆ แบบเป็นธรรมชาติ)
     useEffect(() => {
-        if (artists.length === 0 || isHovered) return;
+        if (displayArtists.length === 0 || isHovered) return;
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % artists.length);
+            setCurrentIndex((prev) => (prev + 1) % displayArtists.length);
         }, 3500); // เปลี่ยนศิลปินทุกๆ 3.5 วินาที
         return () => clearInterval(timer);
     }, [artists, isHovered]);
@@ -62,16 +55,16 @@ export default function HeroVideoShowcase() {
         return genresArray[0]?.genre?.name || "Featured Artist";
     };
 
-    if (artists.length === 0) return <div className="h-[40vh] w-full"></div>;
+    if (displayArtists.length === 0) return <div className="h-[40vh] w-full"></div>;
 
     // คำนวณตำแหน่งให้เรียงเป็น "เส้นโค้งสายรุ้ง" แบบมีองศาการเอียง
     const getLayout = (distance) => {
-        const isMobile = window.innerWidth < 768;
+        const mobile = isMobile.current;
         const abs = Math.abs(distance);
         const sign = Math.sign(distance);
 
         // ซ่อนตัวที่อยู่ไกลๆ เพื่อไม่ให้รกบนมือถือ
-        if (isMobile && abs > 1) return { opacity: 0, scale: 0.5, x: sign * 150, y: 80, rotate: sign * 20, zIndex: 0 };
+        if (mobile && abs > 1) return { opacity: 0, scale: 0.5, x: sign * 150, y: 80, rotate: sign * 20, zIndex: 0 };
 
         const { scaleMap, yMap, xMapDesktop, xMapMobile, rotateMap } = FAN_LAYOUT_CONFIG;
 
@@ -93,12 +86,12 @@ export default function HeroVideoShowcase() {
 
             <div className="relative w-full flex justify-center items-center h-full">
                 <AnimatePresence mode="popLayout">
-                    {artists.map((artist, idx) => {
+                    {displayArtists.map((artist, idx) => {
                         // คำนวณระยะห่างจากตัวตรงกลางแบบวงกลม
                         let distance = idx - currentIndex;
-                        const half = Math.floor(artists.length / 2);
-                        if (distance > half) distance -= artists.length;
-                        if (distance < -half) distance += artists.length;
+                        const half = Math.floor(displayArtists.length / 2);
+                        if (distance > half) distance -= displayArtists.length;
+                        if (distance < -half) distance += displayArtists.length;
 
                         if (Math.abs(distance) > 2) return null; // ไม่เรนเดอร์ตัวที่อยู่ไกลเกินไป
 
@@ -149,6 +142,7 @@ export default function HeroVideoShowcase() {
                                         <img
                                             src={artist.profileImage}
                                             alt={artist.artistName}
+                                            loading="lazy"
                                             className="w-full h-full object-cover opacity-90 transition-transform duration-[2s] hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end justify-center pb-4 md:pb-6 pointer-events-none">

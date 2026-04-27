@@ -26,10 +26,16 @@ export default function PageRock() {
     const queryArtistId = searchParams.get('artistId');
 
     // ── Data ─────────────────────────────────────────────────────────────
-    const { artist, songs, events, loading } = useArtistData(
-        GENRE_ARTIST_IDS.rock,
-        queryArtistId
-    );
+    const { artists, loading: loadingAll } = useArtists();
+
+    const targetId = useMemo(() => {
+        if (loadingAll) return null;
+        return getFilteredRandomArtistId(artists, GENRE_ARTIST_IDS.classic, queryArtistId);
+    }, [artists, loadingAll, queryArtistId]);
+
+    const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
+
+    const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
     // ── Global Player State - Optimized with Selectors ────────────────────

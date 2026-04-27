@@ -5,7 +5,7 @@ import { getAllArtists } from '../../api/artist';
 import { getImageUrl } from '../../utils/imageUtils';
 import { GENRE_ARTIST_IDS } from '../../constants/genreArtistIds';
 
-export default function ArtistShowcase() {
+export default function ArtistShowcase({ artists = [] }) {
   const navigate = useNavigate();
   const [artists, setArtists] = useState([]);
 
@@ -75,6 +75,7 @@ export default function ArtistShowcase() {
                 <img 
                 src={getImageUrl(artist.profileImage, "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=400&auto=format&fit=crop")} 
                 alt={artist.artistName} 
+                loading="lazy"
                 className="w-full h-full object-cover rounded-full bg-black"
               />
                 <div className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300">

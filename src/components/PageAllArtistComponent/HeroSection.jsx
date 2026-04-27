@@ -130,7 +130,7 @@ export default function HeroSection({ floatingNotes, spotlightArtist }) {
                         )}
                     </AnimatePresence>
 
-                    {/* ตัวโน้ตดนตรีลอยออกมา */}
+                    {/* Floating music notes */}
                     {floatingNotes.map((note) => (
                         <motion.div
                             key={note.id}
