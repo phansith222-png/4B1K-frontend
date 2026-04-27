@@ -17,7 +17,8 @@ export default function ChatPage() {
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
   const { showToast } = useCyberToast();
-  const myUserId = user?.id || user?._id;
+  const myUserId = user?.id;
+  const messageImageInputRef = useRef(null);
 
   const [activeChat, setActiveChat] = useState(null);
   const [contacts, setContacts] = useState([]);
@@ -149,7 +150,7 @@ export default function ChatPage() {
     try {
       await mainapi.patch(`/chats/rooms/${activeChat}`, { roomName: newName });
       setContacts(prev => prev.map(c => 
-        String(c.id) === String(activeChat) ? { ...c, roomName: newName } : c
+        String(c.id) === String(activeChat) ? { ...c, name: newName } : c
       ));
       showToast("Group renamed successfully!", "success");
     } catch (err) {
@@ -418,11 +419,12 @@ export default function ChatPage() {
   };
 
   const grouped = useMemo(() => messages.map((m, i) => {
-    const isMe = m.senderId === myUserId;
+    const isMe = Number(m.senderId) === Number(myUserId);
     const prev = messages[i - 1];
     const isNewDay = !prev || new Date(m.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+    const prevSame = prev && Number(prev.senderId) === Number(m.senderId);
 
-    return { ...m, isMe, isGrouped: false, showAvatar: true, showDateDivider: isNewDay };
+    return { ...m, isMe, isGrouped: false, showAvatar: !prevSame, showDateDivider: isNewDay };
   }), [messages, myUserId]);
 
   const filtered = useMemo(() => {
@@ -527,6 +529,8 @@ export default function ChatPage() {
               chatContainerRef={chatContainerRef}
               onAvatarClick={setViewingUser}
               onRenameGroup={handleRenameGroup}
+              messageImageInputRef={messageImageInputRef}
+              handleMessageImageChange={handleMessageImageChange}
             />
           </motion.div>
         )}

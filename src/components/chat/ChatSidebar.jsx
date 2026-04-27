@@ -194,7 +194,7 @@ export default function ChatSidebar({
                     <div className={`w-13 h-13 rounded-[18px] flex items-center justify-center font-extrabold overflow-hidden shadow-2xl border border-white/10 transition-transform duration-500 group-hover:scale-105
                       ${isActive ? "bg-white/10 backdrop-blur-md" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
                       <img
-                        src={avatarUrl(displayName, isRoomGroup ? room.profileImage : otherUser?.profileImage)}
+                        src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)}
                         className="w-full h-full object-cover"
                         alt=""
                       />
