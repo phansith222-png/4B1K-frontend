@@ -13,7 +13,7 @@ export default function UserLayout() {
     const isChat = location.pathname === '/chat';
 
     return (
-        <div className={`bg-[#0B0C10] flex flex-col relative overflow-hidden ${isChat ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+        <div className={`bg-[#0B0C10] flex flex-col relative overflow-hidden ${isChat ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
             {/* 🌌 Premium Foundation Layer - Enabled globally to maintain consistent aesthetic */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                     <div className="absolute top-[-10%] left-[-10%] w-[35%] h-[35%] bg-[#00E5FF] opacity-[0.15] blur-[120px] rounded-full" />
@@ -25,7 +25,7 @@ export default function UserLayout() {
             <NavbarUser />
 
             {/* 📌 Wrap Outlet with PageTransition and ensure key={location.pathname} is set */}
-            <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col h-full overflow-hidden' : ''}`}>
+            <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col overflow-hidden' : ''}`}>
                 <PageTransition key={location.pathname + location.search}>
                     <Outlet />
                 </PageTransition>

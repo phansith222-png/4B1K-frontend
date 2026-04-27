@@ -1,8 +1,13 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { avatarUrl } from "../../utils/chatUtils";
 
 export default function UserProfileModal({ isOpen, onClose, user, onChat }) {
   if (!user) return null;
+
+  const displayName = user.firstName 
+    ? `${user.firstName} ${user.lastName || ''}`.trim() 
+    : (user.username || "Member");
 
   return (
     <AnimatePresence>
@@ -35,16 +40,18 @@ export default function UserProfileModal({ isOpen, onClose, user, onChat }) {
               {/* Avatar with Ring */}
               <div className="relative group mb-6">
                 <div className="absolute -inset-1 bg-gradient-to-br from-[#7000FF] to-[#00E5FF] rounded-[38px] blur-md opacity-50 group-hover:opacity-80 transition-opacity" />
-                <img
-                  src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=7000FF&color=fff`}
-                  alt={user.username}
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  src={avatarUrl(displayName, user.profileImage)}
+                  alt={displayName}
                   className="relative w-32 h-32 rounded-[32px] object-cover border-4 border-[#111318] shadow-2xl"
                 />
               </div>
 
               {/* Name & Title */}
               <h3 className="text-2xl font-black text-white mb-1 tracking-tight text-center uppercase italic">
-                {user.username}
+                {displayName}
               </h3>
               <p className="text-[#00E5FF] text-[10px] font-black uppercase tracking-[0.3em] mb-8 bg-[#00E5FF]/10 px-4 py-1 rounded-full border border-[#00E5FF]/20 shadow-[0_0_15px_rgba(0,229,255,0.1)]">
                 Community Member

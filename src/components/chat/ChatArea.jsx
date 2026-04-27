@@ -56,7 +56,9 @@ export default function ChatArea({
   onAvatarClick,
   onRenameGroup,
   messageImageInputRef,
-  handleMessageImageChange
+  handleMessageImageChange,
+  pendingImage,
+  setPendingImage
 }) {
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -78,17 +80,35 @@ export default function ChatArea({
             className="flex flex-col h-full w-full min-h-0"
           >
             {/* ── Fixed Header ── */}
-            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10] relative">
+            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-xl relative">
               <div className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/10 to-[#00E5FF]/10 opacity-20" />
-              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent" />
+              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent shadow-[0_0_15px_#00E5FF]" />
+              
+              {/* Animated Spotlights */}
+              <motion.div 
+                animate={{ 
+                  x: [-200, 200, -200],
+                  opacity: [0.2, 0.4, 0.2]
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-1/2 left-1/4 w-[400px] h-[200%] bg-[#7000FF]/20 blur-[120px] rotate-45 pointer-events-none" 
+              />
+              <motion.div 
+                animate={{ 
+                  x: [200, -200, 200],
+                  opacity: [0.2, 0.4, 0.2]
+                }}
+                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-1/2 right-1/4 w-[400px] h-[200%] bg-[#00E5FF]/20 blur-[120px] -rotate-45 pointer-events-none" 
+              />
 
               <div className="flex items-center gap-4 px-4 md:px-6 py-3 md:py-4 relative z-10">
                 {/* Back Arrow (LINE Style) */}
                 <motion.button
-                  whileHover={{ scale: 1.1, x: -2 }}
+                  whileHover={{ scale: 1.1, x: -2, backgroundColor: "rgba(255, 255, 255, 0.1)" }}
                   whileTap={{ scale: 0.9 }}
                   onClick={goBack}
-                  className="p-2.5 -ml-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
+                  className="p-2.5 -ml-2 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
                   title="Go Back"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -101,9 +121,9 @@ export default function ChatArea({
                   className="relative group cursor-pointer shrink-0"
                   onClick={handleAvatarClick}
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#7000FF] to-[#00E5FF] rounded-2xl blur opacity-0 group-hover:opacity-40 transition duration-500" />
-                  <div className={`relative w-12 h-12 rounded-2xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[#00E5FF]/50 transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
-                    <img src={roomAvatar} className="w-full h-full object-cover" alt="" />
+                  <div className="absolute -inset-1.5 bg-gradient-to-r from-[#7000FF] to-[#00E5FF] rounded-[22px] blur opacity-40 group-hover:opacity-100 animate-pulse transition duration-500" />
+                  <div className={`relative w-13 h-13 rounded-[20px] overflow-hidden ring-1 ring-white/20 group-hover:ring-[#00E5FF] transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
+                    <img src={roomAvatar} className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" alt="" />
                   </div>
                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </motion.div>
@@ -180,7 +200,7 @@ export default function ChatArea({
                               initial={{ opacity: 0, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                              className="absolute top-full right-0 mt-2 w-64 bg-[#1A1C23] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden py-1.5"
+                              className="fixed top-20 right-4 w-64 bg-[#1A1C23] border border-white/10 rounded-2xl shadow-2xl z-[200] overflow-hidden py-1.5"
                             >
                               {isGroup && activeRoom?.creatorId === myUserId && (
                                 <>
@@ -290,7 +310,7 @@ export default function ChatArea({
                           msg={msg}
                           isMe={msg.isMe}
                           showAvatar={msg.showAvatar && !msg.isMe}
-                          senderName={msg.sender?.username || msg.sender?.firstName || "Member"}
+                          senderName={msg.sender?.firstName ? `${msg.sender.firstName} ${msg.sender.lastName || ''}`.trim() : msg.sender?.username || "Member"}
                           onAvatarClick={onAvatarClick}
                           onImageClick={onImageClick}
                           showDateDivider={msg.showDateDivider}
@@ -320,9 +340,54 @@ export default function ChatArea({
                   )}
                 </AnimatePresence>
 
+                <AnimatePresence>
+                  {pendingImage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                      className="relative w-24 h-24 mb-4 ml-2 group"
+                    >
+                      <div className="absolute -inset-1 bg-[#00E5FF] rounded-2xl blur-md opacity-20" />
+                      <img src={pendingImage} className="relative w-full h-full object-cover rounded-xl border border-white/20 shadow-xl" alt="Pending" />
+                      <button
+                        onClick={() => setPendingImage(null)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-[#1A1C23] border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-500/80 transition-all z-10"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="relative bg-[#1A1C23]/95 backdrop-blur-2xl border border-white/20 p-2 rounded-[28px] shadow-[0_25px_60px_rgba(0,0,0,0.8)] focus-within:border-[#00E5FF]/50 focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] transition-all duration-500 ring-1 ring-white/5">
-                  <div className="flex items-end gap-2 pr-2" ref={emojiRef}>
-                    <div className="flex-1 relative flex items-center">
+                  <div className="flex items-end gap-2" ref={emojiRef}>
+                    
+                    {/* ── Left: Image Attachment Button ── */}
+                    <div className="shrink-0 self-end pb-1">
+                      <input
+                        type="file"
+                        ref={messageImageInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleMessageImageChange}
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        type="button"
+                        onClick={() => messageImageInputRef?.current?.click()}
+                        className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 ${pendingImage ? "text-[#00E5FF] bg-[#00E5FF]/10 border border-[#00E5FF]/30" : "text-gray-500 hover:text-[#00E5FF] hover:bg-white/5 border border-transparent hover:border-white/10"}`}
+                        title="Attach Image"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                      </motion.button>
+                    </div>
+
+                    {/* ── Center: Textarea ── */}
+                    <div className="flex-1 relative min-w-0">
                       <AnimatePresence>
                         {showEmoji && (
                           <motion.div
@@ -355,50 +420,35 @@ export default function ChatArea({
                           e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
                         }}
                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); e.target.style.height = 'auto'; } }}
-                        placeholder="Type your message here..."
-                        className="w-full bg-transparent px-5 py-4 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar"
+                        placeholder={pendingImage ? "Add a caption..." : "Type your message here..."}
+                        className="w-full bg-transparent px-3 py-4 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar"
                       />
+                    </div>
 
+                    {/* ── Right: Emoji + Send ── */}
+                    <div className="flex items-center gap-1 shrink-0 self-end pb-1">
                       <button
                         type="button"
                         onClick={() => setShowEmoji((v) => !v)}
-                        className={`p-2.5 rounded-2xl transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 scale-110 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:scale-110"
-                          }`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
                       >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       </button>
-                    </div>
 
-                    {/* Image Attachment Button */}
-                    <div className="relative">
-                      <input
-                        type="file"
-                        ref={messageImageInputRef}
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleMessageImageChange}
-                      />
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(112,0,255,0.5)" }}
+                        whileTap={{ scale: 0.95 }}
                         type="button"
-                        onClick={() => messageImageInputRef?.current?.click()}
-                        className="p-2.5 rounded-2xl text-gray-500 hover:text-[#00E5FF] hover:scale-110 transition-all duration-300"
-                        title="Attach Image"
+                        onClick={send}
+                        disabled={(!inputText.trim() && !pendingImage) || !connected}
+                        className={`w-11 h-11 rounded-[18px] flex items-center justify-center shrink-0 transition-all duration-300
+                          ${(inputText.trim() || pendingImage) && connected 
+                            ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff] text-white shadow-[0_8px_20px_rgba(112,0,255,0.4)]" 
+                            : "bg-white/5 text-gray-700 cursor-not-allowed"}`}
                       >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4" /></svg>
-                      </button>
+                        <svg className="w-5 h-5 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                      </motion.button>
                     </div>
-
-                    <motion.button
-                      whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(112,0,255,0.4)" }}
-                      whileTap={{ scale: 0.95 }}
-                      type="button"
-                      onClick={send}
-                      disabled={!inputText.trim() || !connected}
-                      className={`w-12 h-12 rounded-[20px] flex items-center justify-center shrink-0 transition-all duration-500
-                        ${inputText.trim() && connected ? "bg-gradient-to-br from-[#7000FF] to-[#8220FF] text-white shadow-lg" : "bg-white/5 text-gray-700"}`}
-                    >
-                      <svg className="w-6 h-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                    </motion.button>
                   </div>
                 </div>
               </div>
