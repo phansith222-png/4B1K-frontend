@@ -8,6 +8,7 @@ import { Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllEvents } from '../api/event';
 import BackButton from '../components/BackButton';
+import { useCyberToast } from '../components/CyberToast';
 
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -15,6 +16,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 export default function PageNearbyEvents() {
   const mapRef = useRef(null);
+  const { showToast } = useCyberToast();
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
@@ -238,7 +240,7 @@ export default function PageNearbyEvents() {
         speed: 0.6 // Slower speed for more cinematic transition
       });
     } else {
-      alert("Location not found. Please enable location services.");
+      showToast("Location not found. Please enable location services.", "error");
     }
   };
 

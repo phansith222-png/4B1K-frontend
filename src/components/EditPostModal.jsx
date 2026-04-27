@@ -1,4 +1,3 @@
-// ไฟล์: src/components/EditPostModal.jsx
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Loader2 } from 'lucide-react';
@@ -8,29 +7,28 @@ import { uploadToCloudinary } from '../utils/uploadCloud';
 function EditPostModal({ post, onClose }) {
 const [editContent, setEditContent] = useState(post.content);
     
-    // 👉 จุดที่แก้ไข 1: เปลี่ยนจากดึง post.image เป็นดึง post.postImages แล้ว map เอาเฉพาะ url ออกมา
-    // รูปที่มีอยู่เดิม (จาก Backend) — เก็บเป็น URL string[]
+    // Map postImages to extract only URLs
+    // Existing images from backend (URL strings)
     const [existingImages, setExistingImages] = useState(
         post.postImages ? post.postImages.map((img) => img.url) : []
     );
 
-    // ไฟล์รูปใหม่ที่ผู้ใช้เพิ่ม
+    // New image files added by user
     const [newFiles, setNewFiles] = useState([]);
-    // Preview URL ของรูปใหม่
+    // Preview URLs for new images
     const [newPreviews, setNewPreviews] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
 
     const fileInputRef = useRef(null);
     const editPost = usePostStore(state => state.editPost);
 
-    // 👉 จุดที่แก้ไข 2: เปลี่ยนตัวเปรียบเทียบใน hasChanges จาก post.image เป็น post.postImages
-    // ตรวจสอบว่ามีการเปลี่ยนแปลงจริง เพื่อ enable/disable ปุ่ม Save
+    // Check if there are changes to enable/disable Save button
     const hasChanges =
         editContent.trim() !== post.content ||
         newFiles.length > 0 ||
         existingImages.length !== (post.postImages || []).length;
 
-    // เลือกรูปใหม่
+    // Handle new file selection
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
         if (selectedFiles.length === 0) return;
@@ -40,13 +38,13 @@ const [editContent, setEditContent] = useState(post.content);
         e.target.value = null;
     };
 
-    // ลบรูปใหม่ที่ยังไม่ได้อัปโหลด
+    // Remove unuploaded new image
     const removeNewImage = (index) => {
         setNewFiles(prev => prev.filter((_, i) => i !== index));
         setNewPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
-    // ลบรูปเดิม (URL)
+    // Remove existing image (URL)
     const removeExistingImage = (index) => {
         setExistingImages(prev => prev.filter((_, i) => i !== index));
     };
@@ -59,20 +57,20 @@ const [editContent, setEditContent] = useState(post.content);
 
             let uploadedUrls = [];
 
-            // อัปโหลดรูปใหม่ไป Cloudinary ถ้ามี
+            // Upload new images to Cloudinary if any
             if (newFiles.length > 0) {
                 const results = await Promise.all(newFiles.map(f => uploadToCloudinary(f)));
                 uploadedUrls = results.filter(url => url !== null);
             }
                 
-            // รวม URL รูปเดิมที่ยังเหลือ + รูปใหม่
+            // Combine remaining existing URLs with new URLs
             const allImages = [...existingImages, ...uploadedUrls];
 
-            // ส่งข้อมูลกลับไปให้ store อัปเดต
+            // Send data back to store to update
             await editPost(post.id, { content: editContent, image: allImages });
             onClose();
         } catch (error) {
-            console.error('แก้ไขไม่สำเร็จ', error);
+            console.error('Edit failed', error);
         } finally {
             setIsUploading(false);
         }
@@ -80,7 +78,7 @@ const [editContent, setEditContent] = useState(post.content);
 
     return (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            {/* พื้นหลังคลิกเพื่อปิด */}
+            {/* Background click to close */}
             <div className="absolute inset-0" onClick={!isUploading ? onClose : undefined} />
 
             <motion.div
@@ -111,7 +109,7 @@ const [editContent, setEditContent] = useState(post.content);
                         placeholder="What's on your mind?"
                     />
 
-                    {/* รูปเดิมจาก post */}
+                    {/* Existing images from post */}
                     {existingImages.length > 0 && (
                         <div>
                             <p className="text-xs text-gray-500 mb-2">Current Images</p>
@@ -138,7 +136,7 @@ const [editContent, setEditContent] = useState(post.content);
                         </div>
                     )}
 
-                    {/* รูปใหม่ที่เพิ่ง preview */}
+                    {/* New preview images */}
                     {newPreviews.length > 0 && (
                         <div>
                             <p className="text-xs text-gray-500 mb-2">New Images</p>
@@ -168,7 +166,7 @@ const [editContent, setEditContent] = useState(post.content);
 
                 {/* Footer */}
                 <div className="p-4 border-t border-white/5 flex justify-between items-center bg-white/[0.01]">
-                    {/* ปุ่มเพิ่มรูป */}
+                    {/* Add image button */}
                     <button
                         type="button"
                         onClick={() => !isUploading && fileInputRef.current?.click()}

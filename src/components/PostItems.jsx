@@ -58,7 +58,7 @@ function PostItem({ post, index }) {
     hour: '2-digit',
     minute: '2-digit',
   }); 
-  // ผลลัพธ์: "22 Apr 2026, 17:35"
+  // Result: "22 Apr 2026, 17:35"
 };
 
   return (
@@ -98,15 +98,15 @@ function PostItem({ post, index }) {
                   )}
                 </div>
 
-          {/* 👇 ปรับส่วนแสดงเวลาตรงนี้ 👇 */}
+          {/* 👇 Adjust time display here 👇 */}
                 <span className="text-xs text-gray-500 flex items-center gap-1">
                   {isEdited ? (
-                    // ถ้าถูก Edit ให้โชว์ updatedAt เป็นวันและเวลา
+                    // If edited, show updatedAt as date and time
                     <span className="italic">
                       Edited : {formatDateTime(post.updatedAt)}
                     </span>
                   ) : (
-                    // ถ้ายังไม่ถูก Edit ให้โชว์ createdAt เป็น TimeAgo เหมือนเดิม
+                    // If not edited, show createdAt
                     <span className="italic">
                       {formatDateTime(post.createdAt)}
                     </span>
@@ -116,11 +116,11 @@ function PostItem({ post, index }) {
               </div>
             </div>
 
-            {/* ปุ่ม จุด 3 จุด */}
+            {/* 3-dot menu button */}
             {user?.id === post.userId && (
               <div className="relative">
                 <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)} // สลับเปิด-ปิดเมนู
+                  onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle menu
                   className="text-gray-500 group-hover:text-[#00E5FF] transition p-2 rounded-full bg-white/5 hover:scale-110"
                 >
                   <MoreHorizontal size={20} />
@@ -138,8 +138,8 @@ function PostItem({ post, index }) {
                     >
                       <button
                         onClick={() => {
-                          setIsEditPostOpen(true); // เปิด Modal Edit
-                          setIsMenuOpen(false); // ปิดเมนูหลังกด
+                          setIsEditPostOpen(true); // Open Edit Modal
+                          setIsMenuOpen(false); // Close menu after click
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
                       >
@@ -149,7 +149,7 @@ function PostItem({ post, index }) {
                       <button
                         onClick={() => {
                           setIsDeleteModalOpen(true);
-                          setIsMenuOpen(false); // เปิด Modal ยืนยัน
+                          setIsMenuOpen(false); // Open confirm modal
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
                       >
@@ -165,7 +165,7 @@ function PostItem({ post, index }) {
                         )}
                       </AnimatePresence>
 
-                      {/* 👇 เพิ่ม Modal สำหรับ Edit ตรงนี้ 👇 */}
+                      {/* 👇 Add Modal for Edit here 👇 */}
                       <AnimatePresence>
                         {isEditPostOpen && (
                           <EditPostModal
@@ -201,7 +201,7 @@ function PostItem({ post, index }) {
           )}
 
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            {/* Artist Tags (ดึงจาก postArtists) */}
+            {/* Artist Tags (from postArtists) */}
             {post.postArtists?.map((item) => (
               <span
                 key={item.artistId}
@@ -238,7 +238,7 @@ function PostItem({ post, index }) {
         {/* Post Actions */}
         <div className="px-6 py-4 flex justify-between items-center text-gray-400 border-t border-white/5 bg-white/[0.01]">
           <div className="flex gap-6">
-            {/* ปุ่ม Like (Heart) */}
+            {/* Like Button */}
             <button
               type="button"
               onClick={hdlLikeClick}
@@ -255,7 +255,7 @@ function PostItem({ post, index }) {
               </span>
             </button>
 
-            {/* ปุ่ม Comment */}
+            {/* Comment Button */}
             <button
               onClick={() => setIsModalOpen(true)}
               type="button"

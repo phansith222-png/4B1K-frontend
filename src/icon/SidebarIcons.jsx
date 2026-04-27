@@ -26,9 +26,13 @@ export const SidebarItem = ({ icon, label, active = false, badge, onClick, activ
 }
 
 
-export const PostToolButton = ({ icon, label }) => {
+export const PostToolButton = ({ icon, label, onClick, disabled }) => {
   return (
-    <button className="text-gray-500 hover:text-white flex items-center gap-2 text-sm bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-[#00E5FF]/30 transition-all">
+    <button 
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="text-gray-500 hover:text-white flex items-center gap-2 text-sm bg-white/5 px-4 py-2 rounded-full border border-white/5 hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
       {icon} {label}
     </button>
   );

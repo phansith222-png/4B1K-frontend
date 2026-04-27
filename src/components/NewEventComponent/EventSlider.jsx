@@ -7,6 +7,7 @@ export default function EventSlider({ sliderItems, featuredIndex, setFeaturedInd
     if (sliderItems.length === 0) return null;
 
     const featuredEvent = sliderItems[featuredIndex] || sliderItems[0];
+    // console.log(featuredEvent)
 
     return (
         <Reveal delay={0.3} effect="fade-up">
@@ -27,7 +28,7 @@ export default function EventSlider({ sliderItems, featuredIndex, setFeaturedInd
                         <div className="lg:col-span-7 relative overflow-hidden aspect-[4/3] md:aspect-[16/10] h-full">
                             <img
                                 src={featuredEvent.posterImage || [
-                                    "https://images.unsplash.com/photo-1540039155732-684735035727?q=80&w=2000&auto=format&fit=crop",
+                                    "https://plus.unsplash.com/premium_photo-1661306437817-8ab34be91e0c?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                                     "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=2000&auto=format&fit=crop",
                                     "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=2000&auto=format&fit=crop"
                                 ][featuredIndex % 3]}

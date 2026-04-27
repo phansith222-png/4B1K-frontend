@@ -36,9 +36,15 @@ const NAV_COLUMNS = [
 
 /* ─── Google social icon ─── */
 function GoogleIcon() {
+  const getGoogleAuthUrl = () => {
+    let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1)
+    return `${apiUrl}/auth/google`
+  }
+
   return (
     <a
-      href="http://localhost:5000/auth/google"
+      href={getGoogleAuthUrl()}
       aria-label="Sign in with Google"
       className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center text-gray-400 hover:text-white hover:border-[#00E5FF]/50 hover:bg-[#00E5FF]/8 transition-all duration-300 hover:-translate-y-0.5"
     >

@@ -1,5 +1,13 @@
 /**
- * 📌 ฟังก์ชันดึงสีให้ตรงกับ Theme ของแต่ละหมวดหมู่
+ * Utility functions for event styling.
+ * @module eventStyles
+ */
+
+/**
+ * Returns Tailwind CSS classes for a given category theme.
+ * 
+ * @param {string} type - The category or genre name (e.g., 'pop', 'rock', 'all').
+ * @returns {string} Tailwind CSS class string for background, text, and shadow.
  */
 export const getCategoryStyle = (type) => {
     const t = (type || "").toLowerCase();

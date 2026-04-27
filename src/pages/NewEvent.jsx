@@ -44,8 +44,7 @@ export default function NewEventPage() {
                     getAllArtists()
                 ]);
 
-                console.log("📥 Raw Event Response:", eventRes);
-                console.log("📥 Raw Artist Response:", artistRes);
+                // Logs removed
 
                 const extractArray = (res, key) => {
                     if (!res) return [];
@@ -64,8 +63,7 @@ export default function NewEventPage() {
                 const artistData = extractArray(artistRes, 'artists');
                 setAllArtists(artistData);
 
-                console.log("✅ Processed Events:", eventData.length);
-                console.log("✅ Processed Artists:", artistData.length);
+                // Logs removed
 
             } catch (error) {
                 console.error("❌ Failed to fetch data", error);

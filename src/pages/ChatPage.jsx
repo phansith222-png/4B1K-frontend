@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import mainapi from "../api/auth";
 import { useSocket } from "../contexts/SocketContext";
 import useUserStore from "../stores/userStore";
@@ -7,10 +8,15 @@ import { avatarUrl } from "../utils/chatUtils";
 // Import new modular components
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatArea from "../components/chat/ChatArea";
+import BackButton from "../components/BackButton";
+import { useCyberToast } from "../components/CyberToast";
+import CyberConfirmModal from "../components/chat/CyberConfirmModal";
+import UserProfileModal from "../components/chat/UserProfileModal";
 
 export default function ChatPage() {
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
+  const { showToast } = useCyberToast();
   const myUserId = user?.id;
   const messageImageInputRef = useRef(null);
 
@@ -28,8 +34,14 @@ export default function ChatPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoadingContacts, setIsLoadingContacts] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: "", message: "", onConfirm: () => { } });
+  const [viewingUser, setViewingUser] = useState(null);
 
   const scrollRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const prevLenRef = useRef(0);
   const typingTimer = useRef(null);
   const emojiRef = useRef(null);
@@ -42,7 +54,7 @@ export default function ChatPage() {
   }, [activeChat]);
 
   const activeRoom = contacts.find((r) => r.id === activeChat);
-  // เชื่อใจค่า isGroup จาก DB เป็นหลัก
+  // Rely on isGroup value from DB as primary source of truth
   const isGroup = activeRoom?.isGroup ?? false;
   const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
   const roomName = isGroup ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`) : (other?.firstName ? `${other.firstName} ${other.lastName || ''}`.trim() : other?.username || "กำลังโหลด...");
@@ -99,7 +111,7 @@ export default function ChatPage() {
       setActiveChat(res.data.id);
     } catch (err) {
       console.error("Failed to create room:", err);
-      alert("ไม่สามารถสร้างห้องแชทได้ในขณะนี้");
+      showToast("Unable to create chat room at this time.", "error");
     } finally {
       setIsCreating(false);
     }
@@ -110,18 +122,18 @@ export default function ChatPage() {
     try {
       // 1. Call API to find or create a private room
       const res = await mainapi.post("/chats/personal", { friendId });
-      
+
       // 2. Refresh the room list to include the new/updated room
       const listRes = await mainapi.get("/chats/rooms");
       setContacts(listRes.data);
-      
+
       // 3. Navigate to the private room
       setActiveChat(res.data.id);
-      
-      // 4. Automatically switch to the "Personal" tab so the user sees the active chat in the sidebar
+
+      // 4. Automatically switch to the "Personal" tab
       setTab("personal");
-      
-      // 5. On mobile, hide the sidebar to show the chat area
+
+      // 5. On mobile, hide the sidebar
       if (window.innerWidth < 768) {
         setShowSidebar(false);
       } else {
@@ -129,33 +141,50 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error("Failed to start private chat:", err);
-      alert("ไม่สามารถเริ่มแชทส่วนตัวได้ในขณะนี้");
+      showToast("Unable to start private chat at this time.", "error");
     }
   };
 
-  const handleDeleteRoom = async () => {
-    const confirmMsg = isGroup 
-      ? "คุณแน่ใจหรือไม่ว่าต้องการลบกลุ่มนี้? ข้อมูลทั้งหมดจะสูญหาย" 
-      : "คุณแน่ใจหรือไม่ว่าต้องการลบการสนทนานี้? ข้อความทั้งหมดจะถูกลบถาวร";
-      
-    if (window.confirm(confirmMsg)) {
-      try {
-        if (isGroup) {
-          // ถ้าเป็นกลุ่ม ใช้ socket เพื่อแจ้งเตือนทุกคนในกลุ่ม
-          socket.emit("delete_group", { roomId: activeChat, userId: myUserId });
-        } else {
-          // ถ้าเป็นแชทส่วนตัว ใช้ API ลบปกติ
-          await mainapi.delete(`/chats/rooms/${activeChat}`);
-          // อัปเดต UI ฝั่งเรา
-          setContacts((prev) => prev.filter((c) => c.id !== activeChat));
-          setActiveChat(null);
-          alert("ลบการสนทนาเรียบร้อยแล้ว");
-        }
-      } catch (err) {
-        console.error("Failed to delete room:", err);
-        alert("ไม่สามารถลบได้ในขณะนี้");
-      }
+  const handleRenameGroup = async (newName) => {
+    if (!activeChat) return;
+    try {
+      await mainapi.patch(`/chats/rooms/${activeChat}`, { roomName: newName });
+      setContacts(prev => prev.map(c => 
+        String(c.id) === String(activeChat) ? { ...c, roomName: newName } : c
+      ));
+      showToast("Group renamed successfully!", "success");
+    } catch (err) {
+      console.error("Failed to rename group:", err);
+      showToast("Unable to rename group at this time.", "error");
     }
+  };
+
+  const handleDeleteRoom = () => {
+    const title = isGroup ? "Delete Group" : "Delete Chat";
+    const message = isGroup
+      ? "Are you sure you want to delete this group? All members will be removed and messages will be lost forever."
+      : "Are you sure you want to delete this conversation? Your chat history will be permanently cleared.";
+
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: async () => {
+        try {
+          if (isGroup) {
+            socket.emit("delete_group", { roomId: activeChat, userId: myUserId });
+          } else {
+            await mainapi.delete(`/chats/rooms/${activeChat}`);
+            setContacts((prev) => prev.filter((c) => c.id !== activeChat));
+            setActiveChat(null);
+            showToast("Conversation deleted successfully.");
+          }
+        } catch (err) {
+          console.error("Failed to delete room:", err);
+          showToast("Unable to delete at this time.", "error");
+        }
+      }
+    });
   };
 
   // close emoji picker on outside click
@@ -168,8 +197,10 @@ export default function ChatPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showEmoji]);
 
-  const scrollToBottom = useCallback((b = "auto") => {
-    setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: b, block: "end" }), 80);
+  const scrollToBottom = useCallback(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, []);
 
   const handleReceive = useCallback((msg) => {
@@ -180,7 +211,7 @@ export default function ChatPage() {
       setMessages((ms) => {
         if (ms.some((m) => m.id === msg.id)) return ms;
         return [...ms.filter((m) => !(m.isOptimistic && m.content === msg.content)),
-          { ...msg, isSent: true, isOptimistic: false }];
+        { ...msg, isSent: true, isOptimistic: false }];
       });
       socket?.emit("mark_read", { chatRoomId: rid, userId: myUserId, lastMessageId: msg.id });
     } else {
@@ -201,11 +232,11 @@ export default function ChatPage() {
   useEffect(() => {
     if (!socket) return;
     const onTyping = (d) => setActiveChat((p) => {
-      if (String(d.roomId) === String(p)) setTypingText(`${d.user} กำลังพิมพ์...`);
+      if (String(d.roomId) === String(p)) setTypingText(`${d.user} is typing...`);
       return p;
     });
     const onGroupDeleted = (data) => {
-      alert("กลุ่มนี้ถูกลบโดยผู้สร้างแล้ว");
+      showToast("This group has been deleted by the creator.", "error");
       setActiveChat((prev) => {
         if (String(data.roomId) === String(prev)) return null;
         return prev;
@@ -243,7 +274,8 @@ export default function ChatPage() {
         }
       });
       setUnreadCounts(prev => ({ ...prev, ...initialUnread }));
-    }).catch(console.error);
+    }).catch(console.error)
+      .finally(() => setIsLoadingContacts(false));
   }, []); // Remove socket dependency as we handle join separately
 
   // Dedicated effect to join rooms when socket is connected and contacts are loaded
@@ -256,25 +288,55 @@ export default function ChatPage() {
   }, [socket, connected, contacts]);
 
   useEffect(() => {
-    if (!socket || !activeChat) return;
+    if (!activeChat) {
+      setMessages([]);
+      setIsLoadingMessages(false);
+      return;
+    }
+
+    let isCurrent = true;
     prevLenRef.current = 0;
     setTypingText("");
     setUnreadCounts((u) => ({ ...u, [activeChat]: 0 }));
+    setMessages([]); 
+    setIsLoadingMessages(true);
+
     mainapi.get(`/chats/${activeChat}/messages`)
-      .then((r) => { 
-        setMessages(r.data.map((m) => ({ ...m, isSent: true }))); 
-        scrollToBottom(); 
-        if (r.data.length > 0) {
+      .then((r) => {
+        if (!isCurrent) return;
+        setMessages(r.data.map((m) => ({ ...m, isSent: true })));
+        
+        // Robust first-time scroll
+        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 50);
+        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 200);
+        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 500);
+
+        if (r.data.length > 0 && socket) {
           const lastMsg = r.data[r.data.length - 1];
           socket.emit("mark_read", { chatRoomId: activeChat, userId: myUserId, lastMessageId: lastMsg.id });
         }
       })
-      .catch(console.error);
-    socket.emit("join_room", String(activeChat));
+      .catch((err) => {
+        if (!isCurrent) return;
+        console.error("Failed to load messages:", err);
+        showToast("Connection to frequency lost. Retrying...", "error");
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoadingMessages(false);
+      });
+
+    if (socket) {
+      socket.emit("join_room", String(activeChat));
+    }
+    
+    return () => { isCurrent = false; };
   }, [socket, activeChat, myUserId, scrollToBottom]);
 
   useEffect(() => {
-    if (messages.length > prevLenRef.current && prevLenRef.current !== 0) scrollToBottom("smooth");
+    if (messages.length > 0) {
+      const timer = setTimeout(() => scrollToBottom(), 50);
+      return () => clearTimeout(timer);
+    }
     prevLenRef.current = messages.length;
   }, [messages, scrollToBottom]);
 
@@ -291,6 +353,12 @@ export default function ChatPage() {
       sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
     };
     setMessages((ms) => [...ms, payload]);
+
+    // Update the room's last activity date to move it to the top in the sidebar
+    setContacts((prev) => prev.map((c) =>
+      String(c.id) === String(activeChat) ? { ...c, lastMessageAt: payload.createdAt } : c
+    ));
+
     setInputText("");
     scrollToBottom("smooth");
     socket.emit("send_message", payload);
@@ -352,76 +420,120 @@ export default function ChatPage() {
 
   const grouped = useMemo(() => messages.map((m, i) => {
     const isMe = m.senderId === myUserId;
-    // Always show avatar for every message as requested
-    return { ...m, isMe, isGrouped: false, showAvatar: true };
+    const prev = messages[i - 1];
+    const isNewDay = !prev || new Date(m.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
+
+    return { ...m, isMe, isGrouped: false, showAvatar: true, showDateDivider: isNewDay };
   }), [messages, myUserId]);
 
   const filtered = useMemo(() => {
-    // กรองตาม Tab (ใช้ isGroup จาก DB ตรงๆ)
-    const byTab = contacts.filter((r) => tab === "community" ? r.isGroup : !r.isGroup);
+    // 1. Filter by Tab
+    let result = contacts.filter((r) => tab === "community" ? r.isGroup : !r.isGroup);
 
-    if (!search.trim()) return byTab;
-    const q = search.toLowerCase();
-    return byTab.filter((r) => {
-      const otherUser = r.users?.find((u) => u.userId !== myUserId)?.user;
-      const name = r.isGroup ? r.name : (otherUser?.username || otherUser?.firstName || "");
-      return (name || "").toLowerCase().includes(q);
+    // 2. Apply Search
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter((r) => {
+        const otherUser = r.users?.find((u) => u.userId !== myUserId)?.user;
+        const name = r.isGroup ? r.name : (otherUser?.username || otherUser?.firstName || "");
+        return (name || "").toLowerCase().includes(q);
+      });
+    }
+
+    // 3. Sort strictly by newest date (last message or update)
+    return [...result].sort((a, b) => {
+      const dateA = new Date(a.lastMessageAt || a.updatedAt || 0).getTime();
+      const dateB = new Date(b.lastMessageAt || b.updatedAt || 0).getTime();
+      return dateB - dateA;
     });
-  }, [contacts, search, tab, myUserId]);
+  }, [contacts, search, tab, myUserId, unreadCounts]);
 
   const openChat = (id) => { setActiveChat(id); setShowSidebar(false); };
   const goBack = () => { setActiveChat(null); setShowSidebar(true); };
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-[#13141a] text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <ChatSidebar
-        showSidebar={showSidebar}
-        connected={connected}
-        search={search}
-        setSearch={setSearch}
-        tab={tab}
-        setTab={setTab}
-        filteredContacts={filtered}
-        activeChat={activeChat}
-        unreadCounts={unreadCounts}
-        openChat={openChat}
-        myUserId={myUserId}
-        myName={myName}
-        myAvatar={myAvatar}
-        user={user}
-        setIsCreateModalOpen={setIsCreateModalOpen}
-      />
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-[#0B0C10] text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <AnimatePresence mode="wait">
+        {(showSidebar || !isMobile) && (
+          <motion.div
+            key="sidebar"
+            initial={isMobile ? { x: -300, opacity: 0 } : false}
+            animate={{ x: 0, opacity: 1 }}
+            exit={isMobile ? { x: -300, opacity: 0 } : false}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className={`${isMobile ? "fixed inset-0 z-50" : "relative w-[380px] shrink-0"} h-full bg-[#0B0C10]`}
+          >
+            <ChatSidebar
+              showSidebar={true} // Now managed by ChatPage's AnimatePresence
+              connected={connected}
+              search={search}
+              setSearch={setSearch}
+              tab={tab}
+              setTab={setTab}
+              filteredContacts={filtered}
+              activeChat={activeChat}
+              unreadCounts={unreadCounts}
+              openChat={openChat}
+              myUserId={myUserId}
+              myName={myName}
+              myAvatar={myAvatar}
+              user={user}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+              isLoading={isLoadingContacts}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <ChatArea
-        activeChat={activeChat}
-        showSidebar={showSidebar}
-        isGroup={isGroup}
-        roomName={roomName}
-        roomAvatar={roomAvatar}
-        activeRoom={activeRoom}
-        myUserId={myUserId}
-        myAvatar={myAvatar}
-        typingText={typingText}
-        connected={connected}
-        messagesGrouped={grouped}
-        inputText={inputText}
-        showEmoji={showEmoji}
-        setShowEmoji={setShowEmoji}
-        setInputText={setInputText}
-        onInput={onInput}
-        send={send}
-        goBack={goBack}
-        handleAvatarClick={handleAvatarClick}
-        fileInputRef={fileInputRef}
-        handleFileChange={handleFileChange}
-        handleDeleteRoom={handleDeleteRoom}
-        startPrivateChat={startPrivateChat}
-        scrollRef={scrollRef}
-        emojiRef={emojiRef}
-        inputRef={inputRef}
-        messageImageInputRef={messageImageInputRef}
-        handleMessageImageChange={handleMessageImageChange}
-      />
+      <AnimatePresence mode="wait">
+        {(!showSidebar || activeChat || !isMobile) && (
+          <motion.div
+            key="chat-area-container"
+            initial={isMobile ? { x: 300, opacity: 0 } : { x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={isMobile ? { x: 300, opacity: 0 } : { x: 20, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="flex-1 h-full"
+          >
+            <ChatArea
+              activeChat={activeChat}
+              showSidebar={showSidebar}
+              isGroup={isGroup}
+              roomName={roomName}
+              roomAvatar={roomAvatar}
+              activeRoom={activeRoom}
+              myUserId={myUserId}
+              myAvatar={myAvatar}
+              typingText={typingText}
+              connected={connected}
+              messagesGrouped={grouped}
+              inputText={inputText}
+              showEmoji={showEmoji}
+              setShowEmoji={setShowEmoji}
+              setInputText={setInputText}
+              onInput={onInput}
+              send={send}
+              goBack={goBack}
+              handleAvatarClick={handleAvatarClick}
+              fileInputRef={fileInputRef}
+              handleFileChange={handleFileChange}
+              handleDeleteRoom={handleDeleteRoom}
+              startPrivateChat={startPrivateChat}
+              scrollRef={scrollRef}
+              emojiRef={emojiRef}
+              inputRef={inputRef}
+              isLoading={isLoadingMessages}
+              onImageClick={setSelectedImage}
+              chatContainerRef={chatContainerRef}
+              onAvatarClick={setViewingUser}
+              onRenameGroup={handleRenameGroup}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ... (Modal remains the same) */}
 
       {/* ── Create Room Modal ── */}
       {isCreateModalOpen && (
@@ -441,17 +553,17 @@ export default function ChatPage() {
                 <p className="text-[13px] text-gray-400 font-medium">Start a new space for conversations and connections.</p>
               </div>
 
-              <form onSubmit={handleCreateRoom}>
-                <div className="mb-8">
-                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Community Name</label>
-                  <input
-                    autoFocus
-                    value={newRoomName}
-                    onChange={(e) => setNewRoomName(e.target.value)}
-                    placeholder="e.g., Gaming Lounge, Tech Talk..."
-                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-gray-100 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all placeholder-gray-600 font-medium"
-                  />
-                </div>
+            <form onSubmit={handleCreateRoom}>
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">ชื่อห้อง</label>
+                <input
+                  autoFocus
+                  value={newRoomName}
+                  onChange={(e) => setNewRoomName(e.target.value)}
+                  placeholder="เช่น คนรักเสียงเพลง, กิจกรรมวันหยุด..."
+                  className="w-full bg-[#2a2d35] border border-white/5 rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
+                />
+              </div>
 
                 <div className="flex gap-3 pt-2 border-t border-white/5">
                   <button
@@ -474,6 +586,59 @@ export default function ChatPage() {
           </div>
         </div>
       )}
+
+      {/* ── Image Lightbox ── */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedImage(null)}
+            className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-full max-h-full"
+              onClick={e => e.stopPropagation()}
+            >
+              <img
+                src={selectedImage}
+                alt="Fullscreen Preview"
+                className="max-w-full max-h-[90dvh] rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10"
+              />
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 right-0 text-white/60 hover:text-white flex items-center gap-2 group transition-colors"
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Close Terminal</span>
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M6 18L18 6M6 6l12 12" /></svg>
+                </div>
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Confirm Modal ── */}
+      <CyberConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+      />
+
+      {/* ── User Profile Modal ── */}
+      <UserProfileModal
+        isOpen={!!viewingUser}
+        onClose={() => setViewingUser(null)}
+        user={viewingUser}
+        onChat={startPrivateChat}
+      />
     </div>
   );
 }

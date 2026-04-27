@@ -18,7 +18,7 @@ export default function EmojiPicker({ onSelect }) {
         {Object.keys(EMOJIS).map((c) => (
           <button key={c} onClick={() => setCat(c)}
             className={`shrink-0 px-2 py-1.5 rounded-lg text-base transition-all ${
-              cat === c ? "bg-blue-600/30 text-blue-300" : "hover:bg-white/5 text-gray-500 hover:text-gray-300"
+              cat === c ? "bg-[#00E5FF]/20 text-[#00E5FF]" : "hover:bg-white/5 text-gray-500 hover:text-gray-300"
             }`}>
             {c.split(" ")[0]}
           </button>
