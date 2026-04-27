@@ -54,7 +54,9 @@ export default function ChatArea({
   onImageClick,
   chatContainerRef,
   onAvatarClick,
-  onRenameGroup
+  onRenameGroup,
+  messageImageInputRef,
+  handleMessageImageChange
 }) {
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -367,10 +369,30 @@ export default function ChatArea({
                       </button>
                     </div>
 
+                    {/* Image Attachment Button */}
+                    <div className="relative">
+                      <input
+                        type="file"
+                        ref={messageImageInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleMessageImageChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => messageImageInputRef?.current?.click()}
+                        className="p-2.5 rounded-2xl text-gray-500 hover:text-[#00E5FF] hover:scale-110 transition-all duration-300"
+                        title="Attach Image"
+                      >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4" /></svg>
+                      </button>
+                    </div>
+
                     <motion.button
                       whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(112,0,255,0.4)" }}
                       whileTap={{ scale: 0.95 }}
-                      type="submit"
+                      type="button"
+                      onClick={send}
                       disabled={!inputText.trim() || !connected}
                       className={`w-12 h-12 rounded-[20px] flex items-center justify-center shrink-0 transition-all duration-500
                         ${inputText.trim() && connected ? "bg-gradient-to-br from-[#7000FF] to-[#8220FF] text-white shadow-lg" : "bg-white/5 text-gray-700"}`}
