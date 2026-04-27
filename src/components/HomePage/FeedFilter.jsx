@@ -22,11 +22,11 @@ export default function FeedFilter({ activeTab, setActiveTab, onOpenArtistPicker
             onClick={() => tab.special ? onOpenArtistPicker() : setActiveTab(tab.id)}
             className={`flex-1 flex items-center ${vertical ? 'justify-start px-4' : 'justify-center px-4'} gap-4 py-3.5 rounded-2xl transition-all relative group/btn`}
           >
-            <div className={`relative z-20 flex items-center gap-4 transition-all duration-300 ${(activeTab === tab.id || (tab.special && selectedArtistName)) ? 'text-white scale-105' : 'text-white hover:text-[#00E5FF]'}`}>
-              <div className={`${(activeTab === tab.id || (tab.special && selectedArtistName)) ? 'text-[#00E5FF]' : ''}`}>
+            <div className={`relative z-20 flex items-center gap-4 transition-all duration-300 ${(activeTab === tab.id || (tab.special && selectedArtistName)) ? 'text-[#00E5FF] scale-105' : 'text-white hover:text-[#00E5FF]'}`}>
+              <div className="flex items-center justify-center">
                 {tab.icon}
               </div>
-              <span className={`${vertical ? 'inline' : 'hidden md:inline'} font-semibold`}>{tab.label}</span>
+              <span className={`font-black uppercase tracking-widest text-[12px]`}>{tab.label}</span>
             </div>
 
             {(activeTab === tab.id || (tab.special && selectedArtistName)) && (

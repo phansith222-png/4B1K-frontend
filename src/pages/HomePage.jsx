@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, SlidersHorizontal } from 'lucide-react';
+import { X, SlidersHorizontal, Flame, Sparkles } from 'lucide-react';
 import { getAllArtists } from '../api/artist';
 
 
@@ -37,37 +37,107 @@ export default function CommunityHomePage() {
   };
 
   return (
-    <div id="community-page" className="h-[calc(100vh-64px)] bg-[#0B0C10] text-white font-sans overflow-hidden">
+    <div id="community-page" className="h-[calc(100vh-64px)] bg-[#13141C] text-white font-sans overflow-hidden">
       
+      {/* 🔮 DYNAMIC LASER BACKGROUND ANIMATIONS (Synced with Navbar Theme) */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Magenta Bloom */}
+        <motion.div 
+          animate={{
+            x: [0, 100, -100, 0],
+            y: [0, -150, 150, 0],
+            scale: [1, 1.2, 0.8, 1],
+            opacity: [0.08, 0.15, 0.08]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#FF00FF]/20 blur-[120px] rounded-full"
+        />
+        {/* Cyan Bloom */}
+        <motion.div 
+          animate={{
+            x: [0, -120, 120, 0],
+            y: [0, 200, -200, 0],
+            scale: [0.8, 1.1, 1, 0.8],
+            opacity: [0.05, 0.12, 0.05]
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-[#00E5FF]/20 blur-[150px] rounded-full"
+        />
+        {/* Purple Pulse */}
+        <motion.div 
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.05, 0.1, 0.05]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#7000FF]/15 blur-[200px] rounded-full"
+        />
+      </div>
+
       {/* 🔮 MAIN CONTENT LAYOUT - Scrollable container for the whole viewport area */}
-      <main className="w-full h-full flex flex-col xl:flex-row justify-between items-start relative pt-0 pb-0 overflow-y-auto hide-scrollbar overscroll-contain transform-gpu">
-        
-        {/* --- 👈 LEFT SIDEBAR (Locked in place) --- */}
-        <aside className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-hidden">
-          <NavigationSidebar />
+      <main className="w-full h-full flex flex-col xl:flex-row justify-between items-start relative z-10 pt-0 pb-0 overflow-y-auto hide-scrollbar overscroll-contain transform-gpu">
+        {/* --- 👈 LEFT SIDEBAR (Pure Black + Navbar Theme Underglow) --- */}
+        <aside className="hidden xl:block w-[380px] shrink-0 sticky top-0 h-[calc(100vh-64px)] relative group/left">
+          {/* Solid Black Background */}
+          <div className="absolute inset-0 bg-black z-10" />
           
-          <div className="pt-6">
-            <div className="flex items-center gap-3 px-6 mb-6 group">
-              <div className="w-8 h-8 rounded-lg bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,229,255,0.1)]">
-                <SlidersHorizontal size={16} />
+          {/* 🌟 Particle Underglow (Points of light like Landing Page) */}
+          <div className="absolute inset-y-0 right-[-100px] w-[300px] z-0 pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.3, 0.1],
+                  scale: [1, 1.5, 1],
+                  y: [0, -20, 20, 0],
+                  x: [0, 10, -10, 0]
+                }}
+                transition={{ 
+                  duration: 4 + i, 
+                  repeat: Infinity, 
+                  delay: i * 0.8,
+                  ease: "easeInOut"
+                }}
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  top: `${15 + i * 15}%`,
+                  right: `${10 + (i % 3) * 20}%`,
+                  width: `${100 + i * 20}px`,
+                  height: `${100 + i * 20}px`,
+                  background: i % 3 === 0 ? '#00E5FF' : i % 3 === 1 ? '#7000FF' : '#FF00FF'
+                }}
+              />
+            ))}
+          </div>
+          <div className="absolute inset-y-0 right-[-40px] w-[150px] bg-gradient-to-l from-transparent via-[#00E5FF]/10 to-transparent blur-[60px] z-0 pointer-events-none opacity-40" />
+          
+          <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10">
+            <NavigationSidebar />
+            
+            <div className="pt-10 border-t border-white/5 mt-10">
+              <div className="flex items-center gap-4 mb-8 group">
+                <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+                  <SlidersHorizontal size={20} />
+                </div>
+                <span className="text-sm font-black text-[#00E5FF] uppercase tracking-[0.25em]">Feed Discover</span>
               </div>
-              <span className="text-xs font-black text-[#00E5FF] uppercase tracking-[0.2em]">Feed Discover</span>
+              <FeedFilter 
+                activeTab={activeTab} 
+                setActiveTab={(tab) => {
+                  setActiveTab(tab);
+                  setSelectedArtists([]);
+                }} 
+                onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
+                selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
+                vertical={true}
+              />
             </div>
-            <FeedFilter 
-              activeTab={activeTab} 
-              setActiveTab={(tab) => {
-                setActiveTab(tab);
-                setSelectedArtists([]);
-              }} 
-              onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
-              selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
-              vertical={true}
-            />
           </div>
         </aside>
 
         {/* --- 📱 CENTER FEED (Primary scroll content) --- */}
-        <div className="flex-1 max-w-[720px] min-w-0 relative z-10 w-full group/feed px-6">
+        <div className="flex-1 max-w-[820px] min-w-0 relative z-10 w-full group/feed px-10">
           {/* Subtle Top Fade (Overlay) */}
           <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#0B0C10] to-transparent z-20 pointer-events-none" />
           
@@ -83,7 +153,7 @@ export default function CommunityHomePage() {
                     key={artist.id}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-3 bg-gradient-to-r from-[#7C4DFF]/15 to-[#00E5FF]/5 border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg group hover:border-[#00E5FF]/30 transition-all"
+                    className="flex items-center gap-3 bg-gradient-to-r from-[#7000FF]/15 to-[#00E5FF]/5 border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg group hover:border-[#00E5FF]/30 transition-all"
                   >
                     <span className="text-white text-sm font-bold uppercase tracking-tight">{artist.artistName}</span>
                     <button 
@@ -103,13 +173,66 @@ export default function CommunityHomePage() {
           </div>
         </div>
 
-        {/* --- 👉 RIGHT SIDEBAR (Locked in place) --- */}
-        <aside className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-hidden">
-          <TrendingArtists 
-            onToggleArtist={toggleArtist} 
-            selectedArtistIds={selectedArtists.map(a => a.id)} 
-          />
-          <DiscoverArtists />
+        {/* --- 👉 RIGHT SIDEBAR (Pure Black + Navbar Theme Underglow) --- */}
+        <aside className="hidden xl:block w-[380px] shrink-0 sticky top-0 h-[calc(100vh-64px)] relative group/right">
+          {/* Solid Black Background */}
+          <div className="absolute inset-0 bg-black z-10" />
+          
+          {/* 🌟 Particle Underglow (Points of light like Landing Page) */}
+          <div className="absolute inset-y-0 left-[-100px] w-[300px] z-0 pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.3, 0.1],
+                  scale: [1, 1.5, 1],
+                  y: [0, 20, -20, 0],
+                  x: [0, -10, 10, 0]
+                }}
+                transition={{ 
+                  duration: 5 + i, 
+                  repeat: Infinity, 
+                  delay: i * 0.7 + 1,
+                  ease: "easeInOut"
+                }}
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  top: `${10 + i * 15}%`,
+                  left: `${10 + (i % 3) * 20}%`,
+                  width: `${120 + i * 15}px`,
+                  height: `${120 + i * 15}px`,
+                  background: i % 3 === 0 ? '#7000FF' : i % 3 === 1 ? '#00E5FF' : '#FF00FF'
+                }}
+              />
+            ))}
+          </div>
+          <div className="absolute inset-y-0 left-[-40px] w-[150px] bg-gradient-to-r from-transparent via-[#7000FF]/10 to-transparent blur-[60px] z-0 pointer-events-none opacity-40" />
+
+          <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10 space-y-12">
+            <div>
+              <div className="flex items-center gap-4 mb-8 group">
+                <div className="w-10 h-10 rounded-xl bg-[#FF4D00]/10 flex items-center justify-center text-[#FF4D00] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,77,0,0.2)]">
+                  <Flame size={20} />
+                </div>
+                <span className="text-sm font-black text-[#FF4D00] uppercase tracking-[0.25em]">Trending Artists</span>
+              </div>
+              <TrendingArtists 
+                onToggleArtist={toggleArtist} 
+                selectedArtistIds={selectedArtists.map(a => a.id)} 
+              />
+            </div>
+
+            <div className="border-t border-white/5 pt-12">
+              <div className="flex items-center gap-4 mb-8 group">
+                <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+                  <Sparkles size={20} />
+                </div>
+                <span className="text-sm font-black text-[#00E5FF] uppercase tracking-[0.25em]">Discover Artists</span>
+              </div>
+              <DiscoverArtists />
+            </div>
+          </div>
         </aside>
 
       </main>

@@ -38,7 +38,7 @@ const StickyMusicPlayer = () => {
 
     // YouTube Hook Configuration
     const playerOptions = useMemo(() => ({
-        autoplay: true,
+        autoplay: false,
         onSongEnded: playNext,
         initialIndex: currentSongIndex,
         isPlaying: storeIsPlaying,

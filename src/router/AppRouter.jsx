@@ -24,6 +24,7 @@ const PagePop = lazy(() => import("../pages/PagePop"));
 const PageRock = lazy(() => import("../pages/PageRock"));
 const PageClassic = lazy(() => import("../pages/PageClassic"));
 const PageEtc = lazy(() => import("../pages/PageEtc"));
+const PageEdm = lazy(() => import("../pages/PageEdm"));
 const PageEntertainment = lazy(() => import("../pages/PageEntertainment"));
 const AllArtist = lazy(() => import("../pages/PageAllArtist"));
 const PageNearbyEvents = lazy(() => import("../pages/PageNearbyEvents"));
@@ -49,6 +50,7 @@ const guestRouter = createBrowserRouter([
       { path: "pop", element: <PagePop /> },
       { path: "rock", element: <PageRock /> },
       { path: "classic", element: <PageClassic /> },
+      { path: "edm", element: <PageEdm /> },
       { path: "etc", element: <PageEtc /> },
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },
@@ -80,6 +82,7 @@ const userRouter = createBrowserRouter([
       { path: "pop", element: <PagePop /> },
       { path: "rock", element: <PageRock /> },
       { path: "classic", element: <PageClassic /> },
+      { path: "edm", element: <PageEdm /> },
       { path: "etc", element: <PageEtc /> },
       { path: "entertainment", element: <PageEntertainment /> },
       { path: "artists", element: <AllArtist /> },

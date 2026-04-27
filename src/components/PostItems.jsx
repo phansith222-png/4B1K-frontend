@@ -11,8 +11,10 @@ import { ActionButton } from "../icon/SidebarIcons";
 import usePostStore from "../stores/postStore";
 import useUserStore from "../stores/userStore";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import PostModal from "./PostModal";
 import EditPostModal from "./EditPostModal";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 import TimeAgo from 'react-timeago'
 
 function PostItemInner({ post, index }) {
@@ -118,7 +120,7 @@ function PostItemInner({ post, index }) {
             </div>
 
             {/* ปุ่ม จุด 3 จุด */}
-            {(user?.id === post.userId || user?._id === post.userId) && (
+            {(String(user?.id || user?._id || '') === String(post.userId || '')) && (
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle menu
@@ -157,24 +159,6 @@ function PostItemInner({ post, index }) {
                         Delete Post
                       </button>
 
-                      <AnimatePresence>
-                        {isModalOpen && (
-                          <PostModal
-                            post={post}
-                            onClose={() => setIsModalOpen(false)}
-                          />
-                        )}
-                      </AnimatePresence>
-
-                      {/* 👇 Add Modal for Edit here 👇 */}
-                      <AnimatePresence>
-                        {isEditPostOpen && (
-                          <EditPostModal
-                            post={post}
-                            onClose={() => setIsEditPostOpen(false)}
-                          />
-                        )}
-                      </AnimatePresence>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -206,9 +190,9 @@ function PostItemInner({ post, index }) {
             {post.postArtists?.map((item) => (
               <span
                 key={item.artistId}
-                className="text-[#00E5FF] text-xs w-fit font-bold bg-[#7C4DFF]/10 px-3 py-1 rounded-full border border-[#7C4DFF]/20 flex items-center gap-1"
+                className="text-[#00E5FF] text-[11px] font-black bg-[#7C4DFF]/10 px-3 py-1 rounded-full border border-[#7C4DFF]/20 flex items-center gap-1"
               >
-                🎤 {item.artist?.artistName}
+                # {item.artistName || item.artist?.artistName || item.artist?.name || 'Artist Tag'}
               </span>
             ))}
           </div>
@@ -225,14 +209,14 @@ function PostItemInner({ post, index }) {
               <div
                 key={el.id || idx}
                 className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 ${
-                  post.postImages.length === 1 ? 'min-h-[200px] max-h-[500px]' : 'h-[150px] sm:h-[200px]'
+                  post.postImages.length === 1 ? 'min-h-[300px] max-h-[600px]' : 'h-[250px] sm:h-[350px]'
                 }`}
               >
                 <img
                   src={el.url}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   alt={`Post content ${idx}`}
                 />
               </div>
@@ -252,10 +236,11 @@ function PostItemInner({ post, index }) {
               <div className="group-hover:scale-110 transition-transform pointer-events-none">
                 <Heart
                   size={18}
-                  className={haveLiked ? "fill-red-500 text-red-500" : ""}
+                  fill={haveLiked ? "currentColor" : "none"}
+                  className={haveLiked ? "text-red-500" : ""}
                 />
               </div>
-              <span className="text-sm font-bold group-hover:text-white pointer-events-none">
+              <span className={`text-sm font-bold pointer-events-none ${haveLiked ? "text-red-500" : "group-hover:text-white"}`}>
                 {likeCount.toLocaleString()}
               </span>
             </button>
@@ -292,53 +277,13 @@ function PostItemInner({ post, index }) {
 
       <AnimatePresence>
         {isDeleteModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Background Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsDeleteModalOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-
-            {/* Modal Content */}
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-[#1a1a1a] border border-white/10 p-8 rounded-[32px] max-w-sm w-full shadow-2xl text-center"
-            >
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart size={32} className="text-red-500 fill-red-500" />
-              </div>
-
-              <h3 className="text-xl font-bold text-white mb-2">
-                Delete Post?
-              </h3>
-              <p className="text-gray-400 mb-8 font-light">
-                Are you sure you want to delete this post?
-              </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex-1 px-6 py-3 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    await hdlDeletePost();
-                    setIsDeleteModalOpen(false);
-                  }}
-                  className="flex-1 px-6 py-3 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
-                >
-                  Delete
-                </button>
-              </div>
-            </motion.div>
-          </div>
+          <DeleteConfirmModal
+            onConfirm={async () => {
+              await hdlDeletePost();
+              setIsDeleteModalOpen(false);
+            }}
+            onCancel={() => setIsDeleteModalOpen(false)}
+          />
         )}
       </AnimatePresence>
     </>
@@ -346,15 +291,4 @@ function PostItemInner({ post, index }) {
 }
 
 
-// Custom comparator: only re-render when the post's own data changes
-const PostItem = memo(PostItemInner, (prev, next) => {
-    return (
-        prev.post.id === next.post.id &&
-        prev.post.likes?.length === next.post.likes?.length &&
-        prev.post.comments?.length === next.post.comments?.length &&
-        prev.post.content === next.post.content &&
-        prev.post.updatedAt === next.post.updatedAt
-    );
-});
-
-export default PostItem;
+export default PostItemInner;

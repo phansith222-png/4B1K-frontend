@@ -22,6 +22,7 @@ import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSe
 import ConcertSection from '../components/PageClassicComponent/ConcertSection';
 import StatsSection from '../components/PageClassicComponent/StatsSection';
 import Reveal from '../components/Reveal';
+import GenreArtistSidebar from '../components/GenreArtistSidebar';
 
 export default function PageClassic() {
     const [searchParams] = useSearchParams();
@@ -92,7 +93,12 @@ export default function PageClassic() {
                     <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
                 </div>
             ) : (
-                <div key={artist?.id || 'content'}>
+                <>
+                    {/* Sidebars for Artist Discovery */}
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="classic" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="classic" />
+
+                    <div key={artist?.id || 'content'} className="relative z-10">
                     <Reveal>
                         <HeroSection artist={artist} events={events} />
                     </Reveal>
@@ -121,7 +127,11 @@ export default function PageClassic() {
                                 else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
                             }}
                             handleProgressClick={(e) => {
-                                if (isCurrentArtist && controls?.handleProgressClick) controls.handleProgressClick(e);
+                                if (isCurrentArtist && controls?.handleProgressClick) {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                                    controls.handleProgressClick(percent);
+                                }
                             }}
                         />
                     </Reveal>
@@ -132,6 +142,7 @@ export default function PageClassic() {
                         <StatsSection songs={songs} />
                     </Reveal>
                 </div>
+                </>
             )}
         </div>
     );

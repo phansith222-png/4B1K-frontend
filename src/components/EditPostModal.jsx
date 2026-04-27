@@ -1,32 +1,58 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { X, Plus, Loader2 } from 'lucide-react';
+import { X, Plus, Loader2, Music4 } from 'lucide-react';
 import usePostStore from '../stores/postStore';
 import { uploadToCloudinary } from '../utils/uploadCloud';
+import ArtistPickerModal from './ArtistPickerModal';
 
 function EditPostModal({ post, onClose }) {
-const [editContent, setEditContent] = useState(post.content);
-    
+    // ── Scroll Lock ──
+    React.useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = 'auto'; };
+    }, []);
+
+    const [editContent, setEditContent] = useState(post.content);
+
     // Map postImages to extract only URLs
     // Existing images from backend (URL strings)
     const [existingImages, setExistingImages] = useState(
         post.postImages ? post.postImages.map((img) => img.url) : []
     );
 
-    // New image files added by user
+    const [selectedArtists, setSelectedArtists] = useState(
+        post.postArtists ? post.postArtists.map(pa => {
+            if (pa.artist) return pa.artist;
+            // Robust Fallback: If relation is missing, use the ID we have. 
+            // We'll look for the artist name in the global context if possible, 
+            // but for now we reconstruct a minimal object so it's not "lost" during edit.
+            return { id: pa.artistId, artistName: `Artist #${pa.artistId}` };
+        }).filter(Boolean) : []
+    );
+    const [isArtistPickerOpen, setIsArtistPickerOpen] = useState(false);
+
+    // Missing states restored
     const [newFiles, setNewFiles] = useState([]);
-    // Preview URLs for new images
     const [newPreviews, setNewPreviews] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
 
     const fileInputRef = useRef(null);
     const editPost = usePostStore(state => state.editPost);
 
+    // Helper to compare artist tag arrays (ignoring order, normalizing types)
+    const tagsChanged = () => {
+        const currentIds = selectedArtists.map(a => String(a.id || a._id || '')).filter(Boolean).sort();
+        const originalIds = (post.postArtists || []).map(pa => String(pa.artistId || '')).filter(Boolean).sort();
+        return JSON.stringify(currentIds) !== JSON.stringify(originalIds);
+    };
+
     // Check if there are changes to enable/disable Save button
     const hasChanges =
-        editContent.trim() !== post.content ||
+        (editContent || '').trim() !== (post.content || '').trim() ||
         newFiles.length > 0 ||
-        existingImages.length !== (post.postImages || []).length;
+        existingImages.length !== (post.postImages || []).length ||
+        tagsChanged();
 
     // Handle new file selection
     const handleFileChange = (e) => {
@@ -62,12 +88,20 @@ const [editContent, setEditContent] = useState(post.content);
                 const results = await Promise.all(newFiles.map(f => uploadToCloudinary(f)));
                 uploadedUrls = results.filter(url => url !== null);
             }
-                
+
             // Combine remaining existing URLs with new URLs
             const allImages = [...existingImages, ...uploadedUrls];
 
             // Send data back to store to update
-            await editPost(post.id, { content: editContent, image: allImages });
+            await editPost(post.id || post._id, {
+                content: editContent,
+                image: allImages,
+                // Match the working PostCreator.jsx structure exactly
+                // artistId: selectedArtists.length > 0 ? Number(selectedArtists[0].id || selectedArtists[0]._id) : null,
+                artistIds: selectedArtists.map(a => Number(a.id || a._id)).filter(id => !isNaN(id)),
+                // Pass full objects for optimistic UI update
+                selectedArtists: selectedArtists
+            });
             onClose();
         } catch (error) {
             console.error('Edit failed', error);
@@ -76,7 +110,7 @@ const [editContent, setEditContent] = useState(post.content);
         }
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
             {/* Background click to close */}
             <div className="absolute inset-0" onClick={!isUploading ? onClose : undefined} />
@@ -108,6 +142,42 @@ const [editContent, setEditContent] = useState(post.content);
                         className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#00E5FF]/50 transition-all resize-none h-32 disabled:opacity-60"
                         placeholder="What's on your mind?"
                     />
+
+                    {/* Artist Tags Section */}
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs font-black uppercase tracking-widest text-[#00E5FF]">Artist Tags</p>
+                            <button
+                                onClick={() => setIsArtistPickerOpen(true)}
+                                className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                            >
+                                + Edit Tags
+                            </button>
+                        </div>
+                        <div
+                            onClick={() => setIsArtistPickerOpen(true)}
+                            className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:border-[#00E5FF]/30 transition-all group/tags"
+                        >
+                            {selectedArtists.length > 0 ? (
+                                selectedArtists.map(artist => (
+                                    <span key={artist.id} className="text-[#00E5FF] text-[11px] font-black bg-[#7C4DFF]/10 px-3 py-1 rounded-full border border-[#7C4DFF]/20 flex items-center gap-1">
+                                        # {artist.artistName || artist.name}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedArtists(prev => prev.filter(a => a.id !== artist.id));
+                                            }}
+                                            className="ml-1 hover:text-red-500"
+                                        >
+                                            <X size={10} />
+                                        </button>
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-xs text-gray-600 italic group-hover/tags:text-gray-400 transition-colors">No artists tagged... Click to add</span>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Existing images from post */}
                     {existingImages.length > 0 && (
@@ -179,6 +249,16 @@ const [editContent, setEditContent] = useState(post.content);
                         </span>
                     </button>
 
+                    <button
+                        type="button"
+                        onClick={() => !isUploading && setIsArtistPickerOpen(true)}
+                        disabled={isUploading}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm text-gray-400 hover:text-[#7C4DFF] hover:bg-[#7C4DFF]/5 transition-colors disabled:opacity-40"
+                    >
+                        <span className="font-black text-lg">#</span>
+                        <span>Tags</span>
+                    </button>
+
                     <input
                         type="file"
                         multiple
@@ -213,7 +293,17 @@ const [editContent, setEditContent] = useState(post.content);
                     </div>
                 </div>
             </motion.div>
-        </div>
+
+            {/* Artist Selection Modal */}
+            {isArtistPickerOpen && (
+                <ArtistPickerModal
+                    selectedArtists={selectedArtists}
+                    onSelectionChange={setSelectedArtists}
+                    onClose={() => setIsArtistPickerOpen(false)}
+                />
+            )}
+        </div>,
+        document.body
     );
 }
 

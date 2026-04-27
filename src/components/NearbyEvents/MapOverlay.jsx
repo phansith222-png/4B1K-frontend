@@ -53,7 +53,7 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
 
           {/* Right Side: Categories & Location Button (Top Right Stack) */}
           <div className="flex flex-col items-end gap-3 mt-1 md:mt-2 w-full md:w-auto pointer-events-auto min-w-0">
-            
+
             {/* 7 Categories (2 Rows on Mobile, Single line on Desktop) */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -64,17 +64,16 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
               {Object.keys(CATEGORY_COLORS).map(cat => {
                 const isActive = activeCategory === cat;
                 const catColor = HEX_COLORS[cat] || '#00E5FF';
-                
+
                 return (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`relative px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 border flex-shrink-0 ${
-                      isActive 
-                        ? 'text-white border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2)] scale-105' 
+                    className={`relative px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 border flex-shrink-0 ${isActive
+                        ? 'text-white border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2)] scale-105'
                         : 'text-gray-300 border-transparent hover:border-white/20'
-                    }`}
-                    style={{ 
+                      }`}
+                    style={{
                       backgroundColor: isActive ? catColor : `${catColor}22`,
                       borderColor: isActive ? 'white' : `${catColor}44`,
                       boxShadow: isActive ? `0 0 20px ${catColor}88` : `0 0 10px ${catColor}33`

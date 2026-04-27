@@ -55,16 +55,13 @@ export default function NavArtistMenu({
                                     </div>
                                 </button>
 
-                                {/* Divider */}
-                                <div className="border-t border-white/10 my-1" />
-
                                 {/* Genre links */}
                                 {[
                                     { path: '/pop', color: '#FF007F', label: 'Pop' },
                                     { path: '/rock', color: '#D3131F', label: 'Rock' },
-                                    { path: '/classic', color: '#d83bb6', label: 'R&B / Classic' },
-                                    { path: '/etc', color: '#CEFF67', label: 'Hiphop / EDM' },
-                                    { path: '/entertainment', color: '#7000FF', label: 'Entertainment' },
+                                    { path: '/classic', color: '#d83bb6', label: 'R&B' },
+                                    { path: '/edm', color: '#00E5FF', label: 'EDM' },
+                                    { path: '/etc', color: '#CEFF67', label: 'Hiphop' },
                                 ].map(({ path, color, label }) => {
                                     const isActive = currentPath === path;
                                     return (
@@ -209,6 +206,22 @@ export default function NavArtistMenu({
                                     }) : (
                                         <p className="text-gray-500 text-sm mt-4 italic">No upcoming concerts.</p>
                                     )}
+                                </div>
+
+                                <div className="mt-[290px] border-t border-white/5 pt-4">
+                                    <button
+                                        onClick={() => onNavigate('/entertainment')}
+                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-black text-[12px] uppercase tracking-[0.2em] transition-all group overflow-hidden relative ${currentPath === '/entertainment' ? 'text-[#7000FF]' : 'text-white hover:text-[#7000FF]'}`}
+                                    >
+                                        <div className="absolute inset-0 bg-[#7000FF]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="flex items-center gap-3 relative z-10">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#7000FF] shadow-[0_0_8px_#7000FF]" />
+                                            Entertainment Hub
+                                        </div>
+                                        <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
 

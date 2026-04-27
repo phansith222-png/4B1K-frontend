@@ -31,7 +31,7 @@ export default function Navbar() {
     const location = useLocation();
     const path = location.pathname;
     const isConcertActive = ['/new-event', '/nearby-events'].some(p => path.startsWith(p));
-    const isArtistActive = ['/artists', '/pop', '/rock', '/classic', '/etc', '/entertainment'].some(p => path.startsWith(p)) || isArtistMenuOpen;
+    const isArtistActive = ['/artists', '/pop', '/rock', '/classic', '/edm', '/etc', '/entertainment'].some(p => path.startsWith(p)) || isArtistMenuOpen;
     const isCommunityActive = path.startsWith('/community') || path.startsWith('/home');
     const isChatActive = path.startsWith('/chat');
 

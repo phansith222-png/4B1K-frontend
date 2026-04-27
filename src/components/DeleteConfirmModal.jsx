@@ -1,57 +1,60 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, Loader2 } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Heart } from 'lucide-react';
 
-function DeleteConfirmModal({ onConfirm, onCancel, isDeleting }) {
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      {/* backdrop */}
+export default function DeleteConfirmModal({ onConfirm, onCancel }) {
+  // ── Scroll Lock ──
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = 'auto'; };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+      {/* Background Overlay */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onCancel}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
       />
 
+      {/* Modal Content */}
       <motion.div
-        initial={{ scale: 0.85, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.85, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="relative z-10 bg-[#1c1c1c] border border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl"
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative bg-[#1a1a1a] border border-white/10 p-8 rounded-[32px] max-w-sm w-full shadow-2xl text-center z-10"
       >
-        {/* Icon */}
-        <div className="flex items-center justify-center w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-2xl mx-auto mb-4">
-          <Trash2 size={22} className="text-red-400" />
+        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Heart size={32} className="text-red-500 fill-red-500" />
         </div>
 
-        <h2 className="text-white font-bold text-center text-lg">Delete Comment?</h2>
-        <p className="text-gray-400 text-sm text-center mt-1 mb-6">
-          Are you sure you want to delete this comment?<br />
-          <span className="text-gray-500 text-xs">This action cannot be undone.</span>
+        <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">
+          Delete Vibe?
+        </h3>
+        <p className="text-gray-400 mb-8 font-light text-sm">
+          Are you sure you want to permanently delete this post? This action cannot be undone.
         </p>
 
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            disabled={isDeleting}
-            className="flex-1 py-2.5 rounded-full border border-white/10 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-40 font-medium"
+            className="flex-1 px-6 py-3 rounded-2xl bg-white/5 text-white font-medium hover:bg-white/10 transition-colors border border-white/5"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            disabled={isDeleting}
-            className="flex-1 py-2.5 rounded-full bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex-1 px-6 py-3 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
           >
-            {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
             Delete
           </button>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }
-
-export default DeleteConfirmModal;
