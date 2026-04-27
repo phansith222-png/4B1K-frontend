@@ -160,30 +160,9 @@ export default function ChatSidebar({
       </div>
 
       {/* ── Room List ── */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-32 md:pb-8 space-y-2.5 sidebar-no-scrollbar relative z-10">
-        <style>{`
-          .sidebar-no-scrollbar::-webkit-scrollbar { display: none; }
-          .sidebar-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
-        <AnimatePresence mode="popLayout">
-          {isLoading ? (
-            // Skeleton Loader
-            [...Array(6)].map((_, i) => (
-              <motion.div
-                key={`skeleton-${i}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="w-full flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-[22px] bg-white/[0.02] border border-white/5 animate-pulse"
-              >
-                <div className="w-13 h-13 rounded-[18px] bg-white/5 shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-2/3 bg-white/5 rounded-lg" />
-                  <div className="h-3 w-1/3 bg-white/5 rounded-lg" />
-                </div>
-              </motion.div>
-            ))
-          ) : filteredContacts.length > 0 ? (
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2" style={{ scrollbarWidth: "thin", scrollbarColor: "#ffffff05 transparent" }}>
+        <AnimatePresence>
+          {filteredContacts.length > 0 ? (
             filteredContacts.map((room, idx) => {
               const isRoomGroup = room.isGroup;
               const otherUser = !isRoomGroup ? room.users?.find((u) => u.userId !== myUserId)?.user : null;
