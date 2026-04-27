@@ -37,9 +37,17 @@ export default function PagePop() {
     const duration = usePlayerStore(state => state.duration);
     const controls = usePlayerStore(state => state.controls);
     const playSongs = usePlayerStore(state => state.playSongs);
-    const globalSongs = usePlayerStore(state => state.songs);
-
-    const isCurrentArtist = globalSongs === songs && songs.length > 0;
+    const globalArtist = usePlayerStore(state => state.artist);
+    const isCurrentArtist = React.useMemo(() => {
+        if (!globalArtist || !artist) return false;
+        const gId = String(globalArtist.id || globalArtist._id || '');
+        const aId = String(artist.id || artist._id || '');
+        const gName = String(globalArtist.artistName || '').toLowerCase().trim();
+        const aName = String(artist.artistName || '').toLowerCase().trim();
+        
+        // Match by ID or Name for maximum reliability
+        return (gId !== '' && gId === aId) || (gName !== '' && gName === aName);
+    }, [globalArtist, artist]);
 
     // Auto-play when artist loads if requested
     React.useEffect(() => {
@@ -111,7 +119,11 @@ export default function PagePop() {
                                 else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
                             }}
                             handleProgressClick={(e) => {
-                                if (isCurrentArtist && controls?.handleProgressClick) controls.handleProgressClick(e);
+                                if (isCurrentArtist && controls?.handleProgressClick) {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                                    controls.handleProgressClick(percent);
+                                }
                             }}
                             currentSong={songs[isCurrentArtist ? currentSongIndex : 0]}
                         />

@@ -27,7 +27,8 @@ function PostItemInner({ post, index }) {
 
   // const currentLikes = usePostStore(state => state.currentLikes) || []
 
-  const haveLiked = post.likes?.some((el) => el.userId === user?.id);
+  const myId = user?.id || user?._id;
+  const haveLiked = post.likes?.some((el) => el.userId === myId);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditPostOpen, setIsEditPostOpen] = useState(false);
@@ -117,7 +118,7 @@ function PostItemInner({ post, index }) {
             </div>
 
             {/* ปุ่ม จุด 3 จุด */}
-            {user?.id === post.userId && (
+            {(user?.id === post.userId || user?._id === post.userId) && (
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)} // สลับเปิด-ปิดเมนู

@@ -44,20 +44,28 @@ export const MINI_POSITION = { bottom: '1.5rem', left: '1.5rem' };
 // ── Beat Visualizer ───────────────────────────────────────────────────────────
 
 /** Number of bars in the full-size beat visualizer */
-export const BEAT_BARS_FULL = 6;
+export const BEAT_BARS_FULL = 12;
 
 /** Number of bars in the mini (pill) beat visualizer */
 export const BEAT_BARS_MINI = 4;
 
-/** Animated height keyframes for each bar (%) */
-export const BEAT_KEYFRAMES = ['15%', '85%', '40%', '100%', '20%', '60%'];
+/** Animated height keyframes for each bar (%) - Multiple variants for realism */
+export const BEAT_KEYFRAMES_VARIANTS = [
+    ['20%', '80%', '40%', '95%', '25%'],
+    ['30%', '75%', '55%', '85%', '35%'],
+    ['15%', '95%', '35%', '80%', '20%'],
+    ['40%', '65%', '30%', '90%', '45%']
+];
+
+/** Standard fallback if single keyframe is needed */
+export const BEAT_KEYFRAMES = BEAT_KEYFRAMES_VARIANTS[0];
 
 /** Base animation duration per bar (seconds); each bar adds BEAT_DURATION_STEP */
-export const BEAT_DURATION_BASE = 0.6;
-export const BEAT_DURATION_STEP = 0.08;
+export const BEAT_DURATION_BASE = 0.55;
+export const BEAT_DURATION_STEP = 0.06;
 
 /** Delay between each bar (seconds) */
-export const BEAT_DELAY_STEP = 0.07;
+export const BEAT_DELAY_STEP = 0.05;
 
 // ── Theme / Colors ────────────────────────────────────────────────────────────
 

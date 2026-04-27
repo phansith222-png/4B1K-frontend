@@ -86,6 +86,10 @@ export default function AppRouter() {
 
   const router = user ? userRouter : guestRouter;
 
+  // Use a stable key that forces remount when auth state changes.
+  // Support both 'id' and '_id' (common in MongoDB)
+  const routerKey = user ? (user.id || user._id || 'auth-user') : 'guest';
+
   return (
     <Suspense
       fallback={
@@ -108,7 +112,8 @@ export default function AppRouter() {
         </div>
       }
     >
-      <RouterProvider key={user?.id} router={router} />
+      <RouterProvider key={routerKey} router={router} />
     </Suspense>
   );
 }
+

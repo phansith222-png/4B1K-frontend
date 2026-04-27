@@ -59,7 +59,13 @@ export default function MusicPlayerSection({
                                             <div className="w-1.5 h-1.5 rounded-full bg-[#1DB954]"></div>
                                             Spotify
                                         </span>
-                                        <span className="text-gray-400 ml-1">{item.popularity ? `${(item.popularity / 1000000).toFixed(1)}M` : '1.2M'} Streams</span>
+                                        <span className="text-gray-400 ml-1">
+                                            {item.popularity 
+                                                ? (item.popularity >= 1000000 
+                                                    ? `${(item.popularity / 1000000).toFixed(1)}M` 
+                                                    : `${(item.popularity / 1000).toFixed(0)}K`)
+                                                : 'HOT'} Streams
+                                        </span>
                                     </div>
                                 </div>
                             </button>

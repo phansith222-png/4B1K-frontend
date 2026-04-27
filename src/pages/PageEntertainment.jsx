@@ -31,7 +31,8 @@ export default function PageEntertainment() {
         currentSongIndex,
         controls,
         playSongs,
-        songs: globalSongs
+        songs: globalSongs,
+        artist: globalArtist
     } = usePlayerStore();
 
     useEffect(() => {
@@ -171,10 +172,10 @@ export default function PageEntertainment() {
                         youtubeSongs={youtubeSongs}
                         spotifySongs={spotifySongs}
                         allChartSongs={allChartSongs}
-                        currentSongIndex={globalSongs === allChartSongs ? currentSongIndex : -1}
-                        isPlaying={globalSongs === allChartSongs ? isPlaying : false}
+                        currentSongIndex={globalArtist?.artistName === 'Top Charts' ? currentSongIndex : -1}
+                        isPlaying={globalArtist?.artistName === 'Top Charts' ? isPlaying : false}
                         handleSongSelect={(idx) => {
-                            if (globalSongs !== allChartSongs) {
+                            if (globalArtist?.artistName !== 'Top Charts') {
                                 playSongs({ artistName: 'Top Charts', profileImage: allChartSongs[idx]?.coverImage }, allChartSongs, idx);
                             } else if (controls?.handleSongSelect) {
                                 controls.handleSongSelect(idx);
