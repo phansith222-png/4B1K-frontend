@@ -52,12 +52,18 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
           <div className="flex flex-col items-end max-w-[75%]">
             {/* Bubble */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 6 }}
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 500, 
+                damping: 30,
+                mass: 0.8
+              }}
               className="cursor-pointer relative"
               onClick={() => isImageMessage && onImageClick?.(imageUrl)}
             >
+              <div className={`${msg.isOptimistic ? "opacity-70 scale-[0.98]" : "opacity-100"} transition-all duration-300`}>
               {isImageMessage ? (
                 <div className="relative overflow-hidden rounded-[20px] rounded-br-[4px] border border-[#7000FF]/50 shadow-[0_0_20px_rgba(112,0,255,0.2)]">
                   <img
@@ -95,13 +101,31 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
                   )}
                 </div>
               )}
+              </div>
             </motion.div>
 
-            {/* Timestamp */}
-            <span className="text-[9px] text-gray-500 font-bold mt-1.5 mr-1 uppercase tracking-widest opacity-80">
-              {time}
-              {!msg.isSent && <span className="ml-2 animate-pulse text-[#00E5FF]">• transmitting</span>}
-            </span>
+            {/* FB Style Status & Timestamp */}
+            <div className="flex items-center gap-1.5 mt-1.5 mr-1">
+              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest opacity-60">
+                {time}
+              </span>
+              
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex items-center justify-center"
+              >
+                {msg.isOptimistic ? (
+                  <div className="w-3 h-3 rounded-full border-[1.5px] border-white/20 border-t-[#00E5FF] animate-spin" />
+                ) : (
+                  <div className="w-3.5 h-3.5 rounded-full bg-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.3)]">
+                    <svg className="w-2.5 h-2.5 text-[#0B0C10]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  </div>
+                )}
+              </motion.div>
+            </div>
           </div>
         </div>
       ) : (

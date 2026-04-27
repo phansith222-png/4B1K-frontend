@@ -44,7 +44,6 @@ export default function ChatPage() {
 
   const scrollRef = useRef(null);
   const chatContainerRef = useRef(null);
-  const prevLenRef = useRef(0);
   const typingTimer = useRef(null);
   const emojiRef = useRef(null);
   const inputRef = useRef(null);
@@ -199,13 +198,10 @@ export default function ChatPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showEmoji]);
 
-  const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ block: 'end' });
-    } else if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, []);
+  const openChat = (id) => {
+    setActiveChat(id);
+    if (isMobile) setShowSidebar(false);
+  };
 
   const handleReceive = useCallback((msg) => {
     const rid = String(msg.chatRoomId);
@@ -304,7 +300,6 @@ export default function ChatPage() {
     }
 
     let isCurrent = true;
-    prevLenRef.current = 0;
     setTypingText("");
     setUnreadCounts((u) => ({ ...u, [activeChat]: 0 }));
     setMessages([]); 
@@ -314,11 +309,6 @@ export default function ChatPage() {
       .then((r) => {
         if (!isCurrent) return;
         setMessages(r.data.map((m) => ({ ...m, isSent: true })));
-        
-        // Robust first-time scroll
-        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 50);
-        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 200);
-        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 500);
 
         if (r.data.length > 0 && socket) {
           const lastMsg = r.data[r.data.length - 1];
@@ -339,35 +329,7 @@ export default function ChatPage() {
     }
     
     return () => { isCurrent = false; };
-  }, [socket, activeChat, myUserId, scrollToBottom]);
-
-  // Ref to track if we should force-scroll on next render (when we send a msg)
-  const forceScrollRef = useRef(false);
-
-  useEffect(() => {
-    if (messages.length === 0) return;
-
-    const container = chatContainerRef.current;
-    if (!container) return;
-
-    if (forceScrollRef.current) {
-      forceScrollRef.current = false;
-      // Use two rAF frames to ensure Framer Motion layout animations settle
-      const raf = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
-      });
-      return () => cancelAnimationFrame(raf);
-    }
-
-    // For incoming messages — only scroll if already near bottom
-    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-    if (distanceFromBottom < 400) {
-      const raf = requestAnimationFrame(() => scrollToBottom());
-      return () => cancelAnimationFrame(raf);
-    }
-  }, [messages, scrollToBottom]);
+  }, [socket, activeChat, myUserId]);
 
   const send = async (e) => {
     e?.preventDefault();
@@ -405,8 +367,6 @@ export default function ChatPage() {
         sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
       };
 
-      // Mark scroll BEFORE setMessages so the useEffect catches it
-      forceScrollRef.current = true;
       setMessages((ms) => [...ms, payload]);
 
       // Update the room's last activity date
@@ -474,7 +434,6 @@ export default function ChatPage() {
     });
   }, [contacts, search, tab, myUserId, unreadCounts]);
 
-  const openChat = (id) => { setActiveChat(id); setShowSidebar(false); };
   const goBack = () => { setActiveChat(null); setShowSidebar(true); };
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 

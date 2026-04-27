@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatBubble from "./ChatBubble";
 import EmojiPicker from "./EmojiPicker";
@@ -23,7 +23,8 @@ const TypingDots = () => (
   </span>
 );
 
-export default function ChatArea({
+// ── Aggressive Scroll Anchor ──
+const ChatArea = React.memo(({
   activeChat,
   showSidebar,
   isGroup,
@@ -59,10 +60,25 @@ export default function ChatArea({
   handleMessageImageChange,
   pendingImage,
   setPendingImage
-}) {
+}) => {
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
+
+  // Force scroll to bottom on EVERY render to fight against layout shifts
+  useLayoutEffect(() => {
+    if (chatContainerRef.current) {
+      const container = chatContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+    }
+  });
+
+  // Secondary backup for messages changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+    }
+  }, [messagesGrouped]);
   return (
     <motion.main
       initial={false}
@@ -259,6 +275,7 @@ export default function ChatArea({
             <div 
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto px-2 md:px-4 py-8 min-h-0 relative chat-no-scrollbar"
+              style={{ overflowAnchor: 'auto' }}
             >
               <style>{`
                 .chat-no-scrollbar::-webkit-scrollbar { display: none; }
@@ -273,18 +290,8 @@ export default function ChatArea({
                 <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-[#00E5FF] rounded-full blur-[150px] opacity-[0.07]" />
               </div>
 
-              <motion.div
-                initial="hidden"
-                animate="show"
-                className="w-full flex flex-col gap-6 min-h-full relative z-10"
-              >
-                <motion.div
-                  variants={{
-                    show: { transition: { staggerChildren: 0.08, delayChildren: 0.4, staggerDirection: -1 } }
-                  }}
-                  className="flex flex-col gap-4"
-                >
-                  <AnimatePresence mode="wait">
+              <div className="w-full flex flex-col gap-6 min-h-full relative z-10">
+                <div className="flex flex-col gap-4">
                     {isLoading ? (
                       // Skeleton for Messages
                       [...Array(4)].map((_, i) => (
@@ -317,10 +324,10 @@ export default function ChatArea({
                         />
                       ))
                     )}
-                  </AnimatePresence>
-                </motion.div>
-                <div ref={scrollRef} className="h-4 w-full shrink-0" />
-              </motion.div>
+                </div>
+                {/* Hidden Anchor for Scrolling */}
+                <div ref={scrollRef} className="h-1 w-full shrink-0 mt-4" />
+              </div>
             </div>
 
             {/* ── Locked Footer/Input (Solid Style) ── */}
@@ -360,11 +367,11 @@ export default function ChatArea({
                   )}
                 </AnimatePresence>
 
-                <div className="relative bg-[#1A1C23]/95 backdrop-blur-2xl border border-white/20 p-2 rounded-[28px] shadow-[0_25px_60px_rgba(0,0,0,0.8)] focus-within:border-[#00E5FF]/50 focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] transition-all duration-500 ring-1 ring-white/5">
-                  <div className="flex items-end gap-2" ref={emojiRef}>
+                <div className="relative group bg-[#1A1C23]/80 backdrop-blur-3xl border border-white/10 p-2 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] focus-within:border-[#00E5FF]/60 focus-within:shadow-[0_0_30px_rgba(0,229,255,0.2)] focus-within:ring-1 focus-within:ring-[#00E5FF]/30 transition-all duration-500">
+                  <div className="flex items-center gap-2" ref={emojiRef}>
                     
                     {/* ── Left: Image Attachment Button ── */}
-                    <div className="shrink-0 self-end pb-1">
+                    <div className="shrink-0 flex items-center justify-center pl-2">
                       <input
                         type="file"
                         ref={messageImageInputRef}
@@ -373,14 +380,14 @@ export default function ChatArea({
                         onChange={handleMessageImageChange}
                       />
                       <motion.button
-                        whileHover={{ scale: 1.1 }}
+                        whileHover={{ scale: 1.1, color: "#00E5FF" }}
                         whileTap={{ scale: 0.9 }}
                         type="button"
                         onClick={() => messageImageInputRef?.current?.click()}
-                        className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 ${pendingImage ? "text-[#00E5FF] bg-[#00E5FF]/10 border border-[#00E5FF]/30" : "text-gray-500 hover:text-[#00E5FF] hover:bg-white/5 border border-transparent hover:border-white/10"}`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${pendingImage ? "text-[#00E5FF] bg-[#00E5FF]/10 border border-[#00E5FF]/30 shadow-[0_0_15px_rgba(0,229,255,0.2)]" : "text-gray-500 hover:bg-white/5"}`}
                         title="Attach Image"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
                       </motion.button>
@@ -421,19 +428,21 @@ export default function ChatArea({
                         }}
                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); e.target.style.height = 'auto'; } }}
                         placeholder={pendingImage ? "Add a caption..." : "Type your message here..."}
-                        className="w-full bg-transparent px-3 py-4 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar"
+                        className="w-full bg-transparent px-3 py-3.5 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar leading-relaxed"
                       />
                     </div>
 
                     {/* ── Right: Emoji + Send ── */}
-                    <div className="flex items-center gap-1 shrink-0 self-end pb-1">
-                      <button
+                    <div className="flex items-center gap-1.5 shrink-0 pr-1">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         type="button"
                         onClick={() => setShowEmoji((v) => !v)}
-                        className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      </button>
+                      </motion.button>
 
                       <motion.button
                         whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(112,0,255,0.5)" }}
@@ -441,7 +450,7 @@ export default function ChatArea({
                         type="button"
                         onClick={send}
                         disabled={(!inputText.trim() && !pendingImage) || !connected}
-                        className={`w-11 h-11 rounded-[18px] flex items-center justify-center shrink-0 transition-all duration-300
+                        className={`w-11 h-11 rounded-[20px] flex items-center justify-center shrink-0 transition-all duration-300
                           ${(inputText.trim() || pendingImage) && connected 
                             ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff] text-white shadow-[0_8px_20px_rgba(112,0,255,0.4)]" 
                             : "bg-white/5 text-gray-700 cursor-not-allowed"}`}
@@ -501,4 +510,6 @@ export default function ChatArea({
       </AnimatePresence>
     </motion.main>
   );
-}
+});
+
+export default ChatArea;
