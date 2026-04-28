@@ -11,6 +11,8 @@ import useUIStore from '../stores/uiStore';
 import NavSearchBar from './navbar/NavSearchBar';
 import NavArtistMenu from './navbar/NavArtistMenu';
 import useSearchStore from '../stores/searchStore';
+import { getImageUrl } from '../utils/imageUtils';
+import useNotificationStore from '../stores/notificationStore';
 
 export default function NavbarUser({ isLanding = false }) {
     const navigate = useNavigate();
@@ -23,6 +25,8 @@ export default function NavbarUser({ isLanding = false }) {
 
     const [isArtistMenuOpen, setIsArtistMenuOpen] = useState(false);
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+    const [isNotifyOpen, setIsNotifyOpen] = useState(false);
+    const notifyRef = useRef(null);
     const [language, setLanguage] = useState('EN');
     const { isSearchOpen } = useSearchStore();
     const { isNavbarVisible } = useUIStore();
@@ -49,6 +53,8 @@ export default function NavbarUser({ isLanding = false }) {
                 setIsArtistMenuOpen(false);
             if (profileRef.current && !profileRef.current.contains(e.target))
                 setIsProfileMenuOpen(false);
+            if (notifyRef.current && !notifyRef.current.contains(e.target))
+                setIsNotifyOpen(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
@@ -77,6 +83,7 @@ export default function NavbarUser({ isLanding = false }) {
     const handleNavigate = (path) => {
         setIsArtistMenuOpen(false);
         setIsProfileMenuOpen(false);
+        setIsNotifyOpen(false);
         navigate(path);
     };
 
@@ -99,6 +106,22 @@ export default function NavbarUser({ isLanding = false }) {
         ? `${user.firstName} ${user.lastName}`
         : user?.username || 'User';
 
+    const { notifications: storeNotifications } = useNotificationStore();
+
+    // 🔔 Combine Store Notifications (Social) + Top Events
+    const socialNotifications = [...storeNotifications].sort((a, b) => new Date(b.time) - new Date(a.time));
+    const eventNotifications = topEvents.slice(0, 3).map(e => ({
+        id: `event-${e.id}`,
+        type: 'event',
+        title: e.eventName,
+        desc: e.description || 'New concert frequency detected.',
+        img: e.posterImage || e.coverImage || e.image,
+        time: e.startTime,
+        link: `/new-event?eventId=${e.id}`
+    }));
+
+    const notifications = [...socialNotifications, ...eventNotifications];
+
     return (
         <div className="relative">
             <style>{`
@@ -109,6 +132,18 @@ export default function NavbarUser({ isLanding = false }) {
                 .bar-4{background-color:#FFFFFF;color:#FFFFFF;animation:smoothWave 2.5s infinite ease-in-out 1.2s}
                 .text-shine{background:linear-gradient(120deg,#FFF 0%,#FFF 40%,#00E5FF 50%,#FFF 60%,#FFF 100%);background-size:200% auto;color:transparent;-webkit-background-clip:text;background-clip:text;animation:shine 4s linear infinite}
                 @keyframes shine{to{background-position:200% center}}
+                .custom-scrollbar-smooth {
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(0, 229, 255, 0.2) transparent;
+                    scroll-behavior: smooth;
+                }
+                .custom-scrollbar-smooth::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar-smooth::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar-smooth::-webkit-scrollbar-thumb { 
+                    background: rgba(0, 229, 255, 0.2); 
+                    border-radius: 20px;
+                }
+                .custom-scrollbar-smooth::-webkit-scrollbar-thumb:hover { background: rgba(0, 229, 255, 0.4); }
             `}</style>
 
             <motion.header
@@ -240,6 +275,121 @@ export default function NavbarUser({ isLanding = false }) {
                                 </svg>
                             </button>
 
+                            {/* 🔔 Notification Button with Dropdown */}
+                            <div className="relative" ref={notifyRef}>
+                                <button
+                                    onClick={() => setIsNotifyOpen(v => !v)}
+                                    className={`hidden xl:flex items-center justify-center w-11 h-11 rounded-2xl border transition-all duration-300 relative group ${
+                                        isNotifyOpen 
+                                        ? 'bg-[#00E5FF]/10 border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.3)]' 
+                                        : 'bg-white/5 border-white/10 hover:border-[#00E5FF]/50 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <svg className={`w-5 h-5 transition-all duration-300 ${isNotifyOpen ? 'text-[#00E5FF]' : 'text-gray-400 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                    </svg>
+                                    {/* 🔴 Dynamic Notification Badge */}
+                                    {storeNotifications.filter(n => !n.isRead).length > 0 && (
+                                        <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-[#0B0C10] flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.5)] z-10">
+                                            <span className="text-[9px] font-black text-white leading-none">
+                                                {storeNotifications.filter(n => !n.isRead).length > 9 ? '9+' : storeNotifications.filter(n => !n.isRead).length}
+                                            </span>
+                                        </div>
+                                    )}
+                                </button>
+
+                                <AnimatePresence>
+                                    {isNotifyOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-4 w-80 bg-[#1A1C23]/95 backdrop-blur-2xl rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden z-50"
+                                        >
+                                            <div className="px-5 py-4 border-b border-white/5 bg-gradient-to-r from-white/5 to-transparent flex justify-between items-center">
+                                                <h3 className="text-sm font-black text-white uppercase tracking-widest">Incoming Frequencies</h3>
+                                                {notifications.length > 0 && (
+                                                    <span className="text-[10px] font-bold text-[#00E5FF] px-2 py-0.5 bg-[#00E5FF]/10 rounded-full border border-[#00E5FF]/20 animate-pulse">
+                                                        {notifications.length} NEW
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="max-h-[400px] overflow-y-auto custom-scrollbar-smooth">
+                                                {notifications.length > 0 ? (
+                                                    notifications.map((item, idx) => (
+                                                        <div 
+                                                            key={item.id || idx}
+                                                            onClick={() => {
+                                                                // ✅ Mark as read
+                                                                if (item.id && typeof item.id === 'number') {
+                                                                    useNotificationStore.getState().markAsRead(item.id);
+                                                                }
+                                                                // 🚀 Add timestamp to force scroll logic even if URL is the same
+                                                                const forceLink = item.link.includes('?') 
+                                                                    ? `${item.link}&t=${Date.now()}` 
+                                                                    : `${item.link}?t=${Date.now()}`;
+                                                                
+                                                                navigate(forceLink);
+                                                                setIsNotifyOpen(false);
+                                                            }}
+                                                            className={`p-4 border-b border-white/5 hover:bg-white/[0.03] transition-all duration-300 cursor-pointer group ${!item.isRead && item.type !== 'event' ? 'bg-[#00E5FF]/5' : 'opacity-60'}`}
+                                                        >
+                                                            <div className="flex gap-3">
+                                                                <div className="shrink-0 relative">
+                                                                    <div className="w-12 h-12 rounded-xl border border-white/10 overflow-hidden shadow-lg shadow-black/50 relative bg-white/5">
+                                                                        <img 
+                                                                            src={getImageUrl(item.img)} 
+                                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                            alt="" 
+                                                                        />
+                                                                    </div>
+                                                                    {/* Type Badge Icon - Nudged slightly up ("ขึ้นตรงๆ") */}
+                                                                    <div className={`absolute bottom-0 -right-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-[#0B0C10] shadow-[0_2px_8px_rgba(0,0,0,0.8)] z-50 ${
+                                                                        item.type === 'like' ? 'bg-gradient-to-br from-pink-400 to-pink-600' : 
+                                                                        item.type === 'comment' ? 'bg-gradient-to-br from-blue-400 to-blue-600' : 'bg-gradient-to-br from-[#00E5FF] to-[#008CFF]'
+                                                                    }`}>
+                                                                        {item.type === 'like' && <svg className="w-3 h-3 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>}
+                                                                        {item.type === 'comment' && <svg className="w-3 h-3 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"/></svg>}
+                                                                        {item.type === 'event' && <svg className="w-3 h-3 text-black drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg>}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-[13px] font-black text-white group-hover:text-[#00E5FF] transition-colors truncate">
+                                                                        {item.title}
+                                                                    </p>
+                                                                    <p className="text-[11px] text-gray-400 mt-1 line-clamp-2 italic">
+                                                                        {item.desc}
+                                                                    </p>
+                                                                    <p className={`text-[9px] font-bold mt-2 uppercase tracking-tighter ${
+                                                                        item.type === 'like' ? 'text-pink-500' : 
+                                                                        item.type === 'comment' ? 'text-blue-500' : 'text-[#00E5FF]'
+                                                                    }`}>
+                                                                        {item.type.toUpperCase()} • {new Date(item.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-10 text-center text-gray-500">
+                                                        <p className="text-sm italic">No new frequencies detected...</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button 
+                                                onClick={() => navigate('/new-event')}
+                                                className="w-full py-4 bg-white/5 text-[11px] font-black text-gray-400 hover:text-white hover:bg-white/10 transition-all uppercase tracking-widest border-t border-white/5"
+                                            >
+                                                View All Chronicles
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
                             {/* Enhanced Chat Button (Desktop Only) */}
                             <button
                                 onClick={() => navigate('/chat')}
@@ -256,8 +406,18 @@ export default function NavbarUser({ isLanding = false }) {
                             {/* Profile dropdown */}
                             <div className="relative" ref={profileRef}>
                                 <button onClick={() => setIsProfileMenuOpen(v => !v)} className="flex items-center gap-2 focus:outline-none group">
-                                    <div className="w-[40px] h-[40px] rounded-full border-2 border-white/20 group-hover:border-[#00E5FF] overflow-hidden bg-[#1A1C23] transition-colors">
-                                        <img src={user.profileImage || `https://ui-avatars.com/api/?name=${displayName}&background=1A1C23&color=00E5FF`} alt="Profile" className="w-full h-full object-cover" />
+                                    <div className="relative">
+                                        <div className="w-[40px] h-[40px] rounded-full border-2 border-white/20 group-hover:border-[#00E5FF] overflow-hidden bg-[#1A1C23] transition-colors">
+                                            <img src={user.profileImage || `https://ui-avatars.com/api/?name=${displayName}&background=1A1C23&color=00E5FF`} alt="Profile" className="w-full h-full object-cover" />
+                                        </div>
+                                        {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true */}
+                                        {(true) && (
+                                            <div className="absolute -bottom-0.5 -left-0.5 w-4 h-4 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_10px_rgba(0,229,255,0.5)] z-10">
+                                                <svg className="w-2.5 h-2.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                                                </svg>
+                                            </div>
+                                        )}
                                     </div>
                                     <motion.svg animate={{ rotate: isProfileMenuOpen ? 0 : 180 }} className={`w-4 h-4 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
@@ -274,7 +434,15 @@ export default function NavbarUser({ isLanding = false }) {
                                             className="absolute right-0 mt-4 w-60 bg-[#1A1C23]/95 backdrop-blur-2xl rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 py-2 z-50"
                                         >
                                             <div className="px-5 py-4 border-b border-white/5 mb-2 bg-gradient-to-b from-white/5 to-transparent">
-                                                <p className="text-sm font-black text-white truncate uppercase tracking-wider">{displayName}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-black text-white truncate uppercase tracking-wider">{displayName}</p>
+                                                    {/* MOCK: true */}
+                                                    {true && (
+                                                        <svg className="w-4 h-4 text-[#00E5FF] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                                                        </svg>
+                                                    )}
+                                                </div>
                                                 <p className="text-[10px] font-bold text-gray-400 truncate mt-1 tracking-widest">{user?.email || 'No email provided'}</p>
                                             </div>
                                             <div className="flex flex-col px-2">

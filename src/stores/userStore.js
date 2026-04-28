@@ -50,9 +50,18 @@ const useUserStore = create(
 
       editProfile: async (body) => {
         try {
-          const resp = await editProfile(body)
-          set({ user: resp.data.user });
-          return { success: true };
+          const resp = await editProfile(body);
+          // 🛡️ Safe Update: Check multiple possible response structures
+          const updatedUser = resp.data?.user || resp.data;
+          
+          if (updatedUser) {
+            set((state) => ({
+              user: { ...state.user, ...updatedUser },
+              isAuthenticated: true
+            }));
+            return { success: true };
+          }
+          return { success: false, error: "Failed to update profile data" };
         } catch (error) {
           const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
           return { success: false, error: errorMessage };

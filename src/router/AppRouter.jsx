@@ -48,7 +48,7 @@ const combinedRouter = createBrowserRouter([
       { path: "home", element: <AuthProtectedRoute element={<HomePage />} /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
-      { path: "editprofile", element: <AuthProtectedRoute element={<EditProfile />} /> },
+      { path: "editprofile", element: <EditProfile /> },
       { path: "new-event", element: <NewEvent /> },
       { path: "chat", element: <AuthProtectedRoute element={<Chat />} /> },
       { path: "pop", element: <PagePop /> },

@@ -101,12 +101,12 @@ export default function HeroSection({ artist, events }) {
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
-                        className="relative w-[380px] h-[480px] md:w-[500px] md:h-[650px]"
+                        className="relative w-[320px] h-[320px] md:w-[500px] md:h-[500px]"
                     >
                         {/* 💎 Modern Minimalism & Glass - Elegant Frames (3 Layers) */}
-                        <div className="absolute inset-0 border border-white/10 rounded-[2.5rem] z-0 scale-[1.02] backdrop-blur-[2px]"></div>
-                        <div className="absolute -inset-4 border border-[#d83bb6]/30 rounded-[3rem] z-0 translate-x-2 translate-y-2 opacity-30 backdrop-blur-[1px]"></div>
-                        <div className="absolute -inset-8 border border-[#d83bb6]/20 rounded-[3.5rem] z-0 translate-x-4 translate-y-4 opacity-10 backdrop-blur-[0.5px]"></div>
+                        <div className="absolute inset-0 border border-white/10 rounded-full z-0 scale-[1.02] backdrop-blur-[2px]"></div>
+                        <div className="absolute -inset-4 border border-[#d83bb6]/30 rounded-full z-0 translate-x-2 translate-y-2 opacity-30 backdrop-blur-[1px]"></div>
+                        <div className="absolute -inset-8 border border-[#d83bb6]/20 rounded-full z-0 translate-x-4 translate-y-4 opacity-10 backdrop-blur-[0.5px]"></div>
                         
                         {/* ✨ Floating Sparkles around frames */}
                         {[...Array(6)].map((_, i) => (
@@ -123,7 +123,7 @@ export default function HeroSection({ artist, events }) {
                         ))}
 
                         {/* Soft Ambient Shadow behind image */}
-                        <div className="absolute inset-0 bg-[#d83bb6] opacity-10 blur-[60px] rounded-[2.5rem] z-0 scale-90"></div>
+                        <div className="absolute inset-0 bg-[#d83bb6] opacity-10 blur-[60px] rounded-full z-0 scale-90"></div>
 
                         {/* Main Image Container */}
                         <div className="relative w-full h-full rounded-full overflow-hidden z-10 border-2 border-white/20 shadow-[0_0_80px_rgba(216,59,182,0.3)] bg-[#0A0A0A] group transition-all duration-500 hover:shadow-[0_0_120px_rgba(216,59,182,0.5)]">
@@ -131,7 +131,7 @@ export default function HeroSection({ artist, events }) {
                                 src={artist.profileImage || "https://images.unsplash.com/photo-1453733190371-0a9bedd82893?q=80&w=1200&auto=format&fit=crop"}
                                 alt={artist.artistName}
                                 loading="lazy"
-                                className="absolute inset-0 w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[15s] ease-out group-hover:rotate-1"
+                                className="absolute inset-0 w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[15s] ease-out group-hover:rotate-1"
                             />
                         </div>
 

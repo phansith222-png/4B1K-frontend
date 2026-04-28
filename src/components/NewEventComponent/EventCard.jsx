@@ -40,6 +40,7 @@ export default function EventCard({ event, index }) {
     return (
         <Reveal key={index} delay={(index % 5) * 0.1} effect="fade-up">
             <div
+                id={`event-item-${event.id}`}
                 onClick={() => navigate(`/nearby-events?search=${encodeURIComponent(artistName)}&eventId=${event.id}`)}
                 className="group cursor-pointer flex flex-col bg-[#12141A]/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-4 hover:bg-[#1A1C23]/60 hover:border-[#7000FF]/40 transition-all duration-500 shadow-xl hover:shadow-[0_0_40px_rgba(112,0,255,0.1)] hover:-translate-y-3 h-full relative overflow-hidden"
             >

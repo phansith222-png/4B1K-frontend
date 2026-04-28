@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, SlidersHorizontal, Flame, Sparkles } from 'lucide-react';
 import { getAllArtists } from '../api/artist';
@@ -22,6 +22,7 @@ export default function CommunityHomePage() {
   const [activeTab, setActiveTab] = useState('All');
   const [selectedArtists, setSelectedArtists] = useState([]);
   const [isArtistPickerOpen, setIsArtistPickerOpen] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const { isNavbarVisible, setNavbarVisible } = useUIStore();
@@ -59,6 +60,49 @@ export default function CommunityHomePage() {
     setIsArtistPickerOpen(false);
   };
 
+  // 🎯 Scroll to Post from Notification (Robust version)
+  useEffect(() => {
+    const postId = searchParams.get('postId');
+    if (postId) {
+      // Ensure we are on "All" tab so the post is likely to be rendered
+      setActiveTab('All');
+      setSelectedArtists([]);
+
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const scrollInterval = setInterval(() => {
+        const element = document.getElementById(`post-${postId}`);
+        const container = document.getElementById('main-scroll-container');
+        
+        if (element && container) {
+          // 🛑 Stop searching immediately once found
+          clearInterval(scrollInterval);
+          
+          // ⏳ Small delay to let the DOM settle for maximum smoothness
+          setTimeout(() => {
+            const targetScroll = element.offsetTop - 100;
+            container.scrollTo({
+              top: targetScroll,
+              behavior: 'smooth'
+            });
+            
+            // ✨ Premium Highlight Effect
+            element.classList.add('ring-2', 'ring-[#00E5FF]', 'ring-offset-4', 'ring-offset-[#13141C]', 'shadow-[0_0_50px_rgba(0,229,255,0.4)]', 'transition-all', 'duration-700');
+            setTimeout(() => {
+              element.classList.remove('ring-2', 'ring-[#00E5FF]', 'ring-offset-4', 'ring-offset-[#13141C]', 'shadow-[0_0_50px_rgba(0,229,255,0.4)]');
+            }, 3000);
+          }, 100);
+        }
+        
+        attempts++;
+        if (attempts >= maxAttempts) clearInterval(scrollInterval);
+      }, 300); // Faster check, but stops sooner
+
+      return () => clearInterval(scrollInterval);
+    }
+  }, [searchParams]);
+
   const toggleArtist = (artist) => {
     setSelectedArtists(prev => {
       const already = prev.find(a => a.id === artist.id);
@@ -69,9 +113,9 @@ export default function CommunityHomePage() {
   };
 
   return (
-    <div id="community-page" className="h-screen bg-[#13141C] text-white font-sans overflow-hidden">
+    <div id="community-page" className="h-screen bg-[#13141C] text-white font-sans overflow-hidden flex flex-row">
       
-      {/* 🔮 DYNAMIC LASER BACKGROUND ANIMATIONS (CSS Optimized for Performance) */}
+      {/* 🔮 DYNAMIC LASER BACKGROUND ANIMATIONS */}
       <style>{`
         @keyframes float-magenta {
           0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.08; }
@@ -90,26 +134,18 @@ export default function CommunityHomePage() {
       `}</style>
 
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Magenta Bloom */}
         <div 
           style={{ animation: 'float-magenta 15s ease-in-out infinite' }}
           className="bg-bloom absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#FF00FF]/20 blur-[120px] rounded-full"
         />
-        {/* Purple Pulse */}
         <div 
           style={{ animation: 'float-purple 10s ease-in-out infinite' }}
           className="bg-bloom absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#7000FF]/15 blur-[200px] rounded-full"
         />
       </div>
 
-      {/* 🔮 MAIN CONTENT LAYOUT - Restore Desktop Behavior */}
-      <main 
-        id="main-scroll-container" 
-        onScroll={handleScroll}
-        className="w-full h-full flex flex-col xl:flex-row justify-between items-start relative z-10 pt-[70px] md:pt-[80px] pb-32 xl:pb-0 overflow-y-auto hide-scrollbar overscroll-contain transform-gpu"
-      >
-        {/* --- 👈 LEFT SIDEBAR (Pure Black + Navbar Theme Underglow) --- */}
-        <aside className="hidden xl:block w-[380px] shrink-0 sticky top-0 h-screen relative group/left">
+      {/* --- 👈 LEFT SIDEBAR --- */}
+      <aside className="hidden xl:block w-[380px] shrink-0 h-screen relative group/left z-30 overscroll-none">
           {/* Solid Black Background */}
           <div className="absolute inset-0 bg-black z-10" />
           
@@ -147,7 +183,7 @@ export default function CommunityHomePage() {
           <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10">
             <NavigationSidebar />
             
-            <div className="pt-10 border-t border-white/5 mt-10">
+            <div className="pt-6 border-t border-white/5 mt-6">
               <div className="flex items-center gap-4 mb-8 group">
                 <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
                   <SlidersHorizontal size={20} />
@@ -168,7 +204,12 @@ export default function CommunityHomePage() {
           </div>
         </aside>
 
-        {/* --- 📱 CENTER FEED (Primary scroll content) --- */}
+      {/* --- 📱 CENTER FEED (Scrollable) --- */}
+      <main 
+        id="main-scroll-container" 
+        onScroll={handleScroll}
+        className="flex-1 h-screen relative z-10 overflow-y-auto hide-scrollbar overscroll-none transform-gpu pt-[70px] md:pt-[80px] pb-32 xl:pb-10"
+      >
         <div className="flex-1 max-w-[820px] min-w-0 relative z-10 w-full group/feed px-0 md:px-10 mx-auto">
           {/* Subtle Top Fade (Overlay) */}
           <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#0B0C10] to-transparent z-20 pointer-events-none" />
@@ -241,9 +282,10 @@ export default function CommunityHomePage() {
             <PostContainer activeTab={activeTab} selectedArtistIds={selectedArtists.map(a => a.id)} />
           </div>
         </div>
+      </main>
 
-        {/* --- 👉 RIGHT SIDEBAR (Pure Black + Navbar Theme Underglow) --- */}
-        <aside className="hidden xl:block w-[380px] shrink-0 sticky top-0 h-screen relative group/right">
+      {/* --- 👉 RIGHT SIDEBAR --- */}
+      <aside className="hidden xl:block w-[380px] shrink-0 h-screen relative group/right z-30 overscroll-none">
           {/* Solid Black Background */}
           <div className="absolute inset-0 bg-black z-10" />
           
@@ -278,9 +320,9 @@ export default function CommunityHomePage() {
           </div>
           <div className="absolute inset-y-0 left-[-40px] w-[150px] bg-gradient-to-r from-transparent via-[#7000FF]/10 to-transparent blur-[60px] z-0 pointer-events-none opacity-40" />
 
-          <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10 space-y-12">
+          <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10 space-y-4">
             <div>
-              <div className="flex items-center gap-4 mb-8 group">
+              <div className="flex items-center gap-4 mb-4 group">
                 <div className="w-10 h-10 rounded-xl bg-[#FF4D00]/10 flex items-center justify-center text-[#FF4D00] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,77,0,0.2)]">
                   <Flame size={20} />
                 </div>
@@ -292,8 +334,8 @@ export default function CommunityHomePage() {
               />
             </div>
 
-            <div className="border-t border-white/5 pt-12">
-              <div className="flex items-center gap-4 mb-8 group">
+            <div className="border-t border-white/5 pt-4">
+              <div className="flex items-center gap-4 mb-4 group">
                 <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
                   <Sparkles size={20} />
                 </div>
@@ -304,9 +346,7 @@ export default function CommunityHomePage() {
           </div>
         </aside>
 
-      </main>
-
-      {/* Artist Selection Modal */}
+        {/* Artist Selection Modal */}
       {isArtistPickerOpen && (
         <ArtistPickerModal 
           selectedArtists={selectedArtists}

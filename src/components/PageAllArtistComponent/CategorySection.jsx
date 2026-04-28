@@ -120,7 +120,7 @@ export default function CategorySection({ section, navigate }) {
                                     const targetPath =
                                         section.keyword === 'pop' ? '/pop' :
                                             section.keyword === 'rock' ? '/rock' :
-                                                section.keyword === 'r&b' ? '/classic' : '/etc';
+                                                section.keyword === 'r&b' ? '/rnb' : '/etc';
                                     navigate(`${targetPath}?artistId=${artist.id}`);
                                 }}
                                 className="flex flex-col gap-5 group w-[280px] md:w-[380px] flex-shrink-0 cursor-pointer"

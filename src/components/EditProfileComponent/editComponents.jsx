@@ -35,7 +35,7 @@ export const ErrorMessage = ({ error }) => (
 );
 
 // 2. Component: ส่วนอัปโหลดรูปภาพ
-export const AvatarUpload = ({ previewImage, fileInputRef, handleImageChange }) => (
+export const AvatarUpload = ({ previewImage, fileInputRef, handleImageChange, verified }) => (
     <section className="flex flex-col items-center">
         <div className="relative group">
             <div className="absolute -inset-1.5 bg-gradient-to-r from-[#00E5FF] to-[#7000FF] rounded-full opacity-30 group-hover:opacity-100 blur-[20px] transition duration-500" />
@@ -52,15 +52,44 @@ export const AvatarUpload = ({ previewImage, fileInputRef, handleImageChange }) 
                     <span className="text-[10px] font-black uppercase tracking-widest text-white">Change</span>
                 </div>
             </div>
+
+            {/* 🛡️ Verified Badge at Bottom-Left */}
+            {verified && (
+                <motion.div 
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="absolute bottom-1 left-1 z-20 w-10 h-10 bg-[#0B0C10] rounded-full border-2 border-[#00E5FF] flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.4)]"
+                >
+                    <svg className="w-6 h-6 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </motion.div>
+            )}
+
             <input type="file" ref={fileInputRef} onChange={handleImageChange} hidden accept="image/*" />
         </div>
     </section>
 );
 
 // 3. Component: ช่องกรอกข้อมูลทั่วไป
-export const ProfileInput = ({ label, id, type = "text", placeholder, register, error, focusedInput, setFocusedInput, ...props }) => (
+export const ProfileInput = ({ label, id, type = "text", placeholder, register, error, focusedInput, setFocusedInput, verified, ...props }) => (
     <div className={inputContainer}>
-        <label className="text-[10px] font-black text-gray-400 uppercase ml-6 tracking-[0.2em] mb-1">{label}</label>
+        <div className="flex items-center gap-2">
+            <label className="text-[10px] font-black text-gray-400 uppercase ml-6 tracking-[0.2em] mb-1">{label}</label>
+            <AnimatePresence>
+                {verified && (
+                    <motion.div 
+                        initial={{ scale: 0, opacity: 0 }} 
+                        animate={{ scale: 1, opacity: 1 }} 
+                        exit={{ scale: 0, opacity: 0 }}
+                        className="mb-1"
+                    >
+                        <svg className="w-4 h-4 text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
         <div className={`animated-border-box ${focusedInput === id && !error ? 'active' : ''}`}>
             <input 
                 type={type}

@@ -7,6 +7,7 @@ import useUserStore from "../stores/userStore";
 import { uploadToCloudinary } from "../utils/uploadCloud";
 import { useCyberToast } from "./CyberToast";
 import CommentItem from "./CommentItem";
+import useNotificationStore from "../stores/notificationStore";
 
 // ── PostModal ──
 function PostModal({ post, onClose }) {
@@ -87,6 +88,17 @@ function PostModal({ post, onClose }) {
         content: commentText.trim(),
         image: uploadedImageUrl,
       });
+
+      // 🔔 Add real-time notification
+      useNotificationStore.getState().addNotification({
+        type: 'comment',
+        postId: livePost.id,
+        title: `You commented on ${livePost.user?.username}'s post`,
+        desc: commentText.trim().substring(0, 40) + (commentText.length > 40 ? '...' : ''),
+        img: uploadedImageUrl || livePost.user?.profileImage || livePost.user?.avatar,
+        link: `/home?postId=${livePost.id}`
+      });
+
       setCommentText("");
       handleRemoveImage();
     } catch (error) {
@@ -126,19 +138,37 @@ function PostModal({ post, onClose }) {
 
           {/* Original Post */}
           <div className="flex gap-4 border-b border-white/5 pb-6">
-            <img
-              src={
-                livePost.user?.profileImage ||
-                livePost.user?.avatar ||
-                `https://ui-avatars.com/api/?name=${livePost.user?.username || "User"}&background=random&color=fff`
-              }
-              className="w-8 h-8 rounded-full border border-white/10 object-cover shrink-0"
-              alt={livePost.user?.username || "User Avatar"}
-            />
+            <div className="relative shrink-0">
+              <img
+                src={
+                  livePost.user?.profileImage ||
+                  livePost.user?.avatar ||
+                  `https://ui-avatars.com/api/?name=${livePost.user?.username || "User"}&background=random&color=fff`
+                }
+                className="w-8 h-8 rounded-full border border-white/10 object-cover shrink-0"
+                alt={livePost.user?.username || "User Avatar"}
+              />
+              {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true for users, false for artists */}
+              {(true && !livePost.user?.artistName) && (
+                <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.5)] z-10">
+                  <svg className="w-1.5 h-1.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                </div>
+              )}
+            </div>
             <div>
-              <span className="font-bold text-sm text-[#00E5FF]">
-                {livePost.user?.username}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-[#00E5FF]">
+                  {livePost.user?.username}
+                </span>
+                {/* MOCK: true for users, false for artists */}
+                {(true && !livePost.user?.artistName) && (
+                  <svg className="w-3.5 h-3.5 text-[#00E5FF] drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                )}
+              </div>
               <span className="text-xs text-gray-500 flex items-center gap-1">
                   {isEdited ? (
                     <span className="italic">

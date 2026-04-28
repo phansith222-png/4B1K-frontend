@@ -130,6 +130,14 @@ export default function PostCreator() {
               className="w-11 h-11 rounded-full border border-white/20 object-cover relative z-10 shadow-lg"
               alt="User Avatar"
             />
+            {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true */}
+            {true && (
+              <div className="absolute -bottom-0.5 -left-0.5 w-4 h-4 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_10px_rgba(0,229,255,0.5)] z-20">
+                <svg className="w-2.5 h-2.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+              </div>
+            )}
           </div>
 
           {/* Trigger Text (Vibrant Gradient) */}
@@ -181,11 +189,21 @@ export default function PostCreator() {
             {/* Body */}
             <div className="p-6">
               <div className="flex gap-4 mb-4">
-                <img
-                  src={user?.profileImage || user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}`}
-                  className="w-12 h-12 rounded-full border border-white/10 object-cover"
-                  alt=""
-                />
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={user?.profileImage || user?.avatar || `https://ui-avatars.com/api/?name=${user?.username}`}
+                    className="w-12 h-12 rounded-full border border-white/10 object-cover"
+                    alt=""
+                  />
+                  {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true */}
+                  {true && (
+                    <div className="absolute -bottom-0.5 -left-0.5 w-4 h-4 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_10px_rgba(0,229,255,0.5)] z-20">
+                      <svg className="w-2.5 h-2.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 <textarea
                   autoFocus
                   value={content}

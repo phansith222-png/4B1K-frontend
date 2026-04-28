@@ -186,8 +186,8 @@ export const useSearchData = (navigate) => {
 
         const genreMap = {
             pop: "/pop", rock: "/rock",
-            "r&b": "/classic", classic: "/classic", rnb: "/classic",
-            "hip hop": "/etc", hiphop: "/etc", edm: "/etc", rap: "/etc",
+            "r&b": "/rnb", classic: "/rnb", rnb: "/rnb",
+            "hip hop": "/etc", hiphop: "/etc", edm: "/edm", rap: "/etc",
         };
 
         if (genreMap[q]) { 
