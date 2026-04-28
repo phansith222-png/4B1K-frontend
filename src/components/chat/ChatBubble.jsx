@@ -31,10 +31,6 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
 
   return (
     <div className="w-full flex flex-col">
-      {/* TEMP DEBUG — remove later */}
-      <div className="text-[9px] text-yellow-400 px-4 font-mono">
-        senderId={String(msg.senderId)} | isMe={String(isMe)}
-      </div>
       {/* ── Date Divider ── */}
       {showDateDivider && (
         <div className="flex items-center gap-3 my-4 px-2">

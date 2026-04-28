@@ -54,7 +54,7 @@ export default function GenreArtistSidebar({ artists, currentArtistId, side = 'l
   }[genre] || '#00E5FF';
 
   return (
-    <div className={`fixed top-0 bottom-0 ${side === 'left' ? 'left-6 md:left-12' : 'right-6 md:right-12'} z-40 flex flex-col items-center justify-center pointer-events-none`}>
+    <div className={`fixed top-0 bottom-0 ${side === 'left' ? 'left-6 md:left-12' : 'right-6 md:right-12'} z-40 hidden xl:flex flex-col items-center justify-center pointer-events-none`}>
       <div className="flex flex-col gap-12 relative">
         {sidebarArtists.map((artist, idx) => (
           <motion.div

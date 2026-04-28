@@ -126,11 +126,12 @@ export default function HeroSection({ artist, events }) {
                         <div className="absolute inset-0 bg-[#d83bb6] opacity-10 blur-[60px] rounded-[2.5rem] z-0 scale-90"></div>
 
                         {/* Main Image Container */}
-                        <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden z-10 border border-white/20 shadow-[0_40px_100px_rgba(0,0,0,0.9)] bg-[#1c172e] group transition-all duration-1000 hover:shadow-[0_0_80px_rgba(216,59,182,0.3)]">
+                        <div className="relative w-full h-full rounded-full overflow-hidden z-10 border-2 border-white/20 shadow-[0_0_80px_rgba(216,59,182,0.3)] bg-[#0A0A0A] group transition-all duration-500 hover:shadow-[0_0_120px_rgba(216,59,182,0.5)]">
                             <img
-                                src={artist.profileImage || "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=2000&auto=format&fit=crop"}
+                                src={artist.profileImage || "https://images.unsplash.com/photo-1453733190371-0a9bedd82893?q=80&w=1200&auto=format&fit=crop"}
                                 alt={artist.artistName}
-                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-all duration-[8s] ease-out"
+                                loading="lazy"
+                                className="absolute inset-0 w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[15s] ease-out group-hover:rotate-1"
                             />
                         </div>
 

@@ -1,42 +1,32 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Music, Users, Search, Compass } from 'lucide-react';
+import { Home, Music, Users, MessageSquare, Compass } from 'lucide-react';
 import useSearchStore from '../../stores/searchStore';
 import NavSearchBar from './NavSearchBar';
+
+import useUIStore from '../../stores/uiStore';
 
 export default function MobileBottomNav() {
     const navigate = useNavigate();
     const location = useLocation();
-
-    const { toggleSearch, isSearchOpen } = useSearchStore();
+    const { isNavbarVisible } = useUIStore();
 
     const navItems = [
         { icon: <Home size={22} />, label: 'Home', path: '/' },
         { icon: <Music size={22} />, label: 'Events', path: '/new-event' },
         { icon: <Compass size={22} />, label: 'Nearby', path: '/nearby-events' },
         { icon: <Users size={22} />, label: 'Artists', path: '/artists' },
-        { icon: <Search size={22} />, label: 'Search', onClick: toggleSearch },
+        { icon: <MessageSquare size={22} />, label: 'Chat', path: '/chat' },
     ];
 
     return (
-        <div className="xl:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#0B0C10]/90 backdrop-blur-xl border-t border-white/5 pb-safe pt-2">
-            {/* 🔍 Search Popover - Slides up from Bottom Nav */}
-            <AnimatePresence>
-                {isSearchOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        className="absolute bottom-full left-0 right-0 bg-[#0B0C10]/95 backdrop-blur-2xl p-4 border-t border-white/10 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-[101]"
-                    >
-                        <div className="max-w-2xl mx-auto">
-                            <NavSearchBar navigate={navigate} />
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
+        <motion.div 
+            initial={{ y: 0 }}
+            animate={{ y: isNavbarVisible ? 0 : 100 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="xl:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#0B0C10]/90 backdrop-blur-xl border-t border-white/5 pb-safe pt-2"
+        >
             <div className="flex justify-around items-center px-4 h-16">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
@@ -63,6 +53,6 @@ export default function MobileBottomNav() {
                     );
                 })}
             </div>
-        </div>
+        </motion.div>
     );
 }

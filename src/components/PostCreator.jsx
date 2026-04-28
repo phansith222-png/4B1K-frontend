@@ -116,7 +116,7 @@ export default function PostCreator() {
       {/* ── TRIGGER BAR ── */}
       <div 
         onClick={() => setIsModalOpen(true)}
-        className="bg-[#1A1B23] border border-white/10 rounded-[32px] p-4 shadow-xl relative z-20 group/creator cursor-pointer hover:border-[#00E5FF]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
+        className="bg-[#1A1B23] border border-white/10 rounded-2xl md:rounded-[32px] p-4 shadow-xl relative z-20 group/creator cursor-pointer hover:border-[#00E5FF]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
       >
         <div className="flex items-center gap-5 px-1">
           {/* Avatar (with glow) */}

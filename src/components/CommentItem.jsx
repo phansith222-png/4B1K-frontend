@@ -136,19 +136,19 @@ function CommentItem({ comment, postId }) {
     (comment.image && !keepExistingImage);
 
 
-    // Time formatting
+  // Time formatting
   const formatDateTime = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }); 
-  // Result: "22 Apr 2026, 17:35"
-};
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    // Result: "22 Apr 2026, 17:35"
+  };
 
   return (
     <>
@@ -258,11 +258,10 @@ function CommentItem({ comment, postId }) {
                   onClick={() => !isSaving && fileInputRef.current?.click()}
                   disabled={isSaving}
                   title="แนบรูปภาพ (สูงสุด 5MB)"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors disabled:opacity-40 ${
-                    editImageFile
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors disabled:opacity-40 ${editImageFile
                       ? 'text-[#00E5FF] bg-[#00E5FF]/10'
                       : 'text-gray-400 hover:text-[#00E5FF] hover:bg-white/5'
-                  }`}
+                    }`}
                 >
                   <ImageIcon size={14} />
                   {editImageFile ? 'Change image' : 'Add image'}
@@ -296,19 +295,19 @@ function CommentItem({ comment, postId }) {
                 </span>
 
                 {/* Insert timestamp here */}
-              <span className="text-[10px] text-gray-500 flex items-center gap-1 mb-1.5 mt-0.5">
-                {isEdited ? (
-                  // Show updatedAt as date and time if edited
-                  <span className="italic">
-                    Edited : {formatDateTime(comment.updatedAt)}
-                  </span>
-                ) : (
-                  // Show createdAt as date and time if not edited
-                  <span className="italic">
-                    {formatDateTime(comment.createdAt)}
-                  </span>
-                )}
-              </span>
+                <span className="text-[10px] text-gray-500 flex items-center gap-1 mb-1.5 mt-0.5">
+                  {isEdited ? (
+                    // Show updatedAt as date and time if edited
+                    <span className="italic">
+                      Edited : {formatDateTime(comment.updatedAt)}
+                    </span>
+                  ) : (
+                    // Show createdAt as date and time if not edited
+                    <span className="italic">
+                      {formatDateTime(comment.createdAt)}
+                    </span>
+                  )}
+                </span>
 
                 {comment.content && (
                   <p className="text-gray-200 text-sm mt-0.5 whitespace-pre-wrap break-words">
@@ -329,11 +328,10 @@ function CommentItem({ comment, postId }) {
                 <div className="absolute top-2 right-2" ref={menuRef}>
                   <button
                     onClick={() => setMenuOpen((v) => !v)}
-                    className={`p-1.5 rounded-full transition-colors ${
-                      menuOpen
+                    className={`p-1.5 rounded-full transition-colors ${menuOpen
                         ? 'text-white bg-white/15'
                         : 'text-gray-400 hover:text-white hover:bg-white/10'
-                    }`}
+                      }`}
                     title="More options"
                   >
                     <MoreHorizontal size={16} />

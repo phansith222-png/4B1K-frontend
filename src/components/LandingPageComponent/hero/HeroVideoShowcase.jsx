@@ -30,10 +30,10 @@ export default function HeroVideoShowcase({ artists = [] }) {
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
-    const isMobile = React.useRef(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
-        const handleResize = () => { isMobile.current = window.innerWidth < 768; };
+        const handleResize = () => { setIsMobile(window.innerWidth < 768); };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -59,7 +59,7 @@ export default function HeroVideoShowcase({ artists = [] }) {
 
     // คำนวณตำแหน่งให้เรียงเป็น "เส้นโค้งสายรุ้ง" แบบมีองศาการเอียง
     const getLayout = (distance) => {
-        const mobile = isMobile.current;
+        const mobile = isMobile;
         const abs = Math.abs(distance);
         const sign = Math.sign(distance);
 
@@ -69,7 +69,7 @@ export default function HeroVideoShowcase({ artists = [] }) {
         const { scaleMap, yMap, xMapDesktop, xMapMobile, rotateMap } = FAN_LAYOUT_CONFIG;
 
         return {
-            x: sign * (isMobile.current ? xMapMobile[abs] : xMapDesktop[abs]),
+            x: sign * (isMobile ? xMapMobile[abs] : xMapDesktop[abs]),
             y: yMap[abs],
             scale: scaleMap[abs],
             rotate: sign * rotateMap[abs],

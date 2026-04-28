@@ -122,8 +122,9 @@ export default function HeroSection({ artist, events }) {
                         {/* Main Image Shield */}
                         <div className="relative w-full h-full rounded-full overflow-hidden z-10 border-4 border-white/10 shadow-[0_0_100px_rgba(0,229,255,0.4)] bg-[#050505] group transition-all duration-700 hover:shadow-[0_0_150px_rgba(0,229,255,0.6)]">
                             <img
-                                src={artist.profileImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2000&auto=format&fit=crop"}
+                                src={artist.profileImage || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1200&auto=format&fit=crop"}
                                 alt={artist.artistName}
+                                loading="lazy"
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-all duration-[15s] ease-out group-hover:rotate-1"
                             />
                             {/* 🔮 Spherical "Ball" Effect - Shadows and Highlights */}

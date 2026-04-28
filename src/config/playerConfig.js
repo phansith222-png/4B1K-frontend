@@ -74,15 +74,15 @@ export const BEAT_DELAY_STEP = 0.05;
  * All player colors live here — do NOT hardcode hex values in components.
  */
 export const PLAYER_COLORS = {
-    accent:      '#00F5D4',            // electric cyan — primary interactive color
-    secondary:   '#FF007F',            // hot pink / magenta — gradient partner
-    bgDark:      '#0D0F17',            // deepest background
-    bgCard:      '#12141E',            // card fill
-    bgGlass:     'rgba(18,20,30,0.85)',// glassmorphism surface
-    border:      'rgba(255,255,255,0.07)',
+    accent: '#00F5D4',            // electric cyan — primary interactive color
+    secondary: '#FF007F',            // hot pink / magenta — gradient partner
+    bgDark: '#0D0F17',            // deepest background
+    bgCard: '#12141E',            // card fill
+    bgGlass: 'rgba(18,20,30,0.85)',// glassmorphism surface
+    border: 'rgba(255,255,255,0.07)',
     borderHover: 'rgba(0,245,212,0.35)',
     textPrimary: '#F0F2FF',
-    textMuted:   '#6B7280',
+    textMuted: '#6B7280',
 };
 
 // ── Fallback Media ────────────────────────────────────────────────────────────

@@ -115,11 +115,11 @@ export default function HeroSection({ artist, events, embers }) {
                             <span className="absolute -bottom-6 left-0 text-[9px] text-white/30 font-mono tracking-tighter">LAT: 13.7563° N / LONG: 100.5018° E</span>
                         </div>
 
-                        {/* Main Image Container */}
                         <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden z-10 border-4 border-white/10 shadow-[0_0_100px_rgba(211,19,31,0.4)] bg-[#050505] group transition-all duration-700 hover:rotate-1">
                             <img
-                                src={artist.profileImage || "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=2000&auto=format&fit=crop"}
+                                src={artist.profileImage || "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=1200&auto=format&fit=crop"}
                                 alt={artist.artistName}
+                                loading="lazy"
                                 className="absolute inset-0 w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 ease-out group-hover:skew-x-1"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-80"></div>

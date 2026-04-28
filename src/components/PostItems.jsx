@@ -23,7 +23,7 @@ function PostItemInner({ post, index }) {
   const unlikePost = usePostStore((state) => state.unlikePost);
   const deletePost = usePostStore((state) => state.deletePost);
 
-//   console.log(post)
+  //   console.log(post)
   const likeCount = post.likes?.length || 0;
   const commentCount = post.comments?.length || 0;
 
@@ -52,17 +52,17 @@ function PostItemInner({ post, index }) {
   };
 
   const formatDateTime = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }); 
-  // Result: "22 Apr 2026, 17:35"
-};
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    // Result: "22 Apr 2026, 17:35"
+  };
 
   return (
     <>
@@ -75,10 +75,10 @@ function PostItemInner({ post, index }) {
           duration: 0.3,
           ease: 'easeOut',
         }}
-        className="bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
+        className="bg-white/[0.03] border-y md:border border-white/10 rounded-2xl md:rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
       >
         {/* Post Header */}
-        <div className="p-6 pb-4">
+        <div className="p-4 md:p-6 pb-2 md:pb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <img
@@ -101,7 +101,7 @@ function PostItemInner({ post, index }) {
                   )}
                 </div>
 
-          {/* 👇 Adjust time display here 👇 */}
+                {/* 👇 Adjust time display here 👇 */}
                 <span className="text-xs text-gray-500 flex items-center gap-1">
                   {isEdited ? (
                     // If edited, show updatedAt as date and time
@@ -159,6 +159,7 @@ function PostItemInner({ post, index }) {
                         Delete Post
                       </button>
 
+
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -167,7 +168,7 @@ function PostItemInner({ post, index }) {
           </div>
 
           {/* Post Content */}
-          <p className="text-gray-200 mb-4 leading-relaxed font-light text-[15px]">
+          <p className="text-gray-200 mb-4 leading-relaxed font-light text-[15px] px-1 md:px-0">
             {post.content?.split("*").map((part, i) =>
               i % 2 === 1 ? (
                 <b key={i} className="font-bold text-white">
@@ -180,12 +181,12 @@ function PostItemInner({ post, index }) {
           </p>
 
           {post.tag && (
-            <span className="text-[#d000ff] text-xs font-bold bg-[#d000ff]/10 px-3 py-1 rounded-full border border-[#d000ff]/20">
+            <span className="text-[#d000ff] text-xs font-bold bg-[#d000ff]/10 px-3 py-1 rounded-full border border-[#d000ff]/20 ml-1 md:ml-0">
               #{post.tag}
             </span>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 mt-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2 px-1 md:px-0">
             {/* Artist Tags (from postArtists) */}
             {post.postArtists?.map((item) => (
               <span
@@ -201,16 +202,14 @@ function PostItemInner({ post, index }) {
         {/* Post Images (Multiple) */}
         {post.postImages && post.postImages.length > 0 && (
           <div
-            className={`px-6 mb-4 grid gap-2 ${
-              post.postImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-            }`}
+            className={`px-0 md:px-6 mb-4 grid gap-1 md:gap-2 ${post.postImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+              }`}
           >
             {post.postImages.map((el, idx) => (
               <div
                 key={el.id || idx}
-                className={`relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 ${
-                  post.postImages.length === 1 ? 'min-h-[300px] max-h-[600px]' : 'h-[250px] sm:h-[350px]'
-                }`}
+                className={`relative overflow-hidden rounded-none md:rounded-2xl border-y md:border border-white/10 bg-white/5 ${post.postImages.length === 1 ? 'min-h-[300px] max-h-[600px]' : 'h-[250px] sm:h-[350px]'
+                  }`}
               >
                 <img
                   src={el.url}
@@ -225,7 +224,7 @@ function PostItemInner({ post, index }) {
         )}
 
         {/* Post Actions */}
-        <div className="px-6 py-4 flex justify-between items-center text-gray-400 border-t border-white/5 bg-white/[0.01]">
+        <div className="px-4 md:px-6 py-4 flex justify-between items-center text-gray-400 border-t border-white/5 bg-white/[0.01]">
           <div className="flex gap-6">
             {/* Like Button */}
             <button

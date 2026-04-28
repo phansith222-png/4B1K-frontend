@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Hooks
 import { useNavbarData } from '../hooks/useNavbarData';
 import useUserStore from '../stores/userStore';
+import useUIStore from '../stores/uiStore';
 
 // Sub-components
 import NavSearchBar from './navbar/NavSearchBar';
@@ -24,6 +25,7 @@ export default function NavbarUser({ isLanding = false }) {
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const [language, setLanguage] = useState('EN');
     const { isSearchOpen } = useSearchStore();
+    const { isNavbarVisible } = useUIStore();
 
     const {
         mainSlides, topEvents,
@@ -109,10 +111,25 @@ export default function NavbarUser({ isLanding = false }) {
                 @keyframes shine{to{background-position:200% center}}
             `}</style>
 
-            <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/98 relative z-50 border-b border-white/5 shadow-lg font-sans">
+            <motion.header 
+                initial={{ y: 0 }}
+                animate={{ y: isNavbarVisible ? 0 : -110 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="fixed top-0 left-0 right-0 flex justify-between items-center px-2 md:px-10 py-4 md:py-5 bg-[#0B0C10]/98 z-50 border-b border-white/5 shadow-lg font-sans"
+            >
 
-                {/* Left: Logo + Search */}
-                <div className="flex-1 flex justify-start items-center gap-6">
+                {/* Left: Back (Mobile) + Logo + Search (Desktop) */}
+                <div className="flex-1 flex justify-start items-center gap-1 md:gap-6">
+                    {/* Back Button - Mobile Only */}
+                    <button 
+                        onClick={() => navigate(-1)} 
+                        className="xl:hidden p-1.5 text-gray-400 hover:text-[#00E5FF] transition-colors"
+                    >
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
                     <div 
                         className="flex items-center gap-2 cursor-pointer z-50 shrink-0" 
                         onClick={(e) => {
@@ -131,12 +148,26 @@ export default function NavbarUser({ isLanding = false }) {
                         </div>
                         <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                     </div>
-
+ 
                     {/* Desktop Search Bar (Now on the left) */}
                     <div className="hidden xl:block">
                         <NavSearchBar navigate={navigate} />
                     </div>
                 </div>
+
+                {/* Mobile Search Overlay - Drops from top */}
+                <AnimatePresence>
+                    {isSearchOpen && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            className="xl:hidden absolute top-full left-0 right-0 bg-[#0B0C10]/95 backdrop-blur-2xl p-4 border-b border-white/10 shadow-2xl z-[45]"
+                        >
+                            <NavSearchBar navigate={navigate} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Center: Navigation (Absolute Center) */}
                 <motion.nav
@@ -198,11 +229,21 @@ export default function NavbarUser({ isLanding = false }) {
                             <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300">Join</button>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-4 lg:gap-6 whitespace-nowrap">
-                            {/* Enhanced Chat Button (Right side) */}
+                        <div className="flex items-center gap-3 md:gap-6 whitespace-nowrap">
+                            {/* Mobile Search Toggle */}
+                            <button 
+                                onClick={() => useSearchStore.getState().toggleSearch()}
+                                className="xl:hidden p-2 text-gray-400 hover:text-[#00E5FF] transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+
+                            {/* Enhanced Chat Button (Desktop Only) */}
                             <button
                                 onClick={() => navigate('/chat')}
-                                className="hidden md:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#7C4DFF]/10 to-[#00E5FF]/10 border border-[#00E5FF]/20 hover:border-[#00E5FF] transition-all duration-300 group relative shadow-[0_0_15px_rgba(0,229,255,0.1)] hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]"
+                                className="hidden xl:flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#7C4DFF]/10 to-[#00E5FF]/10 border border-[#00E5FF]/20 hover:border-[#00E5FF] transition-all duration-300 group relative shadow-[0_0_15px_rgba(0,229,255,0.1)] hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-[#7C4DFF] to-[#00E5FF] opacity-0 group-hover:opacity-10 transition-opacity rounded-2xl" />
                                 <svg className="w-5 h-5 text-[#00E5FF] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,7 +297,7 @@ export default function NavbarUser({ isLanding = false }) {
                         </div>
                     )}
                 </div>
-            </header>
+            </motion.header>
 
             {/* Mega-menu */}
             <NavArtistMenu

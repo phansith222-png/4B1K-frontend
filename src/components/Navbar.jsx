@@ -10,6 +10,7 @@ import NavSearchBar from './navbar/NavSearchBar';
 import NavArtistMenu from './navbar/NavArtistMenu';
 import useSearchStore from '../stores/searchStore';
 import useUserStore from '../stores/userStore';
+import useUIStore from '../stores/uiStore';
 
 export default function Navbar() {
     const { user, logout } = useUserStore();
@@ -20,6 +21,7 @@ export default function Navbar() {
     const [isArtistMenuOpen, setIsArtistMenuOpen] = useState(false);
     const [language, setLanguage] = useState('EN');
     const { isSearchOpen } = useSearchStore();
+    const { isNavbarVisible } = useUIStore();
 
     const {
         mainSlides, topEvents,
@@ -58,12 +60,8 @@ export default function Navbar() {
     useEffect(() => {
         if (!isArtistMenuOpen || topEvents.length === 0) return;
         const t = setInterval(() => {
-            setChartOrder(prev => {
-                const next = [...prev];
-                next.push(next.shift());
-                return next;
-            });
-        }, 3000);
+            setChartOrder(prev => [...prev].sort(() => Math.random() - 0.5));
+        }, 10000);
         return () => clearInterval(t);
     }, [isArtistMenuOpen, topEvents.length]);
 
@@ -88,19 +86,76 @@ export default function Navbar() {
                 @keyframes shine{to{background-position:200% center}}
             `}</style>
 
-            <header className="flex justify-between items-center px-6 md:px-10 py-4 md:py-5 bg-[#0B0C10]/98 relative z-50 border-b border-white/5 shadow-lg font-sans">
+            <motion.header 
+                initial={{ y: 0 }}
+                animate={{ y: isNavbarVisible ? 0 : -110 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="fixed top-0 left-0 right-0 flex justify-between items-center px-2 md:px-10 py-3 md:py-5 bg-[#0B0C10]/98 z-50 border-b border-white/5 shadow-lg font-sans"
+            >
 
-                {/* Left: Logo + Search */}
-                <div className="flex-1 flex justify-start items-center gap-6">
+                {/* --- 📱 MOBILE NAVBAR (3 Items Spread) --- */}
+                <div className="xl:hidden flex items-center justify-between w-full">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-1.5 text-gray-400 hover:text-[#00E5FF] transition-colors rounded-full hover:bg-white/5 shrink-0"
+                    >
+                        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <div
+                        className="flex items-center gap-1.5 cursor-pointer"
+                        onClick={() => navigate('/landing')}
+                    >
+                        <div className="flex items-end gap-[1px] h-4 w-3.5">
+                            <div className="w-0.5 rounded-full bar-1" />
+                            <div className="w-0.5 rounded-full bar-2" />
+                            <div className="w-0.5 rounded-full bar-3" />
+                        </div>
+                        <div className="text-lg font-black italic tracking-tighter text-shine">4B1K</div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Mobile Search Toggle */}
+                        <button 
+                            onClick={() => useSearchStore.getState().toggleSearch()}
+                            className="p-2 text-gray-400 hover:text-[#00E5FF] transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+
+                        <Link to="/editprofile" className="relative group shrink-0">
+                            <img
+                                src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.username}&background=random`}
+                                className="w-8 h-8 rounded-xl object-cover border border-white/10"
+                                alt=""
+                            />
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Mobile Search Overlay - Drops from top */}
+                <AnimatePresence>
+                    {isSearchOpen && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            className="xl:hidden absolute top-full left-0 right-0 bg-[#0B0C10]/95 backdrop-blur-2xl p-4 border-b border-white/10 shadow-2xl z-[45]"
+                        >
+                            <NavSearchBar navigate={navigate} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* --- 💻 DESKTOP NAVBAR (Original) --- */}
+                <div className="hidden xl:flex flex-1 items-center justify-start gap-6">
                     <div
                         className="flex items-center gap-2 cursor-pointer z-50 shrink-0"
-                        onClick={(e) => {
-                            if (location.pathname === '/landing') {
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                            } else {
-                                navigate('/landing');
-                            }
-                        }}
+                        onClick={() => navigate('/landing')}
                     >
                         <div className="flex items-end gap-[2px] h-6 w-5">
                             <div className="w-1 rounded-full bar-1" />
@@ -108,113 +163,58 @@ export default function Navbar() {
                             <div className="w-1 rounded-full bar-3" />
                             <div className="w-1 rounded-full bar-4" />
                         </div>
-                        <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
+                        <div className="text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                     </div>
-
-                    {/* Desktop Search Bar (Now on the left) */}
-                    <div className="hidden xl:block">
-                        <NavSearchBar navigate={navigate} />
-                    </div>
+                    <NavSearchBar navigate={navigate} />
                 </div>
 
                 {/* Center: Navigation (Absolute Center) */}
                 <motion.nav
-                    animate={{
-                        opacity: 1,
-                        x: '-50%',
-                        pointerEvents: 'auto'
-                    }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    animate={{ opacity: 1, x: '-50%', pointerEvents: 'auto' }}
                     className="absolute left-1/2 hidden xl:block z-[60]"
                 >
                     <ul className="flex items-center gap-10 text-[15px] font-bold">
                         <li className="relative group">
-                            <Link
-                                to="/community"
-                                onClick={(e) => handleLinkClick(e, '/community')}
-                                className={`transition-all duration-300 ${isCommunityActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
-                            >
-                                Community
-                            </Link>
+                            <Link to="/community" onClick={(e) => handleLinkClick(e, '/community')} className={`transition-all duration-300 ${isCommunityActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>Community</Link>
                             {isCommunityActive && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative">
-                            <button
-                                ref={buttonRef}
-                                onClick={() => setIsArtistMenuOpen(v => !v)}
-                                className={`flex items-center gap-1.5 focus:outline-none transition-all duration-300 ${isArtistActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
-                            >
-                                Artist Biology
-                                <motion.svg
-                                    animate={{ rotate: isArtistMenuOpen ? 180 : 0 }}
-                                    className={`w-4 h-4 ${isArtistActive ? 'text-[#00E5FF]' : 'text-gray-500'}`}
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                                </motion.svg>
-                            </button>
+                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(v => !v)} className={`flex items-center gap-1.5 focus:outline-none transition-all duration-300 ${isArtistActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>Artist Biology <motion.svg animate={{ rotate: isArtistMenuOpen ? 180 : 0 }} className={`w-4 h-4 ${isArtistActive ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg></button>
                             {isArtistActive && !isArtistMenuOpen && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative group">
-                            <Link
-                                to="/new-event"
-                                onClick={(e) => handleLinkClick(e, '/new-event')}
-                                className={`transition-all duration-300 ${isConcertActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
-                            >
-                                Concert Event
-                            </Link>
+                            <Link to="/new-event" onClick={(e) => handleLinkClick(e, '/new-event')} className={`transition-all duration-300 ${isConcertActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>Concert Event</Link>
                             {isConcertActive && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                     </ul>
                 </motion.nav>
 
-                {/* Right: Search + Actions (flex-1) */}
-                <div className="flex-1 flex items-center justify-end gap-4 md:gap-6 z-50">
-
-                    <div className="flex items-center gap-4 whitespace-nowrap">
-                        {user ? (
-                            <div className="flex items-center gap-5">
-                                {/* Chat Button for Desktop */}
-                                <Link to="/chat" className={`p-2 rounded-xl transition-all ${isChatActive ? 'bg-[#00E5FF]/10 text-[#00E5FF]' : 'text-gray-400 hover:text-white'}`}>
-                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </Link>
-
-                                <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-                                    <div className="flex flex-col items-end hidden md:flex">
-                                        <span className="text-[14px] font-black text-white leading-none">{user.username}</span>
-                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Verified Fan</span>
-                                    </div>
-                                    <Link to="/editprofile" className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00E5FF] to-[#7000FF] rounded-xl blur opacity-0 group-hover:opacity-40 transition duration-300" />
-                                        <img
-                                            src={user.profileImage || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
-                                            className="relative w-10 h-10 rounded-xl object-cover border border-white/10"
-                                            alt=""
-                                        />
-                                    </Link>
-                                    <button
-                                        onClick={() => { logout(); navigate('/landing'); }}
-                                        className="text-[13px] font-bold text-gray-500 hover:text-red-400 transition-colors ml-2"
-                                    >
-                                        Log Out
-                                    </button>
+                <div className="hidden xl:flex flex-1 items-center justify-end gap-6 z-50">
+                    {user ? (
+                        <div className="flex items-center gap-5">
+                            <Link to="/chat" className={`p-2 rounded-xl transition-all ${isChatActive ? 'bg-[#00E5FF]/10 text-[#00E5FF]' : 'text-gray-400 hover:text-white'}`}>
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            </Link>
+                            <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[14px] font-black text-white leading-none">{user.username}</span>
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Verified Fan</span>
                                 </div>
+                                <Link to="/editprofile" className="relative group shrink-0">
+                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00E5FF] to-[#7000FF] rounded-xl blur opacity-0 group-hover:opacity-40 transition duration-300" />
+                                    <img src={user.profileImage || `https://ui-avatars.com/api/?name=${user.username}&background=random`} className="w-10 h-10 rounded-xl object-cover border border-white/10" alt="" />
+                                </Link>
+                                <button onClick={() => { logout(); navigate('/landing'); }} className="text-[13px] font-bold text-gray-500 hover:text-red-400 transition-colors ml-2">Log Out</button>
                             </div>
-                        ) : (
-                            <>
-                                <button onClick={() => navigate('/login')} className="text-[15px] font-bold text-white hover:text-white transition-colors">
-                                    Log In
-                                </button>
-                                <button onClick={() => navigate('/register')} className="text-[15px] font-bold bg-white text-black hover:bg-[#00E5FF] px-6 md:px-8 py-2.5 rounded-full transition-all duration-300">
-                                    Create Account
-                                </button>
-                            </>
-                        )}
-                    </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate('/login')} className="font-bold text-gray-300 hover:text-white transition-colors">Log In</button>
+                            <button onClick={() => navigate('/register')} className="font-bold bg-white text-black hover:bg-[#00E5FF] px-8 py-2.5 rounded-full transition-all duration-300">Join Now</button>
+                        </div>
+                    )}
                 </div>
-            </header>
+            </motion.header>
 
             {/* Mega-menu */}
             <NavArtistMenu
