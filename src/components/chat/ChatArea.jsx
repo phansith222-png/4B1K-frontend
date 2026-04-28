@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ChatBubble from "./ChatBubble";
 import EmojiPicker from "./EmojiPicker";
@@ -23,7 +23,8 @@ const TypingDots = () => (
   </span>
 );
 
-export default function ChatArea({
+// ── Aggressive Scroll Anchor ──
+const ChatArea = React.memo(({
   activeChat,
   showSidebar,
   isGroup,
@@ -56,11 +57,28 @@ export default function ChatArea({
   onAvatarClick,
   onRenameGroup,
   messageImageInputRef,
-  handleMessageImageChange
-}) {
+  handleMessageImageChange,
+  pendingImage,
+  setPendingImage
+}) => {
   const [showGroupMenu, setShowGroupMenu] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
+
+  // Force scroll to bottom when messages change or room changes
+  useLayoutEffect(() => {
+    if (chatContainerRef.current) {
+      const container = chatContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messagesGrouped, activeChat]);
+
+  // Secondary backup for messages changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+    }
+  }, [messagesGrouped]);
   return (
     <motion.main
       initial={false}
@@ -71,24 +89,25 @@ export default function ChatArea({
       <AnimatePresence mode="wait">
         {activeChat ? (
           <motion.div
-            key="active-chat"
-            initial={{ opacity: 0, x: 20 }}
+            key={activeChat}
+            initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="flex flex-col h-full w-full min-h-0"
           >
             {/* ── Fixed Header ── */}
             <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10] relative">
               <div className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/10 to-[#00E5FF]/10 opacity-20" />
-              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent" />
+              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent shadow-[0_0_15px_#00E5FF]" />
 
               <div className="flex items-center gap-4 px-4 md:px-6 py-3 md:py-4 relative z-10">
                 {/* Back Arrow (LINE Style) */}
                 <motion.button
-                  whileHover={{ scale: 1.1, x: -2 }}
+                  whileHover={{ scale: 1.1, x: -2, backgroundColor: "rgba(255, 255, 255, 0.1)" }}
                   whileTap={{ scale: 0.9 }}
                   onClick={goBack}
-                  className="p-2.5 -ml-2 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
+                  className="p-2.5 -ml-2 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
                   title="Go Back"
                 >
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -101,9 +120,8 @@ export default function ChatArea({
                   className="relative group cursor-pointer shrink-0"
                   onClick={handleAvatarClick}
                 >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#7000FF] to-[#00E5FF] rounded-2xl blur opacity-0 group-hover:opacity-40 transition duration-500" />
-                  <div className={`relative w-12 h-12 rounded-2xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[#00E5FF]/50 transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
-                    <img src={roomAvatar} className="w-full h-full object-cover" alt="" />
+                  <div className={`relative w-13 h-13 rounded-[20px] overflow-hidden ring-1 ring-white/20 group-hover:ring-[#00E5FF] transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
+                    <img src={roomAvatar} className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" alt="" />
                   </div>
                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </motion.div>
@@ -180,7 +198,7 @@ export default function ChatArea({
                               initial={{ opacity: 0, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                              className="absolute top-full right-0 mt-2 w-64 bg-[#1A1C23] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden py-1.5"
+                              className="fixed top-20 right-4 w-64 bg-[#1A1C23] border border-white/10 rounded-2xl shadow-2xl z-[200] overflow-hidden py-1.5"
                             >
                               {isGroup && activeRoom?.creatorId === myUserId && (
                                 <>
@@ -239,6 +257,7 @@ export default function ChatArea({
             <div 
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto px-2 md:px-4 py-8 min-h-0 relative chat-no-scrollbar"
+              style={{ overflowAnchor: 'auto' }}
             >
               <style>{`
                 .chat-no-scrollbar::-webkit-scrollbar { display: none; }
@@ -248,59 +267,61 @@ export default function ChatArea({
               {/* Top Fade Gradient Overlay */}
               <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0B0C10] via-[#0B0C10]/80 to-transparent z-20 pointer-events-none" />
               {/* Background Effects */}
-              <div className="absolute inset-0 pointer-events-none z-0">
-                <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-[#7000FF] rounded-full blur-[150px] opacity-[0.07]" />
-                <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-[#00E5FF] rounded-full blur-[150px] opacity-[0.07]" />
-              </div>
 
-              <motion.div
-                initial="hidden"
-                animate="show"
-                className="w-full flex flex-col gap-6 min-h-full relative z-10"
-              >
-                <motion.div
-                  variants={{
-                    show: { transition: { staggerChildren: 0.08, delayChildren: 0.4, staggerDirection: -1 } }
-                  }}
-                  className="flex flex-col gap-4"
-                >
+              <div className="w-full flex flex-col gap-6 min-h-full relative z-10">
+                <div className="flex flex-col gap-4">
                   <AnimatePresence mode="wait">
                     {isLoading ? (
-                      // Skeleton for Messages
-                      [...Array(4)].map((_, i) => (
-                        <motion.div
-                          key={`msg-skeleton-${i}`}
-                          initial={{ opacity: 0, x: i % 2 === 0 ? -10 : 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
-                        >
-                          <div className={`flex gap-3 max-w-[70%] ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
-                            <div className="w-10 h-10 rounded-2xl bg-white/5 animate-pulse shrink-0" />
-                            <div className={`space-y-2 ${i % 2 === 0 ? "items-start" : "items-end"}`}>
-                              <div className="h-12 w-48 bg-white/5 rounded-2xl animate-pulse" />
-                              <div className="h-3 w-16 bg-white/5 rounded-lg animate-pulse" />
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {[...Array(4)].map((_, i) => (
+                          <div
+                            key={`msg-skeleton-${i}`}
+                            className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
+                          >
+                            <div className={`flex gap-3 max-w-[70%] ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
+                              <div className="w-10 h-10 rounded-2xl bg-white/5 animate-pulse shrink-0" />
+                              <div className={`space-y-2 ${i % 2 === 0 ? "items-start" : "items-end"}`}>
+                                <div className="h-12 w-48 bg-white/5 rounded-2xl animate-pulse" />
+                                <div className="h-3 w-16 bg-white/5 rounded-lg animate-pulse" />
+                              </div>
                             </div>
                           </div>
-                        </motion.div>
-                      ))
+                        ))}
+                      </motion.div>
                     ) : (
-                      messagesGrouped.map((msg, i) => (
-                        <ChatBubble
-                          key={msg.id || i}
-                          msg={msg}
-                          isMe={msg.isMe}
-                          showAvatar={msg.showAvatar && !msg.isMe}
-                          senderName={msg.sender?.username || msg.sender?.firstName || "Member"}
-                          onAvatarClick={onAvatarClick}
-                          onImageClick={onImageClick}
-                          showDateDivider={msg.showDateDivider}
-                        />
-                      ))
+                      <motion.div
+                        key="messages-list"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {messagesGrouped.map((msg, i) => (
+                          <ChatBubble
+                            key={msg.id || i}
+                            msg={msg}
+                            isMe={msg.isMe}
+                            showAvatar={msg.showAvatar && !msg.isMe}
+                            senderName={msg.sender?.firstName ? `${msg.sender.firstName} ${msg.sender.lastName || ''}`.trim() : msg.sender?.username || "Member"}
+                            onAvatarClick={onAvatarClick}
+                            onImageClick={onImageClick}
+                            showDateDivider={msg.showDateDivider}
+                            myAvatar={myAvatar}
+                          />
+                        ))}
+                      </motion.div>
                     )}
                   </AnimatePresence>
-                </motion.div>
-                <div ref={scrollRef} className="h-4 w-full shrink-0" />
-              </motion.div>
+                </div>
+                {/* Hidden Anchor for Scrolling */}
+                <div ref={scrollRef} className="h-1 w-full shrink-0 mt-4" />
+              </div>
             </div>
 
             {/* ── Locked Footer/Input (Solid Style) ── */}
@@ -312,7 +333,7 @@ export default function ChatArea({
                       initial={{ opacity: 0, y: 10, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                      className="flex items-center gap-3 text-[10px] text-[#00E5FF] font-black bg-[#0B0C10]/80 backdrop-blur-md border border-[#00E5FF]/30 px-4 py-1.5 rounded-full w-fit mb-3 shadow-[0_0_20px_rgba(0,229,255,0.15)] ml-2"
+                      className="flex items-center gap-3 text-[10px] text-[#00E5FF] font-black bg-[#1A1C23] border border-[#00E5FF]/30 px-4 py-1.5 rounded-full w-fit mb-3 ml-2"
                     >
                       <TypingDots />
                       <span className="uppercase tracking-[0.2em]">{typingText}</span>
@@ -320,9 +341,53 @@ export default function ChatArea({
                   )}
                 </AnimatePresence>
 
-                <div className="relative bg-[#1A1C23]/95 backdrop-blur-2xl border border-white/20 p-2 rounded-[28px] shadow-[0_25px_60px_rgba(0,0,0,0.8)] focus-within:border-[#00E5FF]/50 focus-within:shadow-[0_0_40px_rgba(0,229,255,0.15)] transition-all duration-500 ring-1 ring-white/5">
-                  <div className="flex items-end gap-2 pr-2" ref={emojiRef}>
-                    <div className="flex-1 relative flex items-center">
+                <AnimatePresence>
+                  {pendingImage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                      className="relative w-24 h-24 mb-4 ml-2 group"
+                    >
+                      <img src={pendingImage} className="relative w-full h-full object-cover rounded-xl border border-white/20 shadow-md" alt="Pending" />
+                      <button
+                        onClick={() => setPendingImage(null)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-[#1A1C23] border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-500/80 transition-all z-10"
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="relative group bg-[#1A1C23] border border-white/10 p-2 rounded-[32px] shadow-[0_10px_30px_rgba(0,0,0,0.3)] focus-within:border-[#00E5FF]/60 focus-within:ring-1 focus-within:ring-[#00E5FF]/30 transition-colors duration-300">
+                  <div className="flex items-center gap-2" ref={emojiRef}>
+                    
+                    {/* ── Left: Image Attachment Button ── */}
+                    <div className="shrink-0 flex items-center justify-center pl-2">
+                      <input
+                        type="file"
+                        ref={messageImageInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleMessageImageChange}
+                      />
+                      <motion.button
+                        whileHover={{ scale: 1.1, color: "#00E5FF" }}
+                        whileTap={{ scale: 0.9 }}
+                        type="button"
+                        onClick={() => messageImageInputRef?.current?.click()}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${pendingImage ? "text-[#00E5FF] bg-[#00E5FF]/10 border border-[#00E5FF]/30 shadow-[0_0_15px_rgba(0,229,255,0.2)]" : "text-gray-500 hover:bg-white/5"}`}
+                        title="Attach Image"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                      </motion.button>
+                    </div>
+
+                    {/* ── Center: Textarea ── */}
+                    <div className="flex-1 relative min-w-0">
                       <AnimatePresence>
                         {showEmoji && (
                           <motion.div
@@ -355,50 +420,37 @@ export default function ChatArea({
                           e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
                         }}
                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); e.target.style.height = 'auto'; } }}
-                        placeholder="Type your message here..."
-                        className="w-full bg-transparent px-5 py-4 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar"
+                        placeholder={pendingImage ? "Add a caption..." : "Type your message here..."}
+                        className="w-full bg-transparent px-3 py-3.5 text-[15px] text-gray-100 placeholder-gray-500 outline-none resize-none font-medium custom-scrollbar leading-relaxed"
                       />
+                    </div>
 
-                      <button
+                    {/* ── Right: Emoji + Send ── */}
+                    <div className="flex items-center gap-1.5 shrink-0 pr-1">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         type="button"
                         onClick={() => setShowEmoji((v) => !v)}
-                        className={`p-2.5 rounded-2xl transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 scale-110 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:scale-110"
-                          }`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${showEmoji ? "text-yellow-400 bg-yellow-400/10 shadow-[0_0_15px_rgba(250,204,21,0.3)]" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
                       >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      </button>
-                    </div>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      </motion.button>
 
-                    {/* Image Attachment Button */}
-                    <div className="relative">
-                      <input
-                        type="file"
-                        ref={messageImageInputRef}
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleMessageImageChange}
-                      />
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(112,0,255,0.5)" }}
+                        whileTap={{ scale: 0.95 }}
                         type="button"
-                        onClick={() => messageImageInputRef?.current?.click()}
-                        className="p-2.5 rounded-2xl text-gray-500 hover:text-[#00E5FF] hover:scale-110 transition-all duration-300"
-                        title="Attach Image"
+                        onClick={send}
+                        disabled={(!inputText.trim() && !pendingImage) || !connected}
+                        className={`w-11 h-11 rounded-[20px] flex items-center justify-center shrink-0 transition-all duration-300
+                          ${(inputText.trim() || pendingImage) && connected 
+                            ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff] text-white shadow-[0_8px_20px_rgba(112,0,255,0.4)]" 
+                            : "bg-white/5 text-gray-700 cursor-not-allowed"}`}
                       >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 4v16m8-8H4" /></svg>
-                      </button>
+                        <svg className="w-5 h-5 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+                      </motion.button>
                     </div>
-
-                    <motion.button
-                      whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(112,0,255,0.4)" }}
-                      whileTap={{ scale: 0.95 }}
-                      type="button"
-                      onClick={send}
-                      disabled={!inputText.trim() || !connected}
-                      className={`w-12 h-12 rounded-[20px] flex items-center justify-center shrink-0 transition-all duration-500
-                        ${inputText.trim() && connected ? "bg-gradient-to-br from-[#7000FF] to-[#8220FF] text-white shadow-lg" : "bg-white/5 text-gray-700"}`}
-                    >
-                      <svg className="w-6 h-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                    </motion.button>
                   </div>
                 </div>
               </div>
@@ -414,14 +466,12 @@ export default function ChatArea({
           >
             {/* Background Tech Decor */}
             <div className="absolute inset-0 z-0">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#7000FF]/5 rounded-full blur-[120px]" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/5 rounded-full" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#00E5FF]/10 rounded-full animate-pulse" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#00E5FF]/10 rounded-full" />
             </div>
 
             <div className="relative z-10">
               <div className="relative w-32 h-32 mx-auto mb-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#7000FF] to-[#00E5FF] rounded-[40px] blur-2xl opacity-20 animate-pulse" />
                 <div className="relative w-full h-full bg-[#1A1C23] border border-white/10 rounded-[40px] flex items-center justify-center text-5xl shadow-2xl overflow-hidden">
                   <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
                   💬
@@ -451,4 +501,6 @@ export default function ChatArea({
       </AnimatePresence>
     </motion.main>
   );
-}
+});
+
+export default ChatArea;
