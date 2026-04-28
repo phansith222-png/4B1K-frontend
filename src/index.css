@@ -23,14 +23,25 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   font-family: 'Plus Jakarta Sans', 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
   scrollbar-width: none;
   /* Firefox */
   -ms-overflow-style: none;
   /* IE/Edge */
+  text-rendering: optimizeSpeed;
 }
 
 /* Hide scrollbar for Chrome/Safari/Opera */

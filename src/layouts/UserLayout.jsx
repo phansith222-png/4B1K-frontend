@@ -12,10 +12,11 @@ import SectionErrorFallback from "../components/SectionErrorFallback";
 export default function UserLayout() {
     const location = useLocation();
     const isChat = location.pathname === '/chat';
+    const isFixedLayout = ['/chat', '/home', '/'].includes(location.pathname);
     const topPadding = ['/chat', '/nearby-events'].some(p => location.pathname.startsWith(p)) ? 'pt-0' : 'pt-24 md:pt-28';
 
     return (
-        <div className={`bg-[#0B0C10] flex flex-col relative overflow-hidden ${isChat ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
+        <div className={`bg-[#0B0C10] flex flex-col relative overflow-hidden ${isFixedLayout ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
             {/* 🌌 Premium Foundation Layer - Enabled globally to maintain consistent aesthetic */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[35%] h-[35%] bg-[#00E5FF] opacity-[0.2] blur-[120px] rounded-full" />
@@ -27,7 +28,7 @@ export default function UserLayout() {
             <NavbarUser />
 
             {/* 📌 Wrap Outlet with PageTransition and ensure key={location.pathname} is set */}
-            <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col overflow-hidden pt-[72px] md:pt-[88px]' : ''}`}>
+            <main className={`flex-grow relative z-10 ${isFixedLayout ? 'flex flex-col overflow-hidden' : ''} ${location.pathname === '/chat' ? 'pt-[72px] md:pt-[88px]' : ''}`}>
                 <PageTransition key={location.pathname + location.search}>
                     <Outlet />
                 </PageTransition>

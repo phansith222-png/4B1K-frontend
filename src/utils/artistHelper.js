@@ -15,7 +15,7 @@ export const getArtistInfo = (artist) => {
     // 1. Check by exact ID first (most accurate)
     if (GENRE_ARTIST_IDS.pop.includes(id))      return { path: '/pop',     color: '#FF007F', label: 'Pop' };
     if (GENRE_ARTIST_IDS.rock.includes(id))     return { path: '/rock',    color: '#D3131F', label: 'Rock' };
-    if (GENRE_ARTIST_IDS.classic.includes(id))  return { path: '/classic', color: '#d83bb6', label: 'R&B' };
+    if (GENRE_ARTIST_IDS.classic.includes(id))  return { path: '/rnb',     color: '#d83bb6', label: 'R&B' };
     if (GENRE_ARTIST_IDS.edm.includes(id))      return { path: '/edm',     color: '#00E5FF', label: 'EDM' };
     if (GENRE_ARTIST_IDS.hiphop.includes(id))   return { path: '/etc',     color: '#CEFF67', label: 'Hiphop' };
 
@@ -23,7 +23,7 @@ export const getArtistInfo = (artist) => {
     const gs = artist.genres?.map(g => g.genre?.name?.toLowerCase() ?? '') ?? [];
     if (gs.some(g => g.includes('pop')))                          return { path: '/pop',     color: '#FF007F', label: 'Pop' };
     if (gs.some(g => g.includes('rock')))                         return { path: '/rock',    color: '#D3131F', label: 'Rock' };
-    if (gs.some(g => g.includes('r&b') || g.includes('rnb')))     return { path: '/classic', color: '#d83bb6', label: 'R&B' };
+    if (gs.some(g => g.includes('r&b') || g.includes('rnb')))     return { path: '/rnb',     color: '#d83bb6', label: 'R&B' };
     if (gs.some(g => g.includes('edm') || g.includes('electronic'))) return { path: '/edm',     color: '#00E5FF', label: 'EDM' };
     if (gs.some(g => g.includes('hip') || g.includes('rap')))     return { path: '/etc',     color: '#CEFF67', label: 'Hiphop' };
 

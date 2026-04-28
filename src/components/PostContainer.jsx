@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import usePostStore from '../stores/postStore';
 import PostItem from './PostItems';
@@ -9,6 +10,7 @@ function PostContainer({ activeTab, selectedArtistIds }) {
     const posts = usePostStore(state => state.posts);
     const [visibleCount, setVisibleCount] = React.useState(5);
     const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+    const [searchParams] = useSearchParams();
 
     // Stable ref to prevent effect from re-running on every render
     const fetchPosts = useCallback(() => { getAllPosts(); }, []);
@@ -54,6 +56,17 @@ function PostContainer({ activeTab, selectedArtistIds }) {
         }
         return result;
     }, [posts, activeTab, selectedArtistIds]);
+
+    // 🔍 Auto-expand visibleCount if postId is in URL (Moved here after filteredPosts is defined)
+    useEffect(() => {
+        const postId = searchParams.get('postId');
+        if (postId && filteredPosts.length > 0) {
+            const index = filteredPosts.findIndex(p => String(p.id) === String(postId));
+            if (index !== -1 && index >= visibleCount) {
+                setVisibleCount(index + 1);
+            }
+        }
+    }, [searchParams, filteredPosts, visibleCount]);
 
     const visiblePosts = filteredPosts.slice(0, visibleCount);
 

@@ -47,12 +47,28 @@ export default function UserProfileModal({ isOpen, onClose, user, onChat }) {
                   alt={displayName}
                   className="relative w-32 h-32 rounded-[32px] object-cover border-4 border-[#111318] shadow-2xl"
                 />
+                {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true for users, false for artists */}
+                {(true && !user.artistName) && (
+                  <div className="absolute -bottom-1 -left-1 w-8 h-8 bg-[#0B0C10] rounded-full border-2 border-[#00E5FF] flex items-center justify-center shadow-[0_0_20px_rgba(0,229,255,0.5)] z-20">
+                    <svg className="w-5 h-5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                  </div>
+                )}
               </div>
 
               {/* Name & Title */}
-              <h3 className="text-2xl font-black text-white mb-1 tracking-tight text-center uppercase italic">
-                {displayName}
-              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-2xl font-black text-white tracking-tight text-center uppercase italic">
+                  {displayName}
+                </h3>
+                {/* MOCK: true for users, false for artists */}
+                {(true && !user.artistName) && (
+                  <svg className="w-6 h-6 text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                )}
+              </div>
               <p className="text-[#00E5FF] text-[10px] font-black uppercase tracking-[0.3em] mb-8 bg-[#00E5FF]/10 px-4 py-1 rounded-full border border-[#00E5FF]/20 shadow-[0_0_15px_rgba(0,229,255,0.1)]">
                 Community Member
               </p>

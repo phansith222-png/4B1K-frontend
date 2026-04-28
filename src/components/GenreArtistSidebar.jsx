@@ -27,7 +27,7 @@ export default function GenreArtistSidebar({ artists, currentArtistId, side = 'l
       // Match by Keyword
       if (genre === 'pop') return gs.some(g => g.includes('pop'));
       if (genre === 'rock') return gs.some(g => g.includes('rock'));
-      if (genre === 'classic') return gs.some(g => g.includes('classic') || g.includes('r&b') || g.includes('rnb'));
+      if (genre === 'classic' || genre === 'rnb') return gs.some(g => g.includes('classic') || g.includes('r&b') || g.includes('rnb'));
       if (genre === 'edm') return gs.some(g => g.includes('edm') || g.includes('electronic'));
       if (genre === 'hiphop') return gs.some(g => g.includes('hip') || g.includes('rap'));
 
@@ -49,6 +49,7 @@ export default function GenreArtistSidebar({ artists, currentArtistId, side = 'l
     pop: '#FF007F',
     rock: '#D3131F',
     classic: '#00E5FF',
+    rnb: '#00E5FF',
     edm: '#7000FF',
     hiphop: '#CEFF67'
   }[genre] || '#00E5FF';
@@ -98,7 +99,7 @@ export default function GenreArtistSidebar({ artists, currentArtistId, side = 'l
               <img 
                 src={getImageUrl(artist.profileImage, `https://ui-avatars.com/api/?name=${artist.artistName}`)} 
                 alt={artist.artistName}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 relative z-10"
+                className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500 relative z-10"
               />
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

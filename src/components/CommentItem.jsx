@@ -164,15 +164,25 @@ function CommentItem({ comment, postId }) {
       </AnimatePresence>
 
       <div className="flex gap-3 items-start group">
-        <img
-          src={
-            comment.user?.profileImage ||
-            comment.user?.avatar ||
-            `https://ui-avatars.com/api/?name=${comment.user?.username || 'User'}&background=random&color=fff`
-          }
-          className="w-8 h-8 rounded-full border border-white/10 object-cover shrink-0 mt-1"
-          alt={comment.user?.username || 'User Avatar'}
-        />
+        <div className="relative shrink-0 mt-1">
+          <img
+            src={
+              comment.user?.profileImage ||
+              comment.user?.avatar ||
+              `https://ui-avatars.com/api/?name=${comment.user?.username || 'User'}&background=random&color=fff`
+            }
+            className="w-8 h-8 rounded-full border border-white/10 object-cover"
+            alt={comment.user?.username || 'User Avatar'}
+          />
+          {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true for users, false for artists */}
+          {(true && !comment.user?.artistName) && (
+            <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.5)] z-10">
+              <svg className="w-1.5 h-1.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg>
+            </div>
+          )}
+        </div>
 
         <div className="flex-1 min-w-0">
           {isEditing ? (
@@ -182,9 +192,17 @@ function CommentItem({ comment, postId }) {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white/5 border border-[#00E5FF]/20 rounded-2xl px-4 py-3"
             >
-              <span className="font-bold text-xs text-pink-300 block mb-2">
-                {comment.user?.username || 'Anonymous'}
-              </span>
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="font-bold text-xs text-pink-300">
+                  {comment.user?.username || 'Anonymous'}
+                </span>
+                {/* MOCK: true for users, false for artists */}
+                {(true && !comment.user?.artistName) && (
+                  <svg className="w-3.5 h-3.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                )}
+              </div>
 
               {/* Textarea */}
               <textarea
@@ -290,9 +308,17 @@ function CommentItem({ comment, postId }) {
             // ── Normal mode ──
             <div className="relative">
               <div className="bg-white/5 rounded-2xl p-3 pr-8">
-                <span className="font-bold text-xs text-pink-300">
-                  {comment.user?.username || 'Anonymous'}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs text-pink-300">
+                    {comment.user?.username || 'Anonymous'}
+                  </span>
+                  {/* MOCK: true for users, false for artists */}
+                  {(true && !comment.user?.artistName) && (
+                    <svg className="w-3 h-3 text-[#00E5FF] drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                  )}
+                </div>
 
                 {/* Insert timestamp here */}
                 <span className="text-[10px] text-gray-500 flex items-center gap-1 mb-1.5 mt-0.5">

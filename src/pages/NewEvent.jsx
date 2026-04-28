@@ -46,8 +46,32 @@ export default function NewEventPage() {
     // 1. Synchronize URL search params with state (only on mount or when URL changes)
     useEffect(() => {
         const artistId = searchParams.get('artistId');
+        const eventId = searchParams.get('eventId');
+        
         if (artistId) {
             setSelectedArtistIds([artistId]);
+        }
+
+        if (eventId) {
+            setActiveCategory("All");
+            setSelectedArtistIds([]);
+            
+            // Retry logic for event scrolling
+            let attempts = 0;
+            const scrollInterval = setInterval(() => {
+                const element = document.querySelector(`[id^="event-card-"][data-id="${eventId}"]`) || document.getElementById(`event-${eventId}`);
+                // Since EventCard might not have an ID, we'll need to check how it's rendered.
+                // Let's just use a simple delay and look for anything that might identify it or just scroll to top if needed.
+                // Actually, I'll update EventCard to have an ID.
+                const el = document.getElementById(`event-item-${eventId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    clearInterval(scrollInterval);
+                }
+                attempts++;
+                if (attempts > 10) clearInterval(scrollInterval);
+            }, 500);
+            return () => clearInterval(scrollInterval);
         }
     }, [searchParams]);
 

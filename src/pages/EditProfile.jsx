@@ -25,7 +25,7 @@ export default function EditProfile() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [focusedInput, setFocusedInput] = useState(null); // สำหรับทำเส้นวิ่ง
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm({
         resolver: zodResolver(profileSchema),
         mode: 'onTouched',
         defaultValues: {
@@ -38,6 +38,8 @@ export default function EditProfile() {
             email: user?.email || '',
         }
     });
+
+    const nationalIdValue = watch('nationalId');
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -66,7 +68,6 @@ export default function EditProfile() {
             const result = await editProfile(finalData);
             
             if (result.success) {
-                await getProfile(); 
                 showToast("Edit Success", "success");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
@@ -90,6 +91,7 @@ export default function EditProfile() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="bg-[#0B0C10] min-h-screen text-white pb-24 relative overflow-hidden font-sans"
         >
+            <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
             {/* Custom Styles for Animated Border */}
             <style>{`
                 .animated-border-box {
@@ -139,18 +141,21 @@ export default function EditProfile() {
                 />
             </div>
 
-            <div className="relative z-10 max-w-4xl mx-auto px-6 pt-16">
+            <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 md:pt-40">
                 
                 {/* Header Section */}
                 <div className="relative flex items-center justify-between mb-20">
-                    <div className="absolute top-0 left-0 -translate-y-12">
-                        <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
-                    </div>
-
                     <div className="absolute left-1/2 -translate-x-1/2 text-center">
                         <span className="text-[#00E5FF] font-black text-[10px] uppercase tracking-[0.3em] block mb-1">Configuration</span>
-                        <h1 className="text-2xl md:text-3xl font-black tracking-[0.1em] uppercase text-white whitespace-nowrap z-10">
+                        <h1 className="text-2xl md:text-3xl font-black tracking-[0.1em] uppercase text-white whitespace-nowrap z-10 flex items-center gap-3">
                             Edit Profile
+                            {(nationalIdValue?.length === 13 || user?.nationalId?.length === 13) && (
+                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                                    <svg className="w-6 h-6 text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                                    </svg>
+                                </motion.div>
+                            )}
                         </h1>
                     </div>
                 </div>
@@ -162,6 +167,7 @@ export default function EditProfile() {
                         previewImage={previewImage}
                         fileInputRef={fileInputRef}
                         handleImageChange={handleImageChange}
+                        verified={(nationalIdValue?.length === 13 || user?.nationalId?.length === 13)}
                     />
 
                     {/* 2. Form Grid (ฟอร์มกรอกข้อมูล) */}
@@ -185,6 +191,7 @@ export default function EditProfile() {
                                 focusedInput={focusedInput} 
                                 setFocusedInput={setFocusedInput} 
                                 maxLength={13}
+                                verified={(nationalIdValue?.length === 13) || (user?.nationalId?.length === 13)}
                                 onInput={(e) => {
                                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
                                 }}

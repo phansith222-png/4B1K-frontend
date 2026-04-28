@@ -55,7 +55,7 @@ export default function DiscoverArtists() {
     const artistId = parseInt(id);
     if (artistId >= 1 && artistId <= 5) return { label: 'Pop', route: 'pop' };
     if (artistId >= 6 && artistId <= 10) return { label: 'Rock', route: 'rock' };
-    if (artistId >= 16 && artistId <= 20) return { label: 'R&B / Classic', route: 'classic' };
+    if (artistId >= 16 && artistId <= 20) return { label: 'R&B / Classic', route: 'rnb' };
     return { label: 'Hip Hop / EDM', route: 'etc' };
   };
 
@@ -91,13 +91,17 @@ export default function DiscoverArtists() {
                 className="cursor-pointer group flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <img
-                    src={getImageUrl(artist.profileImage, `https://ui-avatars.com/api/?name=${artist.artistName}`)}
-                    className="w-12 h-12 rounded-xl object-cover border border-white/10 group-hover:scale-110 transition-transform"
-                    alt=""
-                  />
+                  <div className="relative">
+                    <img
+                      src={getImageUrl(artist.profileImage, `https://ui-avatars.com/api/?name=${artist.artistName}`)}
+                      className="w-12 h-12 rounded-xl object-cover border border-white/10 group-hover:scale-110 transition-transform"
+                      alt=""
+                    />
+                  </div>
                   <div>
-                    <p className="text-[15px] font-black text-white tracking-tight group-hover:text-[#00E5FF] transition-colors line-clamp-1">{artist.artistName}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[15px] font-black text-white tracking-tight group-hover:text-[#00E5FF] transition-colors line-clamp-1">{artist.artistName}</p>
+                    </div>
                     <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border inline-block uppercase tracking-wider mt-1 ${getGenreColor(getArtistCategory(artist.id).route)}`}>
                       {getArtistCategory(artist.id).label}
                     </span>

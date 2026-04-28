@@ -85,17 +85,43 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
               )}
             </div>
           </div>
-          <div className="w-8 h-8 shrink-0 self-end mb-4">
+          <div className="w-8 h-8 shrink-0 self-end mb-4 relative">
             <img src={avatarUrl("Me", myAvatar)} className="w-full h-full rounded-lg object-cover ring-1 ring-white/10 shadow-lg" alt="" />
+            {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true */}
+            {true && (
+              <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.5)] z-10">
+                <svg className="w-1.5 h-1.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+              </div>
+            )}
           </div>
         </div>
       ) : (
         <div className="flex items-end gap-3 mb-1.5 px-2">
-          <div className="w-8 h-8 shrink-0 self-end mb-4 cursor-pointer" onClick={() => onAvatarClick?.({ ...msg.sender, id: msg.senderId })}>
+          <div className="w-8 h-8 shrink-0 self-end mb-4 cursor-pointer relative" onClick={() => onAvatarClick?.({ ...msg.sender, id: msg.senderId })}>
             <img src={avatarUrl(senderName, msg.sender?.profileImage)} className="w-full h-full rounded-lg object-cover ring-1 ring-white/10 shadow-lg" alt="" />
+            {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true for users, false for artists */}
+            {(true && !msg.sender?.artistName) && (
+              <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.5)] z-10">
+                <svg className="w-1.5 h-1.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+              </div>
+            )}
           </div>
           <div className="flex flex-col items-start max-w-[80%] md:max-w-[70%]">
-            {showAvatar && <span className="text-[10px] font-black text-[#00E5FF] mb-1 ml-1 uppercase tracking-widest">{senderName}</span>}
+            {showAvatar && (
+              <div className="flex items-center gap-1 mb-1 ml-1">
+                <span className="text-[10px] font-black text-[#00E5FF] uppercase tracking-widest">{senderName}</span>
+                {/* MOCK: true for users, false for artists */}
+                {(true && !msg.sender?.artistName) && (
+                  <svg className="w-3 h-3 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                )}
+              </div>
+            )}
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="relative" onClick={() => isImageMessage && onImageClick?.(imageUrl)}>
               {isImageMessage ? (
                 <div className="relative overflow-hidden rounded-2xl rounded-bl-sm border border-white/5 shadow-2xl">

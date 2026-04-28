@@ -54,10 +54,27 @@ export default function ChatSidebar({
               <div className="absolute -inset-1 bg-gradient-to-r from-[#7000FF]/20 to-[#00E5FF]/20 rounded-[20px] blur opacity-0 group-hover:opacity-100 transition duration-500" />
               <img src={myAvatar} className="relative w-12 h-12 rounded-[18px] object-cover border border-white/10 shadow-2xl" alt="" />
               <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-[3px] border-[#0B0C10] ${connected ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-gray-600"}`} />
+              
+              {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true */}
+              {true && (
+                <div className="absolute -bottom-0.5 -left-0.5 w-3.5 h-3.5 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.5)] z-10">
+                  <svg className="w-2 h-2 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                </div>
+              )}
             </div>
 
             <div className="min-w-0 cursor-pointer" onClick={() => setShowUserMenu(!showUserMenu)}>
-              <h2 className="text-base font-black text-white truncate tracking-tight">{myName}</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-base font-black text-white truncate tracking-tight">{myName}</h2>
+                {/* MOCK: true */}
+                {true && (
+                  <svg className="w-3.5 h-3.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                )}
+              </div>
               <div className="flex items-center gap-1.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-emerald-500" : "bg-gray-600"}`} />
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{connected ? "Online" : "Connecting"}</p>
@@ -211,6 +228,14 @@ export default function ChatSidebar({
                           className="w-full h-full object-cover"
                           alt=""
                         />
+                        {/* 🛡️ Mini Verified Badge (Bottom-Left) for Personal Chat - MOCK: true for users, false for artists */}
+                        {!isRoomGroup && (true && !otherUser?.artistName) && (
+                          <div className="absolute -bottom-0.5 -left-0.5 w-3.5 h-3.5 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_8px_rgba(0,229,255,0.5)] z-10">
+                            <svg className="w-2 h-2 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
                       {unread > 0 && !isActive && (
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#00E5FF] text-[#0B0C10] text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0B0C10] shadow-[0_0_10px_#00E5FF]">
@@ -221,7 +246,15 @@ export default function ChatSidebar({
 
                     <div className="flex-1 text-left min-w-0 z-10">
                       <div className="flex justify-between items-center mb-0.5">
-                        <span className={`text-[14px] font-bold truncate tracking-tight ${isActive ? "text-white" : "text-gray-200"}`}>{displayName}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={`text-[14px] font-bold truncate tracking-tight ${isActive ? "text-white" : "text-gray-200"}`}>{displayName}</span>
+                          {/* MOCK: true for users, false for artists (for personal chat) */}
+                          {!isRoomGroup && (true && !otherUser?.artistName) && (
+                            <svg className="w-3.5 h-3.5 text-[#00E5FF] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
                       <p className={`text-[11px] truncate opacity-60 font-medium uppercase tracking-widest ${isActive ? "text-white/80" : "text-gray-500"}`}>
                         {isRoomGroup ? `${room.users?.length || 0} Participants` : "Private Line"}

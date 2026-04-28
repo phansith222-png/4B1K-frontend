@@ -15,7 +15,7 @@ export const getArtistPathById = (id) => {
   
   if (GENRE_ARTIST_IDS.pop.includes(aId)) return '/pop';
   if (GENRE_ARTIST_IDS.rock.includes(aId)) return '/rock';
-  if (GENRE_ARTIST_IDS.classic.includes(aId)) return '/classic';
+  if (GENRE_ARTIST_IDS.classic.includes(aId)) return '/rnb';
   if (GENRE_ARTIST_IDS.etc.includes(aId)) return '/etc';
   
   return '/artists';

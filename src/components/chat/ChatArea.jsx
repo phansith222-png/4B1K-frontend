@@ -65,6 +65,10 @@ const ChatArea = React.memo(({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
 
+  // 🔍 Find the other user to check if they are an artist
+  const otherUser = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
+  const isArtist = !!otherUser?.artistName;
+
   // Force scroll to bottom when messages change, room changes, or loading finishes
   useLayoutEffect(() => {
     const scrollToBottom = () => {
@@ -125,6 +129,15 @@ const ChatArea = React.memo(({
                     <img src={roomAvatar} className="w-full h-full object-cover" alt="" />
                   </div>
                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                  
+                  {/* 🛡️ Mini Verified Badge (Bottom-Left) for Personal Chat - MOCK: true for users, false for artists */}
+                  {!isGroup && (true && !isArtist) && (
+                    <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_10px_rgba(0,229,255,0.5)] z-20">
+                      <svg className="w-2.5 h-2.5 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
+                    </div>
+                  )}
                 </motion.div>
 
                 <div className="flex-1 min-w-0">
@@ -166,6 +179,12 @@ const ChatArea = React.memo(({
                       >
                         {roomName}
                       </h2>
+                    )}
+                    {/* MOCK: true for users, false for artists (for personal chat) */}
+                    {!isGroup && (true && !isArtist) && (
+                      <svg className="w-4 h-4 text-[#00E5FF] shrink-0 drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
                     )}
                     {!isGroup && (
                       <span className="px-1.5 py-0.5 rounded-md bg-[#00E5FF]/10 border border-[#00E5FF]/20 text-[8px] font-bold text-[#00E5FF] uppercase tracking-tighter">

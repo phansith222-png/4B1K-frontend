@@ -18,6 +18,7 @@ import PostModal from "./PostModal";
 import EditPostModal from "./EditPostModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import TimeAgo from 'react-timeago'
+import useNotificationStore from "../stores/notificationStore";
 
 function PostItemInner({ post, index }) {
   const user = useUserStore((state) => state.user);
@@ -40,13 +41,26 @@ function PostItemInner({ post, index }) {
   const { setLightboxImage } = useUIStore();
   const isEdited = post.createdAt !== post.updatedAt;
 
-  const hdlLikeClick = async () => {
-    // console.log('Post Id',post.id)
+  const addNotification = useNotificationStore(state => state.addNotification);
 
+  const removeNotificationByPostId = useNotificationStore(state => state.removeNotificationByPostId);
+
+  const hdlLikeClick = async () => {
     if (haveLiked) {
       await unlikePost(post.id);
+      // 🗑️ Remove notification when unliked
+      removeNotificationByPostId(post.id, 'like');
     } else {
       await likePost(post.id);
+      // 🔔 Add real-time notification with postId
+      addNotification({
+        type: 'like',
+        postId: post.id,
+        title: `You liked ${post.user?.username}'s post`,
+        desc: post.content ? `"${post.content.substring(0, 40)}..."` : "Check out this post!",
+        img: post.postImages?.[0]?.url || post.user?.profileImage || post.user?.avatar,
+        link: `/home?postId=${post.id}`
+      });
     }
   };
 
@@ -71,6 +85,7 @@ function PostItemInner({ post, index }) {
     <>
       <motion.div
         key={post.id}
+        id={`post-${post.id}`}
         layout={false}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -78,29 +93,42 @@ function PostItemInner({ post, index }) {
           duration: 0.3,
           ease: 'easeOut',
         }}
-        className="bg-white/[0.03] border-y md:border border-white/10 rounded-2xl md:rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
+        className="bg-white/[0.03] border-y md:border border-white/10 rounded-2xl md:rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl scroll-mt-24"
       >
         {/* Post Header */}
         <div className="p-4 md:p-6 pb-2 md:pb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <img
-                src={
-                  post.user?.profileImage ||
-                  post.user?.avatar ||
-                  `https://ui-avatars.com/api/?name=${post.user?.username || "User"}&background=random&color=fff`
-                }
-                className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0 shadow-sm"
-                alt={post.user?.username || "User Avatar"}
-              />
+              <div className="relative">
+                <img
+                  src={
+                    post.user?.profileImage ||
+                    post.user?.avatar ||
+                    `https://ui-avatars.com/api/?name=${post.user?.username || "User"}&background=random&color=fff`
+                  }
+                  className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0 shadow-sm"
+                  alt={post.user?.username || "User Avatar"}
+                />
+                {/* 🛡️ Mini Verified Badge (Bottom-Left) - MOCK: true for users, false for artists */}
+                {(true && !post.user?.artistName) && (
+                  <div className="absolute -bottom-0.5 -left-0.5 w-3.5 h-3.5 bg-[#0B0C10] rounded-full border border-[#00E5FF] flex items-center justify-center shadow-[0_0_10px_rgba(0,229,255,0.5)] z-10">
+                    <svg className="w-2 h-2 text-[#00E5FF]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
 
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-black text-base group-hover:text-[#00E5FF] transition-colors">
                     {post.user?.username}
                   </span>
-                  {post.user?.verified && (
-                    <Verified size={16} className="text-[#00E5FF]" />
+                  {/* MOCK: true for users, false for artists */}
+                  {(true && !post.user?.artistName) && (
+                    <svg className="w-4 h-4 text-[#00E5FF] drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
                   )}
                 </div>
 
