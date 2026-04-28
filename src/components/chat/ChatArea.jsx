@@ -65,13 +65,13 @@ const ChatArea = React.memo(({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
 
-  // Force scroll to bottom on EVERY render to fight against layout shifts
+  // Force scroll to bottom when messages change or room changes
   useLayoutEffect(() => {
     if (chatContainerRef.current) {
       const container = chatContainerRef.current;
       container.scrollTop = container.scrollHeight;
     }
-  });
+  }, [messagesGrouped, activeChat]);
 
   // Secondary backup for messages changes
   useEffect(() => {
@@ -89,34 +89,17 @@ const ChatArea = React.memo(({
       <AnimatePresence mode="wait">
         {activeChat ? (
           <motion.div
-            key="active-chat"
-            initial={{ opacity: 0, x: 20 }}
+            key={activeChat}
+            initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="flex flex-col h-full w-full min-h-0"
           >
             {/* ── Fixed Header ── */}
-            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-xl relative">
+            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10] relative">
               <div className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/10 to-[#00E5FF]/10 opacity-20" />
               <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent shadow-[0_0_15px_#00E5FF]" />
-              
-              {/* Animated Spotlights */}
-              <motion.div 
-                animate={{ 
-                  x: [-200, 200, -200],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-1/2 left-1/4 w-[400px] h-[200%] bg-[#7000FF]/20 blur-[120px] rotate-45 pointer-events-none" 
-              />
-              <motion.div 
-                animate={{ 
-                  x: [200, -200, 200],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-1/2 right-1/4 w-[400px] h-[200%] bg-[#00E5FF]/20 blur-[120px] -rotate-45 pointer-events-none" 
-              />
 
               <div className="flex items-center gap-4 px-4 md:px-6 py-3 md:py-4 relative z-10">
                 {/* Back Arrow (LINE Style) */}
@@ -137,7 +120,6 @@ const ChatArea = React.memo(({
                   className="relative group cursor-pointer shrink-0"
                   onClick={handleAvatarClick}
                 >
-                  <div className="absolute -inset-1.5 bg-gradient-to-r from-[#7000FF] to-[#00E5FF] rounded-[22px] blur opacity-40 group-hover:opacity-100 animate-pulse transition duration-500" />
                   <div className={`relative w-13 h-13 rounded-[20px] overflow-hidden ring-1 ring-white/20 group-hover:ring-[#00E5FF] transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
                     <img src={roomAvatar} className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" alt="" />
                   </div>
@@ -285,45 +267,57 @@ const ChatArea = React.memo(({
               {/* Top Fade Gradient Overlay */}
               <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0B0C10] via-[#0B0C10]/80 to-transparent z-20 pointer-events-none" />
               {/* Background Effects */}
-              <div className="absolute inset-0 pointer-events-none z-0">
-                <div className="absolute top-[10%] left-[5%] w-[400px] h-[400px] bg-[#7000FF] rounded-full blur-[150px] opacity-[0.07]" />
-                <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-[#00E5FF] rounded-full blur-[150px] opacity-[0.07]" />
-              </div>
 
               <div className="w-full flex flex-col gap-6 min-h-full relative z-10">
                 <div className="flex flex-col gap-4">
+                  <AnimatePresence mode="wait">
                     {isLoading ? (
-                      // Skeleton for Messages
-                      [...Array(4)].map((_, i) => (
-                        <motion.div
-                          key={`msg-skeleton-${i}`}
-                          initial={{ opacity: 0, x: i % 2 === 0 ? -10 : 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
-                        >
-                          <div className={`flex gap-3 max-w-[70%] ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
-                            <div className="w-10 h-10 rounded-2xl bg-white/5 animate-pulse shrink-0" />
-                            <div className={`space-y-2 ${i % 2 === 0 ? "items-start" : "items-end"}`}>
-                              <div className="h-12 w-48 bg-white/5 rounded-2xl animate-pulse" />
-                              <div className="h-3 w-16 bg-white/5 rounded-lg animate-pulse" />
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {[...Array(4)].map((_, i) => (
+                          <div
+                            key={`msg-skeleton-${i}`}
+                            className={`flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-4`}
+                          >
+                            <div className={`flex gap-3 max-w-[70%] ${i % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}>
+                              <div className="w-10 h-10 rounded-2xl bg-white/5 animate-pulse shrink-0" />
+                              <div className={`space-y-2 ${i % 2 === 0 ? "items-start" : "items-end"}`}>
+                                <div className="h-12 w-48 bg-white/5 rounded-2xl animate-pulse" />
+                                <div className="h-3 w-16 bg-white/5 rounded-lg animate-pulse" />
+                              </div>
                             </div>
                           </div>
-                        </motion.div>
-                      ))
+                        ))}
+                      </motion.div>
                     ) : (
-                      messagesGrouped.map((msg, i) => (
-                        <ChatBubble
-                          key={msg.id || i}
-                          msg={msg}
-                          isMe={msg.isMe}
-                          showAvatar={msg.showAvatar && !msg.isMe}
-                          senderName={msg.sender?.firstName ? `${msg.sender.firstName} ${msg.sender.lastName || ''}`.trim() : msg.sender?.username || "Member"}
-                          onAvatarClick={onAvatarClick}
-                          onImageClick={onImageClick}
-                          showDateDivider={msg.showDateDivider}
-                        />
-                      ))
+                      <motion.div
+                        key="messages-list"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {messagesGrouped.map((msg, i) => (
+                          <ChatBubble
+                            key={msg.id || i}
+                            msg={msg}
+                            isMe={msg.isMe}
+                            showAvatar={msg.showAvatar && !msg.isMe}
+                            senderName={msg.sender?.firstName ? `${msg.sender.firstName} ${msg.sender.lastName || ''}`.trim() : msg.sender?.username || "Member"}
+                            onAvatarClick={onAvatarClick}
+                            onImageClick={onImageClick}
+                            showDateDivider={msg.showDateDivider}
+                            myAvatar={myAvatar}
+                          />
+                        ))}
+                      </motion.div>
                     )}
+                  </AnimatePresence>
                 </div>
                 {/* Hidden Anchor for Scrolling */}
                 <div ref={scrollRef} className="h-1 w-full shrink-0 mt-4" />
@@ -339,7 +333,7 @@ const ChatArea = React.memo(({
                       initial={{ opacity: 0, y: 10, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                      className="flex items-center gap-3 text-[10px] text-[#00E5FF] font-black bg-[#0B0C10]/80 backdrop-blur-md border border-[#00E5FF]/30 px-4 py-1.5 rounded-full w-fit mb-3 shadow-[0_0_20px_rgba(0,229,255,0.15)] ml-2"
+                      className="flex items-center gap-3 text-[10px] text-[#00E5FF] font-black bg-[#1A1C23] border border-[#00E5FF]/30 px-4 py-1.5 rounded-full w-fit mb-3 ml-2"
                     >
                       <TypingDots />
                       <span className="uppercase tracking-[0.2em]">{typingText}</span>
@@ -355,8 +349,7 @@ const ChatArea = React.memo(({
                       exit={{ opacity: 0, y: 10, scale: 0.9 }}
                       className="relative w-24 h-24 mb-4 ml-2 group"
                     >
-                      <div className="absolute -inset-1 bg-[#00E5FF] rounded-2xl blur-md opacity-20" />
-                      <img src={pendingImage} className="relative w-full h-full object-cover rounded-xl border border-white/20 shadow-xl" alt="Pending" />
+                      <img src={pendingImage} className="relative w-full h-full object-cover rounded-xl border border-white/20 shadow-md" alt="Pending" />
                       <button
                         onClick={() => setPendingImage(null)}
                         className="absolute -top-2 -right-2 w-6 h-6 bg-[#1A1C23] border border-white/20 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-500/80 transition-all z-10"
@@ -367,7 +360,7 @@ const ChatArea = React.memo(({
                   )}
                 </AnimatePresence>
 
-                <div className="relative group bg-[#1A1C23]/80 backdrop-blur-3xl border border-white/10 p-2 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] focus-within:border-[#00E5FF]/60 focus-within:shadow-[0_0_30px_rgba(0,229,255,0.2)] focus-within:ring-1 focus-within:ring-[#00E5FF]/30 transition-all duration-500">
+                <div className="relative group bg-[#1A1C23] border border-white/10 p-2 rounded-[32px] shadow-[0_10px_30px_rgba(0,0,0,0.3)] focus-within:border-[#00E5FF]/60 focus-within:ring-1 focus-within:ring-[#00E5FF]/30 transition-colors duration-300">
                   <div className="flex items-center gap-2" ref={emojiRef}>
                     
                     {/* ── Left: Image Attachment Button ── */}
@@ -473,14 +466,12 @@ const ChatArea = React.memo(({
           >
             {/* Background Tech Decor */}
             <div className="absolute inset-0 z-0">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#7000FF]/5 rounded-full blur-[120px]" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/5 rounded-full" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#00E5FF]/10 rounded-full animate-pulse" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#00E5FF]/10 rounded-full" />
             </div>
 
             <div className="relative z-10">
               <div className="relative w-32 h-32 mx-auto mb-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#7000FF] to-[#00E5FF] rounded-[40px] blur-2xl opacity-20 animate-pulse" />
                 <div className="relative w-full h-full bg-[#1A1C23] border border-white/10 rounded-[40px] flex items-center justify-center text-5xl shadow-2xl overflow-hidden">
                   <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
                   💬

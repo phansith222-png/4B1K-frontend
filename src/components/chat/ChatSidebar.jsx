@@ -105,7 +105,7 @@ export default function ChatSidebar({
 
         {/* ── Search Bar ── */}
         <div className="relative group mb-6">
-          <div className="absolute inset-0 bg-[#00E5FF]/5 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 rounded-2xl" />
+          <div className="absolute inset-0 bg-[#00E5FF]/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 rounded-2xl" />
           <div className="relative flex items-center bg-[#15171e] border border-white/5 rounded-2xl p-0.5 group-focus-within:border-[#00E5FF]/30 transition-all duration-300">
             <div className="pl-4">
               <svg className="w-4 h-4 text-gray-600 group-focus-within:text-[#00E5FF] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -203,7 +203,7 @@ export default function ChatSidebar({
                   >
                     <div className="relative shrink-0">
                       <div className={`w-13 h-13 rounded-[18px] flex items-center justify-center font-extrabold overflow-hidden shadow-2xl border border-white/10 transition-transform duration-500 group-hover:scale-105
-                        ${isActive ? "bg-white/10 backdrop-blur-md" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
+                        ${isActive ? "bg-[#353945]" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
                         <img
                           src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)}
                           className="w-full h-full object-cover"
@@ -260,7 +260,7 @@ export default function ChatSidebar({
               className="flex flex-col items-center justify-center py-20 px-6 text-center"
             >
               <div className="relative mb-6">
-                <div className="absolute inset-0 bg-[#7000FF]/20 blur-3xl rounded-full" />
+                <div className="absolute inset-0 bg-[#7000FF]/10 rounded-full" />
                 <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#1A1C23] to-[#0B0C10] border border-white/10 flex items-center justify-center text-4xl shadow-2xl">
                   📡
                 </div>

@@ -473,14 +473,14 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="wait">
         {(!showSidebar || activeChat || !isMobile) && (
           <motion.div
-            key={activeChat || "chat-area-empty"}
-            initial={isMobile ? { x: 300, opacity: 0 } : { x: 20, opacity: 0 }}
+            key="chat-area-wrapper"
+            initial={isMobile ? { x: 300, opacity: 0 } : { opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={isMobile ? { x: 300, opacity: 0 } : { x: -20, opacity: 0 }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            exit={isMobile ? { x: 300, opacity: 0 } : { opacity: 0 }}
+            transition={{ duration: 0.3 }}
             className="flex-1 h-full"
           >
             <ChatArea

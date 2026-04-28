@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { formatRelative } from "date-fns";
 import { avatarUrl } from "../../utils/chatUtils";
 
-export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatarClick, onImageClick, showDateDivider }) {
+export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatarClick, onImageClick, showDateDivider, myAvatar }) {
   const time = (() => {
     try {
       return formatRelative(new Date(msg.createdAt), new Date());
@@ -46,9 +46,9 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
       )}
 
       {/* ── Message Row ── */}
-      {/* MY message → float RIGHT, no avatar */}
+      {/* MY message → float RIGHT, with avatar */}
       {isMe ? (
-        <div className="flex justify-end mb-1 px-2">
+        <div className="flex items-end justify-end gap-2.5 mb-1 px-2">
           <div className="flex flex-col items-end max-w-[75%]">
             {/* Bubble */}
             <motion.div
@@ -74,13 +74,13 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#7000FF]/20 to-transparent pointer-events-none" />
                   <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+                    <div className="w-10 h-10 rounded-full bg-[#1A1C23]/80 flex items-center justify-center border border-white/30">
                       <svg className="w-5 h-5 text-white shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="relative group overflow-hidden bg-gradient-to-br from-[#7000FF] to-[#9b4dff] text-white px-4 py-2.5 rounded-[22px] rounded-br-[4px] text-[14px] leading-relaxed shadow-[0_10px_25px_rgba(112,0,255,0.4)] border border-white/20 backdrop-blur-sm">
+                <div className="relative group overflow-hidden bg-gradient-to-br from-[#7000FF] to-[#9b4dff] text-white px-4 py-2.5 rounded-[22px] rounded-br-[4px] text-[14px] leading-relaxed shadow-sm border border-white/20">
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative z-10">{renderText(msg.content)}</div>
                   {youtubeId && (
@@ -127,27 +127,33 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
               </motion.div>
             </div>
           </div>
+
+          {/* My Avatar column — always show */}
+          <div className="w-8 shrink-0 self-end mb-4">
+            <div className="relative group/av">
+              <img
+                src={avatarUrl("Me", myAvatar)}
+                alt=""
+                className="relative w-8 h-8 rounded-xl object-cover border border-white/20 shadow-lg group-hover/av:scale-110 transition-transform"
+              />
+            </div>
+          </div>
         </div>
       ) : (
         /* OTHERS' messages → float LEFT, with avatar + name */
         <div className="flex items-end gap-2.5 mb-1 px-2">
-          {/* Avatar column — always reserve space */}
+          {/* Avatar column — always show */}
           <div className="w-8 shrink-0 self-end mb-4">
-            {showAvatar ? (
-              <div
-                className="relative cursor-pointer group/av"
-                onClick={() => onAvatarClick?.({ ...msg.sender, id: msg.senderId })}
-              >
-                <div className="absolute -inset-1 bg-gradient-to-r from-[#7000FF] to-[#00E5FF] rounded-xl blur-[4px] opacity-0 group-hover/av:opacity-100 transition duration-300" />
-                <img
-                  src={avatarUrl(senderName, msg.sender?.profileImage)}
-                  alt=""
-                  className="relative w-8 h-8 rounded-xl object-cover border border-white/20 shadow-lg group-hover/av:scale-110 transition-transform"
-                />
-              </div>
-            ) : (
-              <div className="w-8 h-8" /> // placeholder to keep alignment
-            )}
+            <div
+              className="relative cursor-pointer group/av"
+              onClick={() => onAvatarClick?.({ ...msg.sender, id: msg.senderId })}
+            >
+              <img
+                src={avatarUrl(senderName, msg.sender?.profileImage)}
+                alt=""
+                className="relative w-8 h-8 rounded-xl object-cover border border-white/20 shadow-lg group-hover/av:scale-110 transition-transform"
+              />
+            </div>
           </div>
 
           {/* Bubble + meta */}
@@ -175,13 +181,13 @@ export default function ChatBubble({ msg, isMe, showAvatar, senderName, onAvatar
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/10 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                    <div className="w-10 h-10 rounded-full bg-[#1A1C23]/80 flex items-center justify-center border border-white/20">
                       <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#1c1e26]/90 backdrop-blur-md text-gray-100 px-4 py-2.5 rounded-[22px] rounded-bl-[4px] text-[14px] leading-relaxed shadow-2xl border border-white/10 relative group overflow-hidden">
+                <div className="bg-[#1c1e26] text-gray-100 px-4 py-2.5 rounded-[22px] rounded-bl-[4px] text-[14px] leading-relaxed shadow-sm border border-white/10 relative group overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative z-10">{renderText(msg.content)}</div>
                   {youtubeId && (
