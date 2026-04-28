@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import mainapi from "../api/auth";
 import { useSocket } from "../contexts/SocketContext";
@@ -8,45 +8,37 @@ import { avatarUrl } from "../utils/chatUtils";
 // Import new modular components
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatArea from "../components/chat/ChatArea";
-import BackButton from "../components/BackButton";
 import { useCyberToast } from "../components/CyberToast";
 import CyberConfirmModal from "../components/chat/CyberConfirmModal";
 import UserProfileModal from "../components/chat/UserProfileModal";
 import ConcertBackground from "../components/chat/ConcertBackground";
+
+// Custom hooks
+import { useChatContacts } from "../hooks/chat/useChatContacts";
+import { useChatMessages } from "../hooks/chat/useChatMessages";
+import { useChatSocket } from "../hooks/chat/useChatSocket";
 
 export default function ChatPage() {
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
   const { showToast } = useCyberToast();
   const myUserId = user?.id;
-  const messageImageInputRef = useRef(null);
 
+  // ── UI state ──
   const [activeChat, setActiveChat] = useState(null);
-  const [contacts, setContacts] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [unreadCounts, setUnreadCounts] = useState({});
-  const [inputText, setInputText] = useState("");
   const [connected, setConnected] = useState(false);
-  const [typingText, setTypingText] = useState("");
   const [tab, setTab] = useState("community");
   const [search, setSearch] = useState("");
-  const [showSidebar, setShowSidebar] = useState(true); // mobile toggle
+  const [showSidebar, setShowSidebar] = useState(true);
   const [showEmoji, setShowEmoji] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [isLoadingContacts, setIsLoadingContacts] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: "", message: "", onConfirm: () => { } });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: "", message: "", onConfirm: () => {} });
   const [viewingUser, setViewingUser] = useState(null);
-  const [pendingImage, setPendingImage] = useState(null);
 
-  const scrollRef = useRef(null);
-  const chatContainerRef = useRef(null);
-  const typingTimer = useRef(null);
   const emojiRef = useRef(null);
-  const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const activeChatRef = useRef(activeChat);
 
@@ -54,15 +46,73 @@ export default function ChatPage() {
     activeChatRef.current = activeChat;
   }, [activeChat]);
 
-  const activeRoom = contacts.find((r) => r.id === activeChat);
-  // Rely on isGroup value from DB as primary source of truth
-  const isGroup = activeRoom?.isGroup ?? false;
-  const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
-  const roomName = isGroup ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`) : (other?.firstName ? `${other.firstName} ${other.lastName || ''}`.trim() : other?.username || "กำลังโหลด...");
-  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.coverImage : other?.profileImage);
-  const myName = (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user?.username) || "U";
-  const myAvatar = avatarUrl(myName, user?.profileImage);
+  // ── Data hooks ──
+  const { contacts, setContacts, unreadCounts, setUnreadCounts, isLoadingContacts } =
+    useChatContacts({ socket, connected });
 
+  const {
+    setMessages,
+    isLoadingMessages,
+    inputText,
+    setInputText,
+    pendingImage,
+    setPendingImage,
+    typingText,
+    setTypingText,
+    send,
+    onInput,
+    handleMessageImageChange,
+    grouped,
+    scrollRef,
+    chatContainerRef,
+    inputRef,
+    messageImageInputRef,
+  } = useChatMessages({ socket, connected, activeChat, myUserId, user, showToast, setContacts, setUnreadCounts });
+
+  // ── Socket callbacks (composed here so they close over setMessages, setContacts, etc.) ──
+  const handleReceive = useCallback((msg) => {
+    const rid = String(msg.chatRoomId);
+    const currentActiveChat = String(activeChatRef.current);
+
+    setContacts((prev) => prev.map((c) =>
+      String(c.id) === rid ? { ...c, lastMessageAt: msg.createdAt } : c
+    ));
+
+    if (rid === currentActiveChat) {
+      setMessages((ms) => {
+        if (ms.some((m) => m.id === msg.id)) return ms;
+        return [...ms.filter((m) => !(m.isOptimistic && m.content === msg.content)),
+          { ...msg, isSent: true, isOptimistic: false }];
+      });
+      socket?.emit("mark_read", { chatRoomId: rid, userId: myUserId, lastMessageId: msg.id });
+    } else {
+      if (msg.senderId !== myUserId) {
+        setUnreadCounts((u) => ({ ...u, [rid]: (u[rid] || 0) + 1 }));
+      }
+    }
+  }, [socket, myUserId]);
+
+  const handleRead = useCallback(({ chatRoomId, readByUserId }) => {
+    setActiveChat((prev) => {
+      if (String(chatRoomId) === String(prev) && readByUserId !== myUserId)
+        setMessages((ms) => ms.map((m) => ({ ...m, isRead: true })));
+      return prev;
+    });
+  }, [myUserId]);
+
+  useChatSocket({ socket, handleReceive, handleRead, setConnected, setActiveChat, setContacts, showToast, setTypingText });
+
+  // ── Emoji picker outside-click close ──
+  useEffect(() => {
+    if (!showEmoji) return;
+    const handler = (e) => {
+      if (emojiRef.current && !emojiRef.current.contains(e.target)) setShowEmoji(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showEmoji]);
+
+  // ── Room action handlers ──
   const handleAvatarClick = () => {
     if (isGroup) {
       if (activeRoom?.creatorId === myUserId) {
@@ -76,16 +126,10 @@ export default function ChatPage() {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !activeChat) return;
-
-    // Convert to base64
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const base64String = reader.result;
-      
       try {
-        await mainapi.patch(`/chats/rooms/${activeChat}/avatar`, {
-          coverImage: base64String
-        });
+        await mainapi.patch(`/chats/rooms/${activeChat}/avatar`, { coverImage: reader.result });
         const res = await mainapi.get("/chats/rooms");
         setContacts(res.data);
       } catch (err) {
@@ -99,13 +143,9 @@ export default function ChatPage() {
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     if (!newRoomName.trim() || isCreating) return;
-
     setIsCreating(true);
     try {
-      const res = await mainapi.post("/chats/rooms", {
-        name: newRoomName.trim(),
-        type: "community",
-      });
+      const res = await mainapi.post("/chats/rooms", { name: newRoomName.trim(), type: "community" });
       setContacts((prev) => [res.data, ...prev]);
       setIsCreateModalOpen(false);
       setNewRoomName("");
@@ -121,20 +161,11 @@ export default function ChatPage() {
   const startPrivateChat = async (friendId) => {
     if (!friendId || friendId === myUserId) return;
     try {
-      // 1. Call API to find or create a private room
       const res = await mainapi.post("/chats/personal", { friendId });
-
-      // 2. Refresh the room list to include the new/updated room
       const listRes = await mainapi.get("/chats/rooms");
       setContacts(listRes.data);
-
-      // 3. Navigate to the private room
       setActiveChat(res.data.id);
-
-      // 4. Automatically switch to the "Personal" tab
       setTab("personal");
-
-      // 5. On mobile, hide the sidebar
       if (window.innerWidth < 768) {
         setShowSidebar(false);
       } else {
@@ -150,9 +181,9 @@ export default function ChatPage() {
     if (!activeChat) return;
     try {
       await mainapi.patch(`/chats/rooms/${activeChat}`, { roomName: newName });
-      setContacts(prev => prev.map(c => 
-        String(c.id) === String(activeChat) ? { ...c, name: newName } : c
-      ));
+      setContacts((prev) =>
+        prev.map((c) => String(c.id) === String(activeChat) ? { ...c, name: newName } : c)
+      );
       showToast("Group renamed successfully!", "success");
     } catch (err) {
       console.error("Failed to rename group:", err);
@@ -184,239 +215,23 @@ export default function ChatPage() {
           console.error("Failed to delete room:", err);
           showToast("Unable to delete at this time.", "error");
         }
-      }
+      },
     });
   };
 
-  // close emoji picker on outside click
-  useEffect(() => {
-    if (!showEmoji) return;
-    const handler = (e) => {
-      if (emojiRef.current && !emojiRef.current.contains(e.target)) setShowEmoji(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showEmoji]);
-
-  const openChat = (id) => {
-    setActiveChat(id);
-    if (isMobile) setShowSidebar(false);
-  };
-
-  const handleReceive = useCallback((msg) => {
-    const rid = String(msg.chatRoomId);
-    const currentActiveChat = String(activeChatRef.current);
-
-    // 🚀 CRITICAL: Update lastMessageAt to move room to top on every message
-    setContacts((prev) => prev.map((c) =>
-      String(c.id) === rid ? { ...c, lastMessageAt: msg.createdAt } : c
-    ));
-
-    if (rid === currentActiveChat) {
-      setMessages((ms) => {
-        if (ms.some((m) => m.id === msg.id)) return ms;
-        return [...ms.filter((m) => !(m.isOptimistic && m.content === msg.content)),
-        { ...msg, isSent: true, isOptimistic: false }];
-      });
-      socket?.emit("mark_read", { chatRoomId: rid, userId: myUserId, lastMessageId: msg.id });
-    } else {
-      if (msg.senderId !== myUserId) {
-        setUnreadCounts((u) => ({ ...u, [rid]: (u[rid] || 0) + 1 }));
-      }
-    }
-  }, [socket, myUserId]);
-
-  const handleRead = useCallback(({ chatRoomId, readByUserId }) => {
-    setActiveChat((prev) => {
-      if (String(chatRoomId) === String(prev) && readByUserId !== myUserId)
-        setMessages((ms) => ms.map((m) => ({ ...m, isRead: true })));
-      return prev;
-    });
-  }, [myUserId]);
-
-  useEffect(() => {
-    if (!socket) return;
-    const onTyping = (d) => setActiveChat((p) => {
-      if (String(d.roomId) === String(p)) setTypingText(`${d.user} is typing...`);
-      return p;
-    });
-    const onGroupDeleted = (data) => {
-      showToast("This group has been deleted by the creator.", "error");
-      setActiveChat((prev) => {
-        if (String(data.roomId) === String(prev)) return null;
-        return prev;
-      });
-      mainapi.get("/chats/rooms").then((r) => setContacts(r.data)).catch(console.error);
-    };
-
-    socket.on("connect", () => {
-      setConnected(true);
-    });
-    socket.on("disconnect", () => setConnected(false));
-    socket.on("receive_message", handleReceive);
-    socket.on("message_read", handleRead);
-    socket.on("display_typing", onTyping);
-    socket.on("hide_typing", () => setTypingText(""));
-    socket.on("group_deleted", onGroupDeleted);
-    setConnected(socket.connected);
-    return () => {
-      socket.off("connect"); socket.off("disconnect");
-      socket.off("receive_message", handleReceive);
-      socket.off("message_read", handleRead);
-      socket.off("display_typing", onTyping);
-      socket.off("hide_typing");
-      socket.off("group_deleted", onGroupDeleted);
-    };
-  }, [socket, handleReceive, handleRead]);
-
-  useEffect(() => {
-    mainapi.get("/chats/rooms").then((r) => {
-      setContacts(r.data);
-      const initialUnread = {};
-      r.data.forEach(room => {
-        if (room.unreadCount > 0) {
-          initialUnread[room.id] = room.unreadCount;
-        }
-      });
-      setUnreadCounts(prev => ({ ...prev, ...initialUnread }));
-    }).catch(console.error)
-      .finally(() => setIsLoadingContacts(false));
-  }, []); // Remove socket dependency as we handle join separately
-
-  // Dedicated effect to join rooms when socket is connected and contacts are loaded
-  useEffect(() => {
-    if (socket && connected && contacts.length > 0) {
-      contacts.forEach(room => {
-        socket.emit("join_room", String(room.id));
-      });
-    }
-  }, [socket, connected, contacts]);
-
-  useEffect(() => {
-    if (!activeChat) {
-      setMessages([]);
-      setIsLoadingMessages(false);
-      return;
-    }
-
-    let isCurrent = true;
-    setTypingText("");
-    setUnreadCounts((u) => ({ ...u, [activeChat]: 0 }));
-    setMessages([]); 
-    setIsLoadingMessages(true);
-
-    mainapi.get(`/chats/${activeChat}/messages`)
-      .then((r) => {
-        if (!isCurrent) return;
-        setMessages(r.data.map((m) => ({ ...m, isSent: true })));
-
-        if (r.data.length > 0 && socket) {
-          const lastMsg = r.data[r.data.length - 1];
-          socket.emit("mark_read", { chatRoomId: activeChat, userId: myUserId, lastMessageId: lastMsg.id });
-        }
-      })
-      .catch((err) => {
-        if (!isCurrent) return;
-        console.error("Failed to load messages:", err);
-        showToast("Connection to frequency lost. Retrying...", "error");
-      })
-      .finally(() => {
-        if (isCurrent) setIsLoadingMessages(false);
-      });
-
-    if (socket) {
-      socket.emit("join_room", String(activeChat));
-    }
-    
-    return () => { isCurrent = false; };
-  }, [socket, activeChat, myUserId]);
-
-  const send = async (e) => {
-    e?.preventDefault();
-    const text = inputText.trim();
-    if ((!text && !pendingImage) || !connected || !activeChat) return;
-    
-    let imageUrl = null;
-    const currentPendingImage = pendingImage;
-    const currentText = text;
-
-    // Reset inputs immediately for better UX
-    setInputText("");
-    setPendingImage(null);
-    clearTimeout(typingTimer.current);
-    socket.emit("stop_typing", { chatRoomId: activeChat });
-
-    try {
-      // If there's a pending image, upload it first
-      if (currentPendingImage) {
-        const res = await mainapi.post(`/chats/rooms/${activeChat}/messages/image`, { image: currentPendingImage });
-        imageUrl = res.data.imageUrl;
-      }
-
-      const finalContent = imageUrl ? `[IMAGE]:${imageUrl}${currentText ? "\n" + currentText : ""}` : currentText;
-
-      const payload = {
-        id: `tmp-${Date.now()}`, 
-        chatRoomId: activeChat, 
-        senderId: myUserId,
-        content: finalContent, 
-        createdAt: new Date().toISOString(),
-        isOptimistic: true, 
-        isSent: false, 
-        isRead: false,
-        sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
-      };
-
-      setMessages((ms) => [...ms, payload]);
-
-      // Update the room's last activity date
-      setContacts((prev) => prev.map((c) =>
-        String(c.id) === String(activeChat) ? { ...c, lastMessageAt: payload.createdAt } : c
-      ));
-
-      socket.emit("send_message", payload);
-    } catch (err) {
-      console.error("Failed to send message:", err);
-      showToast("Failed to send message. Please try again.", "error");
-      // Optionally restore state on failure? Usually better to just show error.
-    }
-  };
-
-  const handleMessageImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file || !activeChat || !connected) return;
-    
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPendingImage(reader.result);
-      if (inputRef.current) inputRef.current.focus();
-    };
-    reader.readAsDataURL(file);
-    if (messageImageInputRef.current) messageImageInputRef.current.value = "";
-  };
-
-  const onInput = (e) => {
-    setInputText(e.target.value);
-    if (!socket || !activeChat || !connected) return;
-    socket.emit("typing", { chatRoomId: String(activeChat), userName: user?.username || "User" });
-    clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(() => socket.emit("stop_typing", { chatRoomId: activeChat }), 1500);
-  };
-
-  const grouped = useMemo(() => messages.map((m, i) => {
-    const isMe = Number(m.senderId) === Number(myUserId);
-    const prev = messages[i - 1];
-    const isNewDay = !prev || new Date(m.createdAt).toDateString() !== new Date(prev.createdAt).toDateString();
-    const prevSame = prev && Number(prev.senderId) === Number(m.senderId);
-
-    return { ...m, isMe, isGrouped: false, showAvatar: !prevSame, showDateDivider: isNewDay };
-  }), [messages, myUserId]);
+  // ── Derived display values ──
+  const activeRoom = contacts.find((r) => r.id === activeChat);
+  const isGroup = activeRoom?.isGroup ?? false;
+  const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
+  const roomName = isGroup
+    ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`)
+    : (other?.firstName ? `${other.firstName} ${other.lastName || ""}`.trim() : other?.username || "กำลังโหลด...");
+  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.coverImage : other?.profileImage);
+  const myName = (user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.username) || "U";
+  const myAvatar = avatarUrl(myName, user?.profileImage);
 
   const filtered = useMemo(() => {
-    // 1. Filter by Tab
     let result = contacts.filter((r) => tab === "community" ? r.isGroup : !r.isGroup);
-
-    // 2. Apply Search
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((r) => {
@@ -425,8 +240,6 @@ export default function ChatPage() {
         return (name || "").toLowerCase().includes(q);
       });
     }
-
-    // 3. Sort strictly by newest date (last message or update)
     return [...result].sort((a, b) => {
       const dateA = new Date(a.lastMessageAt || a.updatedAt || 0).getTime();
       const dateB = new Date(b.lastMessageAt || b.updatedAt || 0).getTime();
@@ -435,7 +248,8 @@ export default function ChatPage() {
   }, [contacts, search, tab, myUserId, unreadCounts]);
 
   const goBack = () => { setActiveChat(null); setShowSidebar(true); };
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const openChat = (id) => { setActiveChat(id); if (isMobile) setShowSidebar(false); };
 
   return (
     <div className="flex h-full w-full bg-[#0B0C10] text-gray-200 overflow-hidden relative font-sans selection:bg-[#00E5FF]/30">
@@ -532,15 +346,13 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* ... (Modal remains the same) */}
-
       {/* ── Create Room Modal ── */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
           <div className="w-full max-w-sm relative group animate-in zoom-in-90 slide-in-from-bottom-8 duration-500 ease-out">
             {/* Grand Glowing Effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 rounded-[20px] blur opacity-40 group-hover:opacity-70 transition duration-1000"></div>
-            
+
             <div className="relative bg-[#13141a]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-7 shadow-2xl">
               <div className="mb-8 text-center">
                 <div className="w-16 h-16 mx-auto bg-gradient-to-tr from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-purple-500/30 transform rotate-3">
