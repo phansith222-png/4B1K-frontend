@@ -12,17 +12,21 @@ import { useCyberToast } from "../components/CyberToast";
 import CyberConfirmModal from "../components/chat/CyberConfirmModal";
 import UserProfileModal from "../components/chat/UserProfileModal";
 import ConcertBackground from "../components/chat/ConcertBackground";
+import CreateRoomModal from "../components/chat/CreateRoomModal";
+import ImageLightbox from "../components/chat/ImageLightbox";
 
 // Custom hooks
 import { useChatContacts } from "../hooks/chat/useChatContacts";
 import { useChatMessages } from "../hooks/chat/useChatMessages";
 import { useChatSocket } from "../hooks/chat/useChatSocket";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function ChatPage() {
   const socket = useSocket();
   const user = useUserStore((s) => s.user);
   const { showToast } = useCyberToast();
   const myUserId = user?.id;
+  const isMobile = useIsMobile();
 
   // ── UI state ──
   const [activeChat, setActiveChat] = useState(null);
@@ -69,7 +73,7 @@ export default function ChatPage() {
     messageImageInputRef,
   } = useChatMessages({ socket, connected, activeChat, myUserId, user, showToast, setContacts, setUnreadCounts });
 
-  // ── Socket callbacks (composed here so they close over setMessages, setContacts, etc.) ──
+  // ── Socket callbacks ──
   const handleReceive = useCallback((msg) => {
     const rid = String(msg.chatRoomId);
     const currentActiveChat = String(activeChatRef.current);
@@ -112,13 +116,24 @@ export default function ChatPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showEmoji]);
 
+  // ── Derived display values ──
+  const activeRoom = contacts.find((r) => r.id === activeChat);
+  const isGroup = activeRoom?.isGroup ?? false;
+  const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
+  const roomName = isGroup
+    ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`)
+    : (other?.firstName ? `${other.firstName} ${other.lastName || ""}`.trim() : other?.username || "กำลังโหลด...");
+  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.coverImage : other?.profileImage);
+  const myName = (user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.username) || "U";
+  const myAvatar = avatarUrl(myName, user?.profileImage);
+
   // ── Room action handlers ──
-  const handleAvatarClick = () => {
+  const handleRoomAvatarClick = () => {
     if (isGroup) {
       if (activeRoom?.creatorId === myUserId) {
         fileInputRef.current?.click();
       } else {
-        alert("เฉพาะผู้สร้างห้องเท่านั้นที่สามารถเปลี่ยนรูปได้");
+        showToast("เฉพาะผู้สร้างห้องเท่านั้นที่สามารถเปลี่ยนรูปได้", "error");
       }
     }
   };
@@ -134,7 +149,7 @@ export default function ChatPage() {
         setContacts(res.data);
       } catch (err) {
         console.error("Failed to update avatar:", err);
-        alert("ไม่สามารถเปลี่ยนรูปโปรไฟล์ได้ในขณะนี้");
+        showToast("ไม่สามารถเปลี่ยนรูปโปรไฟล์ได้ในขณะนี้", "error");
       }
     };
     reader.readAsDataURL(file);
@@ -166,11 +181,7 @@ export default function ChatPage() {
       setContacts(listRes.data);
       setActiveChat(res.data.id);
       setTab("personal");
-      if (window.innerWidth < 768) {
-        setShowSidebar(false);
-      } else {
-        setShowSidebar(true);
-      }
+      setShowSidebar(!isMobile);
     } catch (err) {
       console.error("Failed to start private chat:", err);
       showToast("Unable to start private chat at this time.", "error");
@@ -219,16 +230,15 @@ export default function ChatPage() {
     });
   };
 
-  // ── Derived display values ──
-  const activeRoom = contacts.find((r) => r.id === activeChat);
-  const isGroup = activeRoom?.isGroup ?? false;
-  const other = !isGroup ? activeRoom?.users?.find((u) => u.userId !== myUserId)?.user : null;
-  const roomName = isGroup
-    ? (activeRoom?.name || `กลุ่ม ${activeRoom?.id}`)
-    : (other?.firstName ? `${other.firstName} ${other.lastName || ""}`.trim() : other?.username || "กำลังโหลด...");
-  const roomAvatar = avatarUrl(roomName, isGroup ? activeRoom?.coverImage : other?.profileImage);
-  const myName = (user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.username) || "U";
-  const myAvatar = avatarUrl(myName, user?.profileImage);
+  const handleUserAvatarClick = useCallback(async (userData) => {
+    setViewingUser(userData);
+    try {
+      const res = await mainapi.get(`/users/${userData.id}`);
+      setViewingUser(res.data);
+    } catch (err) {
+      console.error("Failed to fetch latest user details:", err);
+    }
+  }, []);
 
   const filtered = useMemo(() => {
     let result = contacts.filter((r) => tab === "community" ? r.isGroup : !r.isGroup);
@@ -248,7 +258,6 @@ export default function ChatPage() {
   }, [contacts, search, tab, myUserId, unreadCounts]);
 
   const goBack = () => { setActiveChat(null); setShowSidebar(true); };
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const openChat = (id) => { setActiveChat(id); if (isMobile) setShowSidebar(false); };
 
   return (
@@ -266,7 +275,7 @@ export default function ChatPage() {
             className={`${isMobile ? "fixed inset-0 z-50" : "relative w-[380px] shrink-0"} h-full bg-[#0B0C10]`}
           >
             <ChatSidebar
-              showSidebar={true} // Now managed by ChatPage's AnimatePresence
+              showSidebar={true}
               connected={connected}
               search={search}
               setSearch={setSearch}
@@ -316,7 +325,7 @@ export default function ChatPage() {
               onInput={onInput}
               send={send}
               goBack={goBack}
-              handleAvatarClick={handleAvatarClick}
+              handleAvatarClick={handleRoomAvatarClick}
               fileInputRef={fileInputRef}
               handleFileChange={handleFileChange}
               handleDeleteRoom={handleDeleteRoom}
@@ -327,15 +336,7 @@ export default function ChatPage() {
               isLoading={isLoadingMessages}
               onImageClick={setSelectedImage}
               chatContainerRef={chatContainerRef}
-              onAvatarClick={async (userData) => {
-                setViewingUser(userData);
-                try {
-                  const res = await mainapi.get(`/users/${userData.id}`);
-                  setViewingUser(res.data);
-                } catch (err) {
-                  console.error("Failed to fetch latest user details:", err);
-                }
-              }}
+              onAvatarClick={handleUserAvatarClick}
               onRenameGroup={handleRenameGroup}
               messageImageInputRef={messageImageInputRef}
               handleMessageImageChange={handleMessageImageChange}
@@ -346,95 +347,17 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Create Room Modal ── */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="w-full max-w-sm relative group animate-in zoom-in-90 slide-in-from-bottom-8 duration-500 ease-out">
-            {/* Grand Glowing Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 rounded-[20px] blur opacity-40 group-hover:opacity-70 transition duration-1000"></div>
+      <CreateRoomModal
+        isOpen={isCreateModalOpen}
+        onClose={() => { setIsCreateModalOpen(false); setNewRoomName(""); }}
+        newRoomName={newRoomName}
+        setNewRoomName={setNewRoomName}
+        onSubmit={handleCreateRoom}
+        isCreating={isCreating}
+      />
 
-            <div className="relative bg-[#13141a]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-7 shadow-2xl">
-              <div className="mb-8 text-center">
-                <div className="w-16 h-16 mx-auto bg-gradient-to-tr from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-purple-500/30 transform rotate-3">
-                  <span className="text-3xl filter drop-shadow-md -rotate-3">🚀</span>
-                </div>
-                <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 tracking-tight mb-2">
-                  Create Community
-                </h3>
-                <p className="text-[13px] text-gray-400 font-medium">Start a new space for conversations and connections.</p>
-              </div>
+      <ImageLightbox src={selectedImage} onClose={() => setSelectedImage(null)} />
 
-            <form onSubmit={handleCreateRoom}>
-              <div className="mb-6">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">ชื่อห้อง</label>
-                <input
-                  autoFocus
-                  value={newRoomName}
-                  onChange={(e) => setNewRoomName(e.target.value)}
-                  placeholder="เช่น คนรักเสียงเพลง, กิจกรรมวันหยุด..."
-                  className="w-full bg-[#2a2d35] border border-white/5 rounded-xl px-4 py-3 text-sm text-gray-200 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                />
-              </div>
-
-                <div className="flex gap-3 pt-2 border-t border-white/5">
-                  <button
-                    type="button"
-                    onClick={() => { setIsCreateModalOpen(false); setNewRoomName(""); }}
-                    className="flex-1 py-3.5 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!newRoomName.trim() || isCreating}
-                    className="flex-1 py-3.5 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-purple-600/25 disabled:opacity-50 disabled:shadow-none transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                  >
-                    {isCreating ? "Creating..." : "Create"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Image Lightbox ── */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 cursor-zoom-out"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-full max-h-full"
-              onClick={e => e.stopPropagation()}
-            >
-              <img
-                src={selectedImage}
-                alt="Fullscreen Preview"
-                className="max-w-full max-h-[90dvh] rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10"
-              />
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 text-white/60 hover:text-white flex items-center gap-2 group transition-colors"
-              >
-                <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Close Terminal</span>
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M6 18L18 6M6 6l12 12" /></svg>
-                </div>
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Confirm Modal ── */}
       <CyberConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
@@ -443,7 +366,6 @@ export default function ChatPage() {
         message={confirmModal.message}
       />
 
-      {/* ── User Profile Modal ── */}
       <UserProfileModal
         isOpen={!!viewingUser}
         onClose={() => setViewingUser(null)}
