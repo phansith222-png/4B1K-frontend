@@ -318,7 +318,7 @@ function CommentItem({ comment, postId }) {
                   <img
                     src={comment.image}
                     alt="comment attachment"
-                    className="mt-2 rounded-xl border border-white/10 max-h-96 object-contain bg-black/10 w-full"
+                    className="mt-2 rounded-xl border border-white/10 max-h-96 object-cover bg-black/10 w-full"
                   />
                 )}
               </div>

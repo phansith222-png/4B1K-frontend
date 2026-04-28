@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import PageTransition from '../components/PageTransition';
 import NavbarUser from '../components/NavbarUser';
 import MobileBottomNav from '../components/navbar/MobileBottomNav';
+import ImageLightbox from '../components/ImageLightbox';
 import { ErrorBoundary } from 'react-error-boundary';
 import SectionErrorFallback from "../components/SectionErrorFallback";
 
@@ -35,6 +36,7 @@ export default function UserLayout() {
 
             {/* Responsive Extras */}
             <MobileBottomNav />
+            <ImageLightbox />
         </div>
     );
 }

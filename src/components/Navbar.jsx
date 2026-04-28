@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Hooks
 import { useNavbarData } from '../hooks/useNavbarData';
@@ -33,7 +33,7 @@ export default function Navbar() {
     const location = useLocation();
     const path = location.pathname;
     const isConcertActive = ['/new-event', '/nearby-events'].some(p => path.startsWith(p));
-    const isArtistActive = ['/artists', '/pop', '/rock', '/classic', '/edm', '/etc', '/entertainment'].some(p => path.startsWith(p)) || isArtistMenuOpen;
+    const isArtistActive = ['/artists', '/pop', '/rock', '/rnb', '/edm', '/etc', '/entertainment'].some(p => path.startsWith(p)) || isArtistMenuOpen;
     const isCommunityActive = path.startsWith('/community') || path.startsWith('/home');
     const isChatActive = path.startsWith('/chat');
 
@@ -86,7 +86,7 @@ export default function Navbar() {
                 @keyframes shine{to{background-position:200% center}}
             `}</style>
 
-            <motion.header 
+            <motion.header
                 initial={{ y: 0 }}
                 animate={{ y: isNavbarVisible ? 0 : -110 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -118,7 +118,7 @@ export default function Navbar() {
 
                     <div className="flex items-center gap-2">
                         {/* Mobile Search Toggle */}
-                        <button 
+                        <button
                             onClick={() => useSearchStore.getState().toggleSearch()}
                             className="p-2 text-gray-400 hover:text-[#00E5FF] transition-colors"
                         >

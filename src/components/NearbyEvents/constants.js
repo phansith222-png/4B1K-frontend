@@ -4,8 +4,7 @@ export const CATEGORY_COLORS = {
   Rock: 'bg-[#ff3366] text-white shadow-[0_0_15px_rgba(255,51,102,0.4)]',
   HipHop: 'bg-[#ffcc00] text-black shadow-[0_0_15px_rgba(255,204,0,0.4)]',
   Pop: 'bg-[#d83bb6] text-white shadow-[0_0_15px_rgba(216,59,182,0.4)]',
-  'R&B': 'bg-[#ff00ff] text-white shadow-[0_0_15px_rgba(255,0,255,0.4)]',
-  Classic: 'bg-[#9d00ff] text-white shadow-[0_0_15px_rgba(157,0,255,0.4)]'
+  'R&B': 'bg-[#ff00ff] text-white shadow-[0_0_15px_rgba(255,0,255,0.4)]'
 };
 
 export const HEX_COLORS = {
@@ -14,8 +13,7 @@ export const HEX_COLORS = {
   Rock: '#ff3366',
   HipHop: '#ffcc00',
   Pop: '#d83bb6',
-  'R&B': '#ff00ff',
-  Classic: '#9d00ff'
+  'R&B': '#ff00ff'
 };
 
 export const MOCK_EVENTS = [

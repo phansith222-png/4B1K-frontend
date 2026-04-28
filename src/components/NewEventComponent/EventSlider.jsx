@@ -55,7 +55,7 @@ export default function EventSlider({ sliderItems, featuredIndex, setFeaturedInd
                         <div className="lg:col-span-5 flex flex-col justify-center p-8 md:p-12 relative z-20 bg-[#11131A]">
                             <div className="flex items-center gap-3 mb-6">
                                 <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full ${getCategoryStyle(featuredEvent.type)}`}>
-                                    {featuredEvent.type || "Concert"}
+                                    {((featuredEvent.type || "Concert").toLowerCase().includes('classic') || (featuredEvent.type || "Concert").toLowerCase().includes('r&b')) ? 'R&B' : (featuredEvent.type || "Concert")}
                                 </span>
                             </div>
 

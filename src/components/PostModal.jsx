@@ -12,8 +12,11 @@ import CommentItem from "./CommentItem";
 function PostModal({ post, onClose }) {
   // ── Scroll Lock ──
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = 'auto'; };
+    const container = document.getElementById('main-scroll-container');
+    if (container) {
+      container.style.overflow = 'hidden';
+      return () => { container.style.overflow = 'auto'; };
+    }
   }, []);
 
   const { showToast } = useCyberToast();

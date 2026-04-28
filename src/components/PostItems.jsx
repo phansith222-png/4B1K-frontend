@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Heart,
@@ -6,10 +6,12 @@ import {
   MoreHorizontal,
   Share2,
   Verified,
+  X,
 } from "lucide-react";
 import { ActionButton } from "../icon/SidebarIcons";
 import usePostStore from "../stores/postStore";
 import useUserStore from "../stores/userStore";
+import useUIStore from "../stores/uiStore";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import PostModal from "./PostModal";
@@ -35,6 +37,7 @@ function PostItemInner({ post, index }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditPostOpen, setIsEditPostOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { setLightboxImage } = useUIStore();
   const isEdited = post.createdAt !== post.updatedAt;
 
   const hdlLikeClick = async () => {
@@ -208,7 +211,8 @@ function PostItemInner({ post, index }) {
             {post.postImages.map((el, idx) => (
               <div
                 key={el.id || idx}
-                className={`relative overflow-hidden rounded-none md:rounded-2xl border-y md:border border-white/10 bg-white/5 ${post.postImages.length === 1 ? 'min-h-[300px] max-h-[600px]' : 'h-[250px] sm:h-[350px]'
+                onClick={() => setLightboxImage(post.postImages.map(img => img.url), idx)}
+                className={`relative overflow-hidden rounded-none md:rounded-2xl border-y md:border border-white/10 bg-white/5 cursor-pointer hover:opacity-90 transition-opacity ${post.postImages.length === 1 ? 'min-h-[300px] max-h-[600px]' : 'h-[250px] sm:h-[350px]'
                   }`}
               >
                 <img

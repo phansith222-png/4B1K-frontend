@@ -59,7 +59,7 @@ export default function NavArtistMenu({
                                 {[
                                     { path: '/pop', color: '#FF007F', label: 'Pop' },
                                     { path: '/rock', color: '#D3131F', label: 'Rock' },
-                                    { path: '/classic', color: '#d83bb6', label: 'R&B' },
+                                    { path: '/rnb', color: '#d83bb6', label: 'R&B' },
                                     { path: '/edm', color: '#00E5FF', label: 'EDM' },
                                     { path: '/etc', color: '#CEFF67', label: 'Hiphop' },
                                 ].map(({ path, color, label }) => {

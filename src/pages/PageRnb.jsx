@@ -55,7 +55,7 @@ export default function PageClassic() {
         const aId = String(artist.id || artist._id || '');
         const gName = String(globalArtist.artistName || '').toLowerCase().trim();
         const aName = String(artist.artistName || '').toLowerCase().trim();
-        
+
         return (gId !== '' && gId === aId) || (gName !== '' && gName === aName);
     }, [globalArtist, artist]);
 
@@ -99,49 +99,49 @@ export default function PageClassic() {
                     <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="classic" />
 
                     <div key={artist?.id || 'content'} className="relative z-10">
-                    <Reveal>
-                        <HeroSection artist={artist} events={events} />
-                    </Reveal>
-                    <Reveal>
-                        <BioSection artist={artist} />
-                    </Reveal>
-                    <Reveal>
-                        <MusicPlayerSection
-                            artist={artist}
-                            songs={songs}
-                            currentSongIndex={isCurrentArtist ? currentSongIndex : 0}
-                            isPlaying={isCurrentArtist ? isPlaying : false}
-                            progress={isCurrentArtist ? progress : 0}
-                            currentTime={isCurrentArtist ? currentTime : '0:00'}
-                            duration={isCurrentArtist ? duration : '0:00'}
-                            togglePlayPause={() => {
-                                if (!isCurrentArtist) playSongs(artist, songs, 0);
-                                else if (controls?.togglePlayPause) controls.togglePlayPause();
-                            }}
-                            changeSong={(dir) => {
-                                if (!isCurrentArtist) playSongs(artist, songs, 0);
-                                else if (controls?.changeSong) controls.changeSong(dir);
-                            }}
-                            handleSongSelect={(idx) => {
-                                if (!isCurrentArtist) playSongs(artist, songs, idx);
-                                else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
-                            }}
-                            handleProgressClick={(e) => {
-                                if (isCurrentArtist && controls?.handleProgressClick) {
-                                    const rect = e.currentTarget.getBoundingClientRect();
-                                    const percent = ((e.clientX - rect.left) / rect.width) * 100;
-                                    controls.handleProgressClick(percent);
-                                }
-                            }}
-                        />
-                    </Reveal>
-                    <Reveal>
-                        <ConcertSection events={events} artist={artist} />
-                    </Reveal>
-                    <Reveal>
-                        <StatsSection songs={songs} />
-                    </Reveal>
-                </div>
+                        <Reveal>
+                            <HeroSection artist={artist} events={events} />
+                        </Reveal>
+                        <Reveal>
+                            <BioSection artist={artist} />
+                        </Reveal>
+                        <Reveal>
+                            <MusicPlayerSection
+                                artist={artist}
+                                songs={songs}
+                                currentSongIndex={isCurrentArtist ? currentSongIndex : 0}
+                                isPlaying={isCurrentArtist ? isPlaying : false}
+                                progress={isCurrentArtist ? progress : 0}
+                                currentTime={isCurrentArtist ? currentTime : '0:00'}
+                                duration={isCurrentArtist ? duration : '0:00'}
+                                togglePlayPause={() => {
+                                    if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                    else if (controls?.togglePlayPause) controls.togglePlayPause();
+                                }}
+                                changeSong={(dir) => {
+                                    if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                    else if (controls?.changeSong) controls.changeSong(dir);
+                                }}
+                                handleSongSelect={(idx) => {
+                                    if (!isCurrentArtist) playSongs(artist, songs, idx);
+                                    else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
+                                }}
+                                handleProgressClick={(e) => {
+                                    if (isCurrentArtist && controls?.handleProgressClick) {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                                        controls.handleProgressClick(percent);
+                                    }
+                                }}
+                            />
+                        </Reveal>
+                        <Reveal>
+                            <ConcertSection events={events} artist={artist} />
+                        </Reveal>
+                        <Reveal>
+                            <StatsSection songs={songs} />
+                        </Reveal>
+                    </div>
                 </>
             )}
         </div>

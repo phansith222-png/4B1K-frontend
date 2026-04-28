@@ -25,20 +25,20 @@ export default function NewEventPage() {
     const [activeCategory, setActiveCategory] = useState("All");
     const [selectedArtistIds, setSelectedArtistIds] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 15; 
+    const itemsPerPage = 15;
     const gridRef = useRef(null);
     const [featuredIndex, setFeaturedIndex] = useState(0);
 
     const handleCategorySelect = (category) => {
         setActiveCategory(category);
-        setSelectedArtistIds([]); 
+        setSelectedArtistIds([]);
         setCurrentPage(1);
         setFeaturedIndex(0);
     };
 
     const handleArtistSelect = (ids) => {
         setSelectedArtistIds(ids);
-        setActiveCategory("All"); 
+        setActiveCategory("All");
         setCurrentPage(1);
         setFeaturedIndex(0);
     };
@@ -102,7 +102,12 @@ export default function NewEventPage() {
 
     const categories = useMemo(() => {
         if (!events.length) return ["All"];
-        const uniqueCategories = new Set(events.map(e => e.type || "Concert"));
+        const uniqueCategories = new Set(events.map(e => {
+            const type = e.type || "Concert";
+            const t = type.toLowerCase();
+            if (t.includes('classic') || t.includes('r&b')) return 'R&B';
+            return type;
+        }));
         return ["All", ...Array.from(uniqueCategories)];
     }, [events]);
 
@@ -118,7 +123,12 @@ export default function NewEventPage() {
 
         // Apply Category Filter
         if (activeCategory !== "All") {
-            result = result.filter(event => (event.type || "Concert") === activeCategory);
+            result = result.filter(event => {
+                const type = (event.type || "Concert");
+                const t = type.toLowerCase();
+                const mappedType = (t.includes('classic') || t.includes('r&b')) ? 'R&B' : type;
+                return mappedType === activeCategory;
+            });
         }
 
         // Apply Artist Filter
@@ -131,7 +141,7 @@ export default function NewEventPage() {
                 // Match by ID
                 const eArtistId = String(event.artistId || event.mainArtistId || event.mainArtist?.id || event.artist?.id || "");
                 const matchId = selectedArtistIds.includes(eArtistId);
-                
+
                 if (matchId) return true;
 
                 // Match by Name fallback
@@ -153,10 +163,10 @@ export default function NewEventPage() {
     const currentEvents = filteredEvents.slice(indexOfFirstItem, indexOfLastItem);
 
     const sliderItems = currentEvents.slice(0, Math.min(5, currentEvents.length));
-    
+
     // If artists are selected, show ALL events in the grid (even those in the slider)
     // Otherwise, keep them separate to avoid redundancy for general browsing
-    const otherEvents = selectedArtistIds.length > 0 
+    const otherEvents = selectedArtistIds.length > 0
         ? currentEvents // Show everything including slider items
         : currentEvents.slice(sliderItems.length); // Original behavior: hide slider items from grid
 
@@ -246,30 +256,30 @@ export default function NewEventPage() {
             </div>
 
             <main className="max-w-[120rem] mx-auto px-6 md:px-24 pt-12 pb-32 relative z-10 w-full flex flex-col gap-16">
-                    <HeroSection />
+                <HeroSection />
 
-                    {loading ? (
-                        /* Skeleton — same layout as real content */
-                        <div className="animate-pulse flex flex-col gap-10">
-                            {/* Slider skeleton */}
-                            <div className="h-[40vh] rounded-[3rem] bg-white/5" />
-                            {/* Filter pills skeleton */}
-                            <div className="flex gap-3">
-                                {[0,1,2,3,4].map(i => <div key={i} className="h-10 w-24 rounded-full bg-white/5" />)}
-                            </div>
-                            {/* Grid skeleton */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-4">
-                                {[0,1,2,3,4,5,6,7,8,9].map(i => (
-                                    <div key={i} className="flex flex-col gap-3">
-                                        <div className="aspect-[3/4] rounded-[2rem] bg-white/5" />
-                                        <div className="h-4 rounded-full bg-white/5" />
-                                        <div className="h-3 rounded-full bg-white/5 w-3/4" />
-                                    </div>
-                                ))}
-                            </div>
+                {loading ? (
+                    /* Skeleton — same layout as real content */
+                    <div className="animate-pulse flex flex-col gap-10">
+                        {/* Slider skeleton */}
+                        <div className="h-[40vh] rounded-[3rem] bg-white/5" />
+                        {/* Filter pills skeleton */}
+                        <div className="flex gap-3">
+                            {[0, 1, 2, 3, 4].map(i => <div key={i} className="h-10 w-24 rounded-full bg-white/5" />)}
                         </div>
-                    ) : (
-                        <>
+                        {/* Grid skeleton */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-4">
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+                                <div key={i} className="flex flex-col gap-3">
+                                    <div className="aspect-[3/4] rounded-[2rem] bg-white/5" />
+                                    <div className="h-4 rounded-full bg-white/5" />
+                                    <div className="h-3 rounded-full bg-white/5 w-3/4" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <>
                         <EventSlider
                             sliderItems={sliderItems}
                             featuredIndex={featuredIndex}
@@ -324,9 +334,9 @@ export default function NewEventPage() {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        </>
-                    )}
-                </main>
+                    </>
+                )}
+            </main>
         </div>
     );
 }

@@ -32,7 +32,8 @@ export default function EventCard({ event, index }) {
     const eventName = event.eventName || event.title || event.name || "Untitled Event";
     const startTime = event.startTime || event.date;
     const venueName = event.venue?.name || event.location?.name || event.location || "Location TBA";
-    const eventType = event.type || event.category || event.genre || "Concert";
+    const rawEventType = event.type || event.category || event.genre || "Concert";
+    const eventType = (rawEventType.toLowerCase().includes('classic') || rawEventType.toLowerCase().includes('r&b')) ? 'R&B' : rawEventType;
     const artistName = event.mainArtistName || event.artistName || event.artist?.artistName || "Artist";
 
 
