@@ -65,20 +65,22 @@ const ChatArea = React.memo(({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState("");
 
-  // Force scroll to bottom when messages change or room changes
+  // Force scroll to bottom when messages change, room changes, or loading finishes
   useLayoutEffect(() => {
-    if (chatContainerRef.current) {
-      const container = chatContainerRef.current;
-      container.scrollTop = container.scrollHeight;
-    }
-  }, [messagesGrouped, activeChat]);
+    const scrollToBottom = () => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+      if (scrollRef.current) {
+        scrollRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+      }
+    };
 
-  // Secondary backup for messages changes
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-    }
-  }, [messagesGrouped]);
+    scrollToBottom();
+    const t1 = setTimeout(scrollToBottom, 50);
+    const t2 = setTimeout(scrollToBottom, 300);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [messagesGrouped, activeChat, isLoading]);
   return (
     <motion.main
       initial={false}
