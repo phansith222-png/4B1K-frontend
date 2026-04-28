@@ -162,7 +162,7 @@ export default function MiniMap({ events: initialEvents = [] }) {
   }, []);
 
   return (
-    <div className="relative w-full h-[400px] md:h-[450px] rounded-3xl overflow-hidden group">
+    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] rounded-3xl overflow-hidden group">
       
       {/* 🔄 Loading Overlay */}
       {loading && (

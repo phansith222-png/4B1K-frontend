@@ -99,20 +99,19 @@ const ChatArea = React.memo(({
             className="flex flex-col h-full w-full min-h-0"
           >
             {/* ── Fixed Header ── */}
-            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10] relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/10 to-[#00E5FF]/10 opacity-20" />
-              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/40 to-transparent shadow-[0_0_15px_#00E5FF]" />
+            <header className="shrink-0 z-[100] border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-xl relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/5 to-[#00E5FF]/5 pointer-events-none" />
+              <div className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#00E5FF]/20 to-transparent" />
 
-              <div className="flex items-center gap-4 px-4 md:px-6 py-3 md:py-4 relative z-10">
-                {/* Back Arrow (LINE Style) */}
+              <div className="flex items-center gap-4 px-4 md:px-6 py-2.5 md:py-3 relative z-10">
+                {/* Back Arrow (Compact Style) */}
                 <motion.button
-                  whileHover={{ scale: 1.1, x: -2, backgroundColor: "rgba(255, 255, 255, 0.1)" }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 0.05)" }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={goBack}
-                  className="p-2.5 -ml-2 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
-                  title="Go Back"
+                  className="p-2 rounded-xl border border-white/10 text-gray-400 hover:text-[#00E5FF] transition-all"
                 >
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                   </svg>
                 </motion.button>
@@ -122,13 +121,13 @@ const ChatArea = React.memo(({
                   className="relative group cursor-pointer shrink-0"
                   onClick={handleAvatarClick}
                 >
-                  <div className={`relative w-13 h-13 rounded-[20px] overflow-hidden ring-1 ring-white/20 group-hover:ring-[#00E5FF] transition-all shadow-2xl ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#9b4dff]" : ""}`}>
-                    <img src={roomAvatar} className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" alt="" />
+                  <div className={`relative w-10 h-10 rounded-xl overflow-hidden ring-1 ring-white/10 group-hover:ring-[#00E5FF]/50 transition-all ${isGroup ? "bg-gradient-to-br from-[#7000FF] to-[#00E5FF]" : "bg-gray-800"}`}>
+                    <img src={roomAvatar} className="w-full h-full object-cover" alt="" />
                   </div>
                   <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                 </motion.div>
 
-                <div className="flex-1 min-w-0 group/title relative">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     {isEditingName ? (
                       <input
@@ -153,26 +152,32 @@ const ChatArea = React.memo(({
                             setIsEditingName(false);
                           }
                         }}
-                        className="bg-white/5 border border-[#00E5FF]/30 rounded-lg px-2 py-1 text-lg font-black text-white outline-none focus:ring-1 focus:ring-[#00E5FF] w-full max-w-[300px]"
+                        className="bg-white/5 border border-[#00E5FF]/30 rounded-lg px-2 py-0.5 text-[15px] font-bold text-white outline-none focus:ring-1 focus:ring-[#00E5FF] w-full"
                       />
                     ) : (
-                      <div className="flex items-center gap-2 group/title">
-                        <h2 className="font-black text-lg text-white truncate tracking-tight transition-colors">{roomName}</h2>
-                      </div>
+                      <h2 
+                        className="font-bold text-[15px] text-white truncate tracking-tight cursor-pointer hover:text-[#00E5FF] transition-colors"
+                        onClick={() => {
+                          if (isGroup && activeRoom?.creatorId === myUserId) {
+                            setEditName(roomName);
+                            setIsEditingName(true);
+                          }
+                        }}
+                      >
+                        {roomName}
+                      </h2>
                     )}
-                    {!isGroup && !isEditingName && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#00E5FF]/10 border border-[#00E5FF]/20 text-[9px] font-black text-[#00E5FF] uppercase tracking-widest">
-                        Personal
+                    {!isGroup && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-[#00E5FF]/10 border border-[#00E5FF]/20 text-[8px] font-bold text-[#00E5FF] uppercase tracking-tighter">
+                        Secure
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
-                      <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-gray-600"}`} />
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                        {isGroup ? "Community Hub" : "Direct Link"}
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-emerald-500 shadow-[0_0_5px_#10b981]" : "bg-gray-600"}`} />
+                    <p className="text-[9px] font-medium text-gray-500 uppercase tracking-widest">
+                      {isGroup ? "Group Transmission" : "Private Connection"}
+                    </p>
                   </div>
                 </div>
 
@@ -327,8 +332,8 @@ const ChatArea = React.memo(({
             </div>
 
             {/* ── Locked Footer/Input (Solid Style) ── */}
-            <footer className="shrink-0 z-40 bg-[#0B0C10] border-t border-white/5 px-4 pb-32 pt-6 md:px-8 md:pb-24 md:pt-8">
-              <div className="max-w-5xl mx-auto">
+            <footer className="shrink-0 z-40 bg-[#0B0C10] border-t border-white/5 px-4 pb-6 pt-4 md:px-6 md:pb-8 md:pt-6">
+              <div className="w-full">
                 <AnimatePresence>
                   {typingText && (
                     <motion.div

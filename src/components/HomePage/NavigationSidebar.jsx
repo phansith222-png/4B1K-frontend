@@ -10,10 +10,12 @@ export default function NavigationSidebar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="p-2">
-      <div className="flex items-center gap-3 mb-6 px-4">
-        <Compass size={18} className="text-[#00E5FF] animate-pulse" />
-        <h3 className="text-[#00E5FF] text-xs font-black tracking-[0.2em] uppercase">Navigation</h3>
+    <div className="">
+      <div className="flex items-center gap-4 mb-8 group">
+        <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+          <Compass size={20} />
+        </div>
+        <span className="text-sm font-black text-[#00E5FF] uppercase tracking-[0.25em]">Navigation</span>
       </div>
       <ul className="space-y-3">
         <SidebarItem

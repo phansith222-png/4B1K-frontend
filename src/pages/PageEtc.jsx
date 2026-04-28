@@ -21,6 +21,7 @@ import MusicPlayerSection from '../components/PageEtcComponent/MusicPlayerSectio
 import ConcertSection from '../components/PageEtcComponent/ConcertSection';
 import StatsSection from '../components/PageEtcComponent/StatsSection';
 import Reveal from '../components/Reveal';
+import GenreArtistSidebar from '../components/GenreArtistSidebar';
 
 export default function PageEtc() {
     const [searchParams] = useSearchParams();
@@ -31,7 +32,7 @@ export default function PageEtc() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, 'etc', queryArtistId);
+        return getFilteredRandomArtistId(artists, 'hiphop', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
@@ -39,7 +40,6 @@ export default function PageEtc() {
     const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
-    // ── Global Player State - Optimized with Selectors ────────────────────
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const currentSongIndex = usePlayerStore(state => state.currentSongIndex);
     const progress = usePlayerStore(state => state.progress);
@@ -47,9 +47,17 @@ export default function PageEtc() {
     const duration = usePlayerStore(state => state.duration);
     const controls = usePlayerStore(state => state.controls);
     const playSongs = usePlayerStore(state => state.playSongs);
-    const globalSongs = usePlayerStore(state => state.songs);
-
-    const isCurrentArtist = globalSongs === songs && songs.length > 0;
+    const globalArtist = usePlayerStore(state => state.artist);
+    
+    const isCurrentArtist = React.useMemo(() => {
+        if (!globalArtist || !artist) return false;
+        const gId = String(globalArtist.id || globalArtist._id || '');
+        const aId = String(artist.id || artist._id || '');
+        const gName = String(globalArtist.artistName || '').toLowerCase().trim();
+        const aName = String(artist.artistName || '').toLowerCase().trim();
+        
+        return (gId !== '' && gId === aId) || (gName !== '' && gName === aName);
+    }, [globalArtist, artist]);
 
     // Auto-play when artist loads if requested
     React.useEffect(() => {
@@ -58,13 +66,8 @@ export default function PageEtc() {
         }
     }, [artist, songs, searchParams, playSongs]);
 
-    // ── Genre Detection ──────────────────────────────────────────────────
-    const genreKeyword = useMemo(() => {
-        if (!artist?.genres) return 'edm';
-        const gNames = artist.genres.map(g => g.genre?.name?.toLowerCase() || "");
-        if (gNames.some(n => n.includes('hip') || n.includes('rap'))) return 'hip hop';
-        return 'edm';
-    }, [artist]);
+    // Force genre keyword to 'hip hop'
+    const genreKeyword = 'hip hop';
 
     // ── Render ────────────────────────────────────────────────────────────
     return (
@@ -152,7 +155,12 @@ export default function PageEtc() {
                     <p className="text-gray-500 mt-2">Please run seed to inject data into database.</p>
                 </div>
             ) : (
-                <div key={artist?.id || 'content'}>
+                <>
+                    {/* Sidebars for Artist Discovery */}
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="hiphop" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="hiphop" />
+
+                    <div key={artist?.id || 'content'} className="relative z-10">
                     <Reveal>
                         <HeroSection artist={artist} events={events} />
                     </Reveal>
@@ -181,7 +189,11 @@ export default function PageEtc() {
                                 else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
                             }}
                             handleProgressClick={(e) => {
-                                if (isCurrentArtist && controls?.handleProgressClick) controls.handleProgressClick(e);
+                                if (isCurrentArtist && controls?.handleProgressClick) {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                                    controls.handleProgressClick(percent);
+                                }
                             }}
                             currentSong={songs[isCurrentArtist ? currentSongIndex : 0]}
                         />
@@ -193,6 +205,7 @@ export default function PageEtc() {
                         <StatsSection songs={songs} />
                     </Reveal>
                 </div>
+                </>
             )}
         </div>
     );

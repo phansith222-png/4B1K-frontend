@@ -1,14 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { loadSlim } from '@tsparticles/slim';
+import { motion } from 'framer-motion';
 
 // Hooks
 import { useArtists } from '../hooks/useArtists';
 import { useArtistDetail } from '../hooks/useArtistDetail';
 import { getFilteredRandomArtistId } from '../utils/artistHelper';
-import { getImageUrl } from '../utils/imageUtils';
-import PageLoader from '../components/PageLoader';
 import { usePlayerStore } from '../stores/playerStore';
+import PageLoader from '../components/PageLoader';
 import { SkeletonHero } from '../components/Skeleton';
 
 // Constants
@@ -16,15 +15,15 @@ import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
 // Components
 import CategoryBackground from '../components/PageAllArtistComponent/CategoryBackground';
-import HeroSection from '../components/PageRockComponent/HeroSection';
-import LineupSection from '../components/PageRockComponent/LineupSection';
-import MusicPlayerSection from '../components/PageRockComponent/MusicPlayerSection';
-import ConcertSection from '../components/PageRockComponent/ConcertSection';
-import StatsSection from '../components/PageRockComponent/StatsSection';
+import HeroSection from '../components/PageEtcComponent/HeroSection';
+import BioSection from '../components/PageEtcComponent/BioSection';
+import MusicPlayerSection from '../components/PageEtcComponent/MusicPlayerSection';
+import ConcertSection from '../components/PageEtcComponent/ConcertSection';
+import StatsSection from '../components/PageEtcComponent/StatsSection';
 import Reveal from '../components/Reveal';
 import GenreArtistSidebar from '../components/GenreArtistSidebar';
 
-export default function PageRock() {
+export default function PageEdm() {
     const [searchParams] = useSearchParams();
     const queryArtistId = searchParams.get('artistId');
 
@@ -33,7 +32,8 @@ export default function PageRock() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, 'rock', queryArtistId);
+        // Use 'edm' specifically for this page
+        return getFilteredRandomArtistId(artists, 'edm', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
@@ -41,7 +41,6 @@ export default function PageRock() {
     const loading = loadingAll || loadingDetail;
 
     // ── Player ────────────────────────────────────────────────────────────
-    // ── Global Player State - Optimized with Selectors ────────────────────
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const currentSongIndex = usePlayerStore(state => state.currentSongIndex);
     const progress = usePlayerStore(state => state.progress);
@@ -50,6 +49,7 @@ export default function PageRock() {
     const controls = usePlayerStore(state => state.controls);
     const playSongs = usePlayerStore(state => state.playSongs);
     const globalArtist = usePlayerStore(state => state.artist);
+    
     const isCurrentArtist = React.useMemo(() => {
         if (!globalArtist || !artist) return false;
         const gId = String(globalArtist.id || globalArtist._id || '');
@@ -67,94 +67,102 @@ export default function PageRock() {
         }
     }, [artist, songs, searchParams, playSongs]);
 
-    // ── Particles init (stable callback) ──────────────────────────────────
-    const particlesInit = useCallback(async engine => {
-        await loadSlim(engine);
-    }, []);
-
-    // ── Embers (stable random values) ─────────────────────────────────────
-    const embers = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
-        id: i,
-        size: Math.random() * 3 + 1.5,
-        left: Math.random() * 100,
-        delay: Math.random() * 5,
-        duration: Math.random() * 5 + 5,
-        xOffset: Math.random() * 100 - 50,
-    })), []);
+    // Force genre keyword to 'edm'
+    const genreKeyword = 'edm';
 
     // ── Render ────────────────────────────────────────────────────────────
     return (
-        <div className="bg-[#050505] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden selection:bg-[#D3131F] selection:text-white">
+        <div className="bg-[#050505] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden selection:bg-[#2B5AE8] selection:text-white relative">
+
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;900&display=swap');
+                body { font-family: 'Outfit', sans-serif; }
+
+                .shape-blob { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; filter: blur(90px); }
+                @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                .vinyl-rotate { animation: spin-slow 12s linear infinite; }
+                .cd-rotate { animation: spin-slow 12s linear infinite; }
+
+                .eq-bar { animation: eqRun 1.5s ease-in-out infinite; }
+                @keyframes eqRun { 0%, 100% { height: 20%; } 50% { height: 100%; } }
+
+                .tooltip-box { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+                .group:hover .tooltip-box { opacity: 1; transform: translateY(0); }
+
+                .bg-grid-animation {
+                    background-size: 100px 100px;
+                    background-image: linear-gradient(to right, rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+                    animation: panGrid 20s linear infinite;
+                }
+                @keyframes panGrid { 0% { transform: translateY(0); } 100% { transform: translateY(50px); } }
+
+                .marquee-container { display: flex; width: 200%; animation: marquee 20s linear infinite; }
+                @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+            `}</style>
 
             {/* Animated background - Always renders */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <CategoryBackground keyword="rock" isPlaying={isPlaying} artist={artist} />
+                <CategoryBackground keyword={genreKeyword} isPlaying={isPlaying} artist={artist} />
+
+                {/* Random Theme Shimmer Boxes */}
+                {[...Array(12)].map((_, i) => (
+                    <motion.div
+                        key={`shimmer-${i}`}
+                        className="absolute rotate-45"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            width: Math.random() * 120 + 80,
+                            height: Math.random() * 120 + 80,
+                            background: i % 2 === 0 ? 'linear-gradient(45deg, #00E5FF40, transparent)' : 'linear-gradient(45deg, #FF00FF40, transparent)',
+                            border: `2px solid ${i % 2 === 0 ? '#00E5FF80' : '#FF00FF80'}`,
+                            backdropFilter: 'blur(8px)',
+                            boxShadow: `0 0 50px ${i % 2 === 0 ? '#00E5FF25' : '#FF00FF25'}`
+                        }}
+                        animate={{
+                            x: [0, Math.random() * 30 - 15, 0],
+                            y: [0, Math.random() * 30 - 15, 0],
+                            opacity: isPlaying ? [0.1, 0.3, 0.1] : [0.05, 0.15, 0.05],
+                            rotate: isPlaying ? [45, 135, 45] : [45, 60, 45],
+                            scale: isPlaying ? [1, 1.1, 1] : [1, 1, 1]
+                        }}
+                        transition={{
+                            duration: isPlaying ? 2.0 : Math.random() * 8 + 8,
+                            repeat: Infinity,
+                            ease: 'easeInOut'
+                        }}
+                    />
+                ))}
+
+                <div className="absolute inset-[-100%] bg-grid-animation z-0 opacity-40" />
+
+                <div
+                    className="absolute inset-0 opacity-[0.05]"
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px)`,
+                        backgroundSize: '100px 100px'
+                    }}
+                />
             </div>
 
             {loading && !artist ? (
                 <SkeletonHero />
             ) : !artist && !loading ? (
                 <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-white">
-                    <p className="font-black text-2xl text-[#D3131F] uppercase tracking-widest drop-shadow-[0_0_10px_#D3131F]">No Rock Artists Found</p>
-                    <p className="text-gray-500 mt-2 font-medium tracking-wider">Please run seed to inject data into database.</p>
+                    <p className="font-bold text-xl text-[#2B5AE8]">No EDM Artists Found.</p>
                 </div>
             ) : (
                 <>
                     {/* Sidebars for Artist Discovery */}
-                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="rock" />
-                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="rock" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="edm" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="edm" />
 
                     <div key={artist?.id || 'content'} className="relative z-10">
-                    <style>{`
-                        @keyframes rotateCD { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                        .cd-rotate { animation: rotateCD 8s linear infinite; }
-
-                        @keyframes beatRun { 0% { height: 10px; } 50% { height: 35px; } 100% { height: 10px; } }
-                        .beat-bar { animation: beatRun 1.2s ease-in-out infinite; }
-                        .beat-bar:nth-child(2) { animation-delay: 0.1s; }
-                        .beat-bar:nth-child(3) { animation-delay: 0.2s; }
-                        .beat-bar:nth-child(4) { animation-delay: 0.3s; }
-                        .beat-bar:nth-child(5) { animation-delay: 0.4s; }
-
-                        .noise-bg {
-                            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-                        }
-
-                        .shape-blob-1 { animation: floatRock 15s ease-in-out infinite; will-change: transform, opacity; }
-                        .shape-blob-2 { animation: floatRock 15s ease-in-out infinite reverse; will-change: transform, opacity; }
-                        @keyframes floatRock {
-                            0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-                            33% { transform: translate(40px, -60px) scale(1.1) rotate(5deg); }
-                            66% { transform: translate(-30px, 30px) scale(0.9) rotate(-5deg); }
-                        }
-
-                        .bar-spotify-v3 {
-                            background: linear-gradient(180deg, #6b7280 0%, #374151 100%);
-                            border-radius: 6px 6px 0 0;
-                            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2), inset -1px 0 2px rgba(0,0,0,0.8);
-                            transition: all 0.3s ease;
-                        }
-                        .bar-youtube-v3 {
-                            background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
-                            border-radius: 6px 6px 0 0;
-                            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.4), inset -1px 0 2px rgba(0,0,0,0.6), 0px 10px 20px rgba(211,19,31,0.2);
-                            transition: all 0.3s ease;
-                        }
-
-                        @keyframes eqPlay { 0%, 100% { height: 15%; } 50% { height: 100%; } }
-                        .eq-bar { animation: eqPlay 1.2s ease-in-out infinite; }
-
-                        .firefly-glow { box-shadow: 0 0 10px #D4AF37, 0 0 20px rgba(212, 175, 55, 0.4); }
-
-                        .tooltip-box { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-                        .group:hover .tooltip-box { opacity: 1; transform: translateY(0); }
-                    `}</style>
-
                     <Reveal>
-                        <HeroSection artist={artist} events={events} embers={embers} />
+                        <HeroSection artist={artist} events={events} />
                     </Reveal>
                     <Reveal>
-                        <LineupSection artist={artist} />
+                        <BioSection artist={artist} />
                     </Reveal>
                     <Reveal>
                         <MusicPlayerSection
@@ -184,6 +192,7 @@ export default function PageRock() {
                                     controls.handleProgressClick(percent);
                                 }
                             }}
+                            currentSong={songs[isCurrentArtist ? currentSongIndex : 0]}
                         />
                     </Reveal>
                     <Reveal>

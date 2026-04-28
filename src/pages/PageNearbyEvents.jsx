@@ -103,7 +103,7 @@ export default function PageNearbyEvents() {
             id: event.id || Math.random(),
             title: event.eventName || event.title || event.name || 'Untitled Event',
             artist: event.mainArtistName || event.artistName || event.artist?.artistName || event.mainArtist?.artistName || "Artist",
-            category: event.type || event.category || event.genre || 'All',
+            category: (event.type || event.category || event.genre || 'All').toLowerCase() === 'classic' ? 'R&B' : (event.type || event.category || event.genre || 'All'),
             date: event.startTime ? new Date(event.startTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (event.date || 'Date TBA'),
             time: event.startTime ? `${new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (event.time || 'Time TBA'),
             location: event.venue?.name || event.location?.name || event.location || 'Location TBA',
@@ -317,7 +317,7 @@ export default function PageNearbyEvents() {
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-72px)] bg-black text-white overflow-hidden font-sans">
+    <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
 
       {/* 🔄 Loading Bar — thin top bar instead of full-screen overlay */}

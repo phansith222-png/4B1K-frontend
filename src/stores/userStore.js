@@ -57,11 +57,17 @@ const useUserStore = create(
           const errorMessage = error.response?.data?.message || error.message || "Something went wrong";
           return { success: false, error: errorMessage };
         }
-      }
+      },
+
+      _hasHydrated: false,
+      setHasHydrated: (status) => set({ _hasHydrated: status }),
 
     }),
     {
       name: STORAGE_KEYS.AUTH,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

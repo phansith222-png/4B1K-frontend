@@ -40,7 +40,7 @@ export default function LandingPage() {
       let path = '/artists';
       if ([1, 2, 3, 4, 5].includes(aId)) path = '/pop';
       else if ([6, 7, 8, 9, 10].includes(aId)) path = '/rock';
-      else if ([16, 17, 18, 19, 20].includes(aId)) path = '/classic';
+      else if ([16, 17, 18, 19, 20].includes(aId)) path = '/rnb';
       else if ([11, 12, 13, 14, 15, 21, 22, 23, 24, 25].includes(aId)) path = '/etc';
 
       const randomSong = artist.songs && artist.songs.length > 0 

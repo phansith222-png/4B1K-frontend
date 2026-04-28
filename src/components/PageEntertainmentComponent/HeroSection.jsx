@@ -56,8 +56,9 @@ export default function HeroSection({ navigate }) {
                         className="absolute top-0 right-0 w-[90%] aspect-[3/4] rounded-2xl overflow-hidden border-[10px] border-[#12141a] shadow-[0_30px_60px_rgba(0,0,0,0.9)] group"
                     >
                         <img
-                            src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000&auto=format&fit=crop"
+                            src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1200&auto=format&fit=crop"
                             alt="Recording Studio"
+                            loading="lazy"
                             className="w-full h-full object-cover brightness-75 group-hover:scale-110 transition-transform duration-[10s]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] via-transparent to-transparent opacity-90" />

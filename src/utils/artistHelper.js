@@ -15,14 +15,17 @@ export const getArtistInfo = (artist) => {
     // 1. Check by exact ID first (most accurate)
     if (GENRE_ARTIST_IDS.pop.includes(id))      return { path: '/pop',     color: '#FF007F', label: 'Pop' };
     if (GENRE_ARTIST_IDS.rock.includes(id))     return { path: '/rock',    color: '#D3131F', label: 'Rock' };
-    if (GENRE_ARTIST_IDS.classic.includes(id))  return { path: '/classic', color: '#d83bb6', label: 'R&B / Classic' };
-    if (GENRE_ARTIST_IDS.etc.includes(id))      return { path: '/etc',     color: '#CEFF67', label: 'Hiphop / EDM' };
+    if (GENRE_ARTIST_IDS.classic.includes(id))  return { path: '/classic', color: '#d83bb6', label: 'R&B' };
+    if (GENRE_ARTIST_IDS.edm.includes(id))      return { path: '/edm',     color: '#00E5FF', label: 'EDM' };
+    if (GENRE_ARTIST_IDS.hiphop.includes(id))   return { path: '/etc',     color: '#CEFF67', label: 'Hiphop' };
 
     // 2. Fallback to genre names if ID not found
     const gs = artist.genres?.map(g => g.genre?.name?.toLowerCase() ?? '') ?? [];
+    if (gs.some(g => g.includes('pop')))                          return { path: '/pop',     color: '#FF007F', label: 'Pop' };
     if (gs.some(g => g.includes('rock')))                         return { path: '/rock',    color: '#D3131F', label: 'Rock' };
-    if (gs.some(g => g.includes('r&b') || g.includes('rnb')))     return { path: '/classic', color: '#d83bb6', label: 'R&B / Classic' };
-    if (gs.some(g => g.includes('hip hop') || g.includes('edm'))) return { path: '/etc',     color: '#CEFF67', label: 'Hiphop / EDM' };
+    if (gs.some(g => g.includes('r&b') || g.includes('rnb')))     return { path: '/classic', color: '#d83bb6', label: 'R&B' };
+    if (gs.some(g => g.includes('edm') || g.includes('electronic'))) return { path: '/edm',     color: '#00E5FF', label: 'EDM' };
+    if (gs.some(g => g.includes('hip') || g.includes('rap')))     return { path: '/etc',     color: '#CEFF67', label: 'Hiphop' };
 
     // Default fallback
     return { path: '/pop', color: '#FF007F', label: 'Pop' };
@@ -50,9 +53,10 @@ export const getFilteredRandomArtistId = (artists, genreKey, queryArtistId) => {
         filtered = artists.filter(a => {
             const gs = a.genres?.map(g => g.genre?.name?.toLowerCase() ?? '') ?? [];
             if (genreKey === 'pop') return gs.some(g => g.includes('pop'));
-            if (genreKey === 'rock') return gs.some(g => g.includes('rock'));
-            if (genreKey === 'classic') return gs.some(g => g.includes('classic') || g.includes('r&b') || g.includes('rnb'));
-            if (genreKey === 'etc') return gs.some(g => g.includes('hip') || g.includes('rap') || g.includes('edm') || g.includes('electronic'));
+            if (genreKey === 'rock') return gs.some(g => g.some(keyword => g.includes(keyword))); // Matches any rock-related genre
+            if (genreKey === 'classic' || genreKey === 'rnb') return gs.some(g => g.includes('classic') || g.includes('r&b') || g.includes('rnb'));
+            if (genreKey === 'edm') return gs.some(g => g.includes('edm') || g.includes('electronic'));
+            if (genreKey === 'etc' || genreKey === 'hiphop') return gs.some(g => g.includes('hip') || g.includes('rap'));
             return false;
         });
     }

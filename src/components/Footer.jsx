@@ -103,7 +103,7 @@ export default function Footer() {
       {/* Subtle ambient glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-32 bg-[#00E5FF] opacity-[0.04] blur-[80px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="relative z-10">
 
         {/* ── Top row: logo + tagline + google ── */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-12">

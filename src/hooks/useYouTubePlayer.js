@@ -87,20 +87,32 @@ const useYouTubePlayer = (songs = [], playerId = 'yt-player', options = {}) => {
 
         try {
             if (playerRef.current.loadVideoById) {
-                playerRef.current.loadVideoById(videoId);
-                lastVideoIdRef.current = videoId;
-                
-                // Aggressive autoplay: attempt immediate play + a small delayed play
-                if (playerRef.current.unMute) playerRef.current.unMute();
-                if (playerRef.current.playVideo) playerRef.current.playVideo();
-                
-                setTimeout(() => {
-                    if (playerRef.current && playerRef.current.playVideo) {
-                        playerRef.current.playVideo();
+                if (externalIsPlaying) {
+                    playerRef.current.loadVideoById(videoId);
+                    lastVideoIdRef.current = videoId;
+                    
+                    // Aggressive autoplay: attempt immediate play + a small delayed play
+                    if (playerRef.current.unMute) playerRef.current.unMute();
+                    if (playerRef.current.playVideo) playerRef.current.playVideo();
+                    
+                    setTimeout(() => {
+                        if (playerRef.current && playerRef.current.playVideo) {
+                            playerRef.current.playVideo();
+                        }
+                    }, 150);
+                    
+                    safeSetIsPlaying(true);
+                } else {
+                    // Just cue the video if we are not supposed to be playing
+                    if (playerRef.current.cueVideoById) {
+                        playerRef.current.cueVideoById(videoId);
+                    } else {
+                        playerRef.current.loadVideoById(videoId);
+                        playerRef.current.pauseVideo();
                     }
-                }, 150);
-                
-                safeSetIsPlaying(true);
+                    lastVideoIdRef.current = videoId;
+                    safeSetIsPlaying(false);
+                }
             }
         } catch (err) {
             console.error("YouTube Load Error:", err);

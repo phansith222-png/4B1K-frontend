@@ -1,32 +1,51 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { 
+    Play, Pause, SkipForward, SkipBack, Minimize2, 
+    Volume2, VolumeX, Volume1, ChevronDown, Music as IconMusic
+} from 'lucide-react';
 import { usePlayerStore } from '../stores/playerStore';
 import useYouTubePlayer from '../hooks/useYouTubePlayer';
-import {
-    PLAYER_ID, PLAYER_COLORS as C, PLAYER_Z_INDEX,
-    PLAYER_WIDTH, PLAYER_POSITION, MINI_POSITION,
-    FALLBACK_COVER, BEAT_KEYFRAMES, BEAT_KEYFRAMES_VARIANTS,
-    BEAT_BARS_FULL, BEAT_BARS_MINI,
-    BEAT_DURATION_BASE, BEAT_DURATION_STEP, BEAT_DELAY_STEP,
-    DEFAULT_VOLUME, VOLUME_LOW_THRESHOLD,
-} from '../config/playerConfig';
+import useUIStore from '../stores/uiStore';
 
-// ── Icons ───────────────────────────────────────────────────────────────────
-const IconPrev = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" /></svg>;
-const IconNext = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" /></svg>;
-const IconPlay = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 ml-0.5"><path d="M8 5v14l11-7z" /></svg>;
-const IconPause = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>;
-const IconChevronDown = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M19 9l-7 7-7-7" /></svg>;
-const IconMusic = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></svg>;
-const IconMute = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M16.5 12A4.5 4.5 0 0014 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-3.01-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06A8.99 8.99 0 0017.73 19L19 20.27 20.27 19 5.27 4 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>;
-const IconVolLow = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>;
-const IconVolHigh = () => <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77 0-4.28-2.99-7.86-7-8.77z"/></svg>;
+// --- Constants & Style Helpers ---
+const PLAYER_ID = 'sticky-youtube-player';
+const PLAYER_Z_INDEX = 1000;
+const VOLUME_LOW_THRESHOLD = 30;
+const PLAYER_WIDTH = 340;
+const MINI_POSITION = { bottom: '2rem', left: '2rem' };
+const PLAYER_POSITION = { bottom: '2rem', left: '2rem' };
 
-// ── YouTube Container (Frozen to prevent React from touching it after YT API takes over) ──
-const YouTubeContainer = React.memo(() => (
-    <div id={PLAYER_ID} style={{ position: 'fixed', width: 0, height: 0, overflow: 'hidden', opacity: 0, pointerEvents: 'none', zIndex: -1 }} />
-), () => true);
+const C = {
+    accent: '#00F5D4',
+    secondary: '#FF007F',
+    bgGlass: 'rgba(11, 12, 16, 0.9)',
+    border: 'rgba(0, 245, 212, 0.2)',
+    textPrimary: '#FFFFFF',
+    textMuted: '#94A3B8'
+};
+
+const BEAT_BARS_MINI = 4;
+const BEAT_BARS_FULL = 12;
+const BEAT_DURATION_BASE = 0.5;
+const BEAT_DURATION_STEP = 0.1;
+const BEAT_DELAY_STEP = 0.1;
+const BEAT_KEYFRAMES_VARIANTS = ['40%', '100%', '60%', '85%', '45%', '90%', '55%', '70%'];
+
+// Icons Wrapper
+const IconPlay = () => <Play size={20} fill="currentColor" />;
+const IconPause = () => <Pause size={20} fill="currentColor" />;
+const IconNext = () => <SkipForward size={18} fill="currentColor" />;
+const IconPrev = () => <SkipBack size={18} fill="currentColor" />;
+const IconChevronDown = () => <ChevronDown size={18} />;
+const IconVolHigh = () => <Volume2 size={16} />;
+const IconVolLow = () => <Volume1 size={16} />;
+const IconMute = () => <VolumeX size={16} />;
+
+const YouTubeContainer = () => (
+    <div id={PLAYER_ID} style={{ position: 'absolute', width: 0, height: 0, opacity: 0, pointerEvents: 'none' }} />
+);
 
 const StickyMusicPlayer = () => {
     const { 
@@ -36,9 +55,18 @@ const StickyMusicPlayer = () => {
         fetchDefaultSongs
     } = usePlayerStore();
 
+    const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+    const { isNavbarVisible } = useUIStore();
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // YouTube Hook Configuration
     const playerOptions = useMemo(() => ({
-        autoplay: true,
+        autoplay: false,
         onSongEnded: playNext,
         initialIndex: currentSongIndex,
         isPlaying: storeIsPlaying,
@@ -103,11 +131,21 @@ const StickyMusicPlayer = () => {
                     <motion.button
                         key="mini"
                         initial={{ x: -80, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
+                        animate={{ 
+                            x: 0, 
+                            opacity: 1,
+                            y: isNavbarVisible ? 0 : 150
+                        }}
                         exit={{ x: -80, opacity: 0 }}
                         onClick={toggleMinimize}
-                        style={{ zIndex: PLAYER_Z_INDEX, ...MINI_POSITION }}
-                        className="fixed flex items-center gap-2 px-3 py-2 rounded-full cursor-pointer select-none overflow-hidden"
+                        style={{ 
+                            zIndex: PLAYER_Z_INDEX, 
+                            position: 'fixed',
+                            ...(isMobile 
+                                ? { bottom: 'calc(5rem + env(safe-area-inset-bottom))', left: '1rem' } 
+                                : MINI_POSITION) 
+                        }}
+                        className="fixed flex items-center gap-2 px-3 py-2 rounded-full cursor-pointer select-none overflow-hidden transition-all duration-500"
                         whileHover={{ scale: 1.05 }}
                     >
                         <div className="absolute inset-0" style={{ background: C.bgGlass, backdropFilter: 'blur(20px)', border: `1px solid ${C.border}`, borderRadius: '999px' }} />
@@ -136,9 +174,20 @@ const StickyMusicPlayer = () => {
                         drag dragControls={dragControls} dragMomentum={false} dragElastic={0.05}
                         dragListener={false} 
                         initial={{ y: 40, opacity: 0, scale: 0.95 }}
-                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        animate={{ 
+                            y: isNavbarVisible ? 0 : 400, 
+                            opacity: 1, 
+                            scale: 1 
+                        }}
                         exit={{ y: 40, opacity: 0, scale: 0.95 }}
-                        style={{ zIndex: PLAYER_Z_INDEX, ...PLAYER_POSITION, width: PLAYER_WIDTH, position: 'fixed' }}
+                        style={{ 
+                            zIndex: PLAYER_Z_INDEX, 
+                            ...(isMobile 
+                                ? { bottom: 'calc(5rem + env(safe-area-inset-bottom))', left: '1rem', right: '1rem' } 
+                                : PLAYER_POSITION), 
+                            width: isMobile ? 'calc(100% - 2rem)' : PLAYER_WIDTH, 
+                            position: 'fixed' 
+                        }}
                         className="select-none"
                     >
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl" style={{ background: C.bgGlass, backdropFilter: 'blur(32px)', border: `1px solid ${C.border}` }}>
@@ -162,7 +211,7 @@ const StickyMusicPlayer = () => {
                                         {Array.from({ length: BEAT_BARS_FULL }).map((_, i) => (
                                             <motion.div 
                                                 key={i}
-                                                className="w-1.5 rounded-t-full shadow-[0_0_12px_rgba(0,245,212,0.3)]"
+                                                className="w-1.5 rounded-t-full shadow-[0_0_12px_rgba(0,245,212,0.4)]"
                                                 style={{ background: `linear-gradient(to top, ${C.accent}, ${C.secondary})` }}
                                                 animate={isPlaying ? { 
                                                     height: BEAT_KEYFRAMES_VARIANTS[i % BEAT_KEYFRAMES_VARIANTS.length],
@@ -189,7 +238,7 @@ const StickyMusicPlayer = () => {
                                         onClick={handleLocalProgressClick}
                                     >
                                         <motion.div 
-                                            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-fuchsia-500 rounded-full"
+                                            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#00F5D4] to-[#FF007F] rounded-full"
                                             style={{ width: `${progress}%` }}
                                         />
                                         <div 
@@ -217,7 +266,7 @@ const StickyMusicPlayer = () => {
                                     <button onClick={() => setStoreVolume(volume === 0 ? 80 : 0)} className="text-white/40 group-hover:text-white transition-colors">
                                         {volume === 0 ? <IconMute /> : volume < VOLUME_LOW_THRESHOLD ? <IconVolLow /> : <IconVolHigh />}
                                     </button>
-                                    <input type="range" min="0" max="100" value={volume} onChange={e => setStoreVolume(Number(e.target.value))} className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-cyan-400" />
+                                    <input type="range" min="0" max="100" value={volume} onChange={e => setStoreVolume(Number(e.target.value))} className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#00F5D4]" />
                                     <span className="text-[10px] font-mono opacity-40 w-6 text-right">{volume}</span>
                                 </div>
                             </div>

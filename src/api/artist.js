@@ -1,4 +1,5 @@
 import mainapi from './auth';
+import { getImageUrl } from '../utils/imageUtils';
 
 const TTL = 5 * 60 * 1000; // 5 minutes
 const isFresh = (time) => Date.now() - time < TTL;
@@ -25,10 +26,18 @@ export const getAllArtists = async () => {
   if (artistsPromise) return artistsPromise;
 
   artistsPromise = mainapi.get('/artists').then(res => {
-    artistsCache = res.data;
+    const data = res.data;
+    const list = data.artists || (Array.isArray(data) ? data : []);
+
+    list.forEach(a => {
+      // Normalize with getImageUrl to support relative paths from Seed
+      if (a.profileImage) a.profileImage = getImageUrl(a.profileImage);
+    });
+
+    artistsCache = data;
     artistsCacheTime = Date.now();
     artistsPromise = null;
-    return res.data;
+    return data;
   }).catch(err => {
     artistsPromise = null;
     throw err;
@@ -43,9 +52,16 @@ export const getArtistById = async (id) => {
   if (artistDetailPromises.has(id)) return artistDetailPromises.get(id);
 
   const promise = mainapi.get(`/artists/${id}`).then(res => {
-    artistDetailCache.set(id, { data: res.data, time: Date.now() });
+    const data = res.data;
+    const artist = data.artist || data;
+
+    if (artist) {
+      if (artist.profileImage) artist.profileImage = getImageUrl(artist.profileImage);
+    }
+
+    artistDetailCache.set(id, { data, time: Date.now() });
     artistDetailPromises.delete(id);
-    return res.data;
+    return data;
   }).catch(err => {
     artistDetailPromises.delete(id);
     throw err;

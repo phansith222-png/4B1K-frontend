@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Reveal from '../Reveal';
-import FeaturedArtists from '../FeaturedArtists';
 export default function StatsSection({ songs }) {
     return (
         <section className="relative w-full py-24 px-6 bg-transparent border-t border-[#30294e]/50 z-10">
@@ -73,9 +72,6 @@ export default function StatsSection({ songs }) {
                         </div>
                     </div>
                 </Reveal>
-
-                {/* 🎯 FEATURED ARTISTS SECTION */}
-                <FeaturedArtists genre="classic" />
 
             </div>
         </section>

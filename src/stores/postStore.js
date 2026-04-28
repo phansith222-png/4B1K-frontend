@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { createCommentApi, createPostApi, deleteCommentApi, deletePostApi, editCommentApi, editPostApi, getAllLikePostApi, getAllPostsApi, likePostApi, unlikePostApi } from "../api/auth";
+import useUserStore from "./userStore";
 
 // ─── Helper: merge updated post into list without full refetch ────────────────
 const updatePostInList = (posts, postId, updater) =>
-    posts.map((p) => (p.id === postId ? updater(p) : p));
+    posts.map((p) => (p.id === postId || p._id === postId ? updater(p) : p));
 
 const usePostStore = create((set, get) => ({
     posts: [],
@@ -39,53 +40,60 @@ const usePostStore = create((set, get) => ({
 
     // ── Optimistic like/unlike — no full refetch ─────────────────────────────
     likePost: async (postId) => {
-        const userId = get().currentLikes?.userId;
-        // Optimistic update: add like immediately
-        set((state) => ({
-            posts: updatePostInList(state.posts, postId, (p) => ({
-                ...p,
-                likes: [...(p.likes || []), { userId: state._userId }],
-            })),
-        }));
         try {
             const resp = await likePostApi(postId);
-            set({ currentLikes: resp.data });
-            // Sync accurate data silently
+            // Fetch fresh to get accurate likes array with userIds
             const fresh = await getAllPostsApi();
-            set({ posts: fresh.data.posts });
+            if (fresh.data.posts) {
+                set({ posts: fresh.data.posts });
+            }
             return resp;
         } catch (error) {
             console.error("Like failed:", error);
-            // Rollback optimistic update
-            get().getAllPosts();
         }
     },
 
     unlikePost: async (postId) => {
-        // Optimistic update: remove like immediately
-        set((state) => ({
-            posts: updatePostInList(state.posts, postId, (p) => ({
-                ...p,
-                likes: (p.likes || []).slice(0, -1),
-            })),
-        }));
         try {
             const resp = await unlikePostApi(postId);
-            set({ currentLikes: resp.data });
             const fresh = await getAllPostsApi();
-            set({ posts: fresh.data.posts });
+            if (fresh.data.posts) {
+                set({ posts: fresh.data.posts });
+            }
             return resp;
         } catch (error) {
             console.error("Unlike failed:", error);
-            get().getAllPosts();
         }
     },
 
     // ── Create post — optimistic prepend ────────────────────────────────────
     createPost: async (body) => {
+        // Optimistic prepend
+        const tempId = `temp-post-${Date.now()}`;
+        const optimisticPost = {
+            id: tempId,
+            content: body.content,
+            userId: useUserStore.getState().user?.id || useUserStore.getState().user?._id,
+            user: useUserStore.getState().user,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            postImages: body.image ? body.image.map((url, i) => ({ id: `temp-img-${i}`, url })) : [],
+            postArtists: body.selectedArtists
+                ? body.selectedArtists.map(a => ({ artistId: Number(a.id), artist: a }))
+                : (body.artistIds ? body.artistIds.map(id => ({ artistId: Number(id), artist: { id: Number(id), artistName: 'Loading...' } })) : []),
+            likes: [],
+            comments: [],
+            totalLikes: 0
+        };
+
+
+        set((state) => ({
+            posts: [optimisticPost, ...state.posts]
+        }));
+
         try {
             const resp = await createPostApi(body);
-            // Fetch to get full post with relations
+            // Refetch to get real IDs and relations
             const fresh = await getAllPostsApi();
             set({ posts: fresh.data.posts });
             return resp;
@@ -101,11 +109,21 @@ const usePostStore = create((set, get) => ({
             posts: updatePostInList(state.posts, postId, (p) => ({
                 ...p,
                 ...body,
+                // Optimistically update structures that the UI depends on
+                postImages: body.image ? body.image.map((url, i) => ({ id: `temp-${i}`, url })) : p.postImages,
+                postArtists: body.selectedArtists
+                    ? body.selectedArtists.map(a => ({ artistId: Number(a.id || a._id), artist: a }))
+                    : (body.artistIds ? body.artistIds.map(id => ({ artistId: Number(id), artist: { id: Number(id), artistName: 'Loading...' } })) : p.postArtists),
                 updatedAt: new Date().toISOString(),
             })),
         }));
         try {
             const resp = await editPostApi(postId, body);
+            // Give the backend a moment to process relations before refetching
+            // This prevents the "flicker" where tags disappear because the refetch was too fast
+            setTimeout(() => {
+                get().getAllPosts();
+            }, 500);
             return resp;
         } catch (error) {
             console.error("Edit post failed:", error);

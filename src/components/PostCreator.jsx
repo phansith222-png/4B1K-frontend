@@ -91,7 +91,10 @@ export default function PostCreator() {
       await createPost({
         content,
         image: uploadedImageUrls,
-        artistIds: selectedArtists.map((a) => a.id),
+        artistId: selectedArtists.length > 0 ? Number(selectedArtists[0].id || selectedArtists[0]._id) : null,
+        artistIds: selectedArtists.map((a) => Number(a.id || a._id)).filter(id => !isNaN(id)),
+        // Pass full objects for optimistic UI update
+        selectedArtists: selectedArtists
       });
 
       // Clean up object URLs and reset
@@ -113,7 +116,7 @@ export default function PostCreator() {
       {/* ── TRIGGER BAR ── */}
       <div 
         onClick={() => setIsModalOpen(true)}
-        className="bg-[#1A1B23] border border-white/10 rounded-[32px] p-4 shadow-xl relative z-20 group/creator cursor-pointer hover:border-[#00E5FF]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
+        className="bg-[#1A1B23] border border-white/10 rounded-2xl md:rounded-[32px] p-4 shadow-xl relative z-20 group/creator cursor-pointer hover:border-[#00E5FF]/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
       >
         <div className="flex items-center gap-5 px-1">
           {/* Avatar (with glow) */}
@@ -144,7 +147,7 @@ export default function PostCreator() {
             </div>
             <div className="relative group/icon">
               <div className="absolute inset-0 bg-[#7C4DFF] blur-lg opacity-0 group-hover/creator:opacity-30 transition-opacity" />
-              <Music4 size={22} className="text-[#7C4DFF] relative z-10 transition-transform group-hover/creator:scale-110" />
+              <span className="text-[#7C4DFF] text-xl font-black relative z-10 transition-transform group-hover/creator:scale-110 flex items-center justify-center w-8 h-8">#</span>
             </div>
           </div>
         </div>
@@ -192,19 +195,41 @@ export default function PostCreator() {
                 />
               </div>
 
-              {/* Previews (Artists) */}
-              {selectedArtists.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {selectedArtists.map((artist) => (
-                    <span key={artist.id} className="flex items-center gap-1.5 text-[11px] font-black bg-[#7C4DFF]/20 text-[#00E5FF] px-3 py-1 rounded-full border border-[#7C4DFF]/30 uppercase">
-                      🎤 {artist.artistName || artist.name}
-                      <button onClick={() => setSelectedArtists(p => p.filter(a => a.id !== artist.id))} className="hover:text-red-400">
-                        <X size={12} />
-                      </button>
-                    </span>
-                  ))}
+              {/* Artist Tags Section */}
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-[#00E5FF]">Artist Tags</p>
+                  <button
+                    onClick={() => setIsArtistModalOpen(true)}
+                    className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+                  >
+                    + Tag Artist
+                  </button>
                 </div>
-              )}
+                <div 
+                  onClick={() => setIsArtistModalOpen(true)}
+                  className="flex flex-wrap gap-2 min-h-[44px] p-3 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:border-[#00E5FF]/30 transition-all group/tags"
+                >
+                  {selectedArtists.length > 0 ? (
+                    selectedArtists.map(artist => (
+                      <span key={artist.id} className="text-[#00E5FF] text-[11px] font-black bg-[#7C4DFF]/10 px-3 py-1 rounded-full border border-[#7C4DFF]/20 flex items-center gap-1">
+                        # {artist.artistName || artist.name}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedArtists(prev => prev.filter(a => a.id !== artist.id));
+                          }} 
+                          className="ml-1 hover:text-red-500"
+                        >
+                          <X size={10} />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-600 italic group-hover/tags:text-gray-400 transition-colors">No artists tagged... Click to add</span>
+                  )}
+                </div>
+              </div>
 
               {/* Previews (Images) */}
               {imageItems.length > 0 && (
@@ -235,10 +260,10 @@ export default function PostCreator() {
                   </button>
                   <button 
                     onClick={() => setIsArtistModalOpen(true)}
-                    className="p-3 rounded-2xl bg-white/5 text-[#7C4DFF] hover:bg-[#7C4DFF]/10 transition-all"
+                    className="p-3 rounded-2xl bg-white/5 text-[#7C4DFF] hover:bg-[#7C4DFF]/10 transition-all flex items-center justify-center w-11 h-11"
                     title="Tag Artist"
                   >
-                    <Music4 size={20} />
+                    <span className="text-xl font-black leading-none">#</span>
                   </button>
                 </div>
 

@@ -16,14 +16,15 @@ import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
 // Components
 import CategoryBackground from '../components/PageAllArtistComponent/CategoryBackground';
-import HeroSection from '../components/PageClassicComponent/HeroSection';
-import BioSection from '../components/PageClassicComponent/BioSection';
-import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSection';
-import ConcertSection from '../components/PageClassicComponent/ConcertSection';
-import StatsSection from '../components/PageClassicComponent/StatsSection';
+import HeroSection from '../components/PageRnbComponent/HeroSection';
+import BioSection from '../components/PageRnbComponent/BioSection';
+import MusicPlayerSection from '../components/PageRnbComponent/MusicPlayerSection';
+import ConcertSection from '../components/PageRnbComponent/ConcertSection';
+import StatsSection from '../components/PageRnbComponent/StatsSection';
 import Reveal from '../components/Reveal';
+import GenreArtistSidebar from '../components/GenreArtistSidebar';
 
-export default function PageClassic() {
+export default function PageRnb() {
     const [searchParams] = useSearchParams();
     const queryArtistId = searchParams.get('artistId');
 
@@ -32,7 +33,7 @@ export default function PageClassic() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, 'classic', queryArtistId);
+        return getFilteredRandomArtistId(artists, 'rnb', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
@@ -54,7 +55,7 @@ export default function PageClassic() {
         const aId = String(artist.id || artist._id || '');
         const gName = String(globalArtist.artistName || '').toLowerCase().trim();
         const aName = String(artist.artistName || '').toLowerCase().trim();
-        
+
         return (gId !== '' && gId === aId) || (gName !== '' && gName === aName);
     }, [globalArtist, artist]);
 
@@ -92,46 +93,56 @@ export default function PageClassic() {
                     <p className="text-[#f9c1db]/60 mt-2 tracking-widest">Please run seed to inject data into database.</p>
                 </div>
             ) : (
-                <div key={artist?.id || 'content'}>
-                    <Reveal>
-                        <HeroSection artist={artist} events={events} />
-                    </Reveal>
-                    <Reveal>
-                        <BioSection artist={artist} />
-                    </Reveal>
-                    <Reveal>
-                        <MusicPlayerSection
-                            artist={artist}
-                            songs={songs}
-                            currentSongIndex={isCurrentArtist ? currentSongIndex : 0}
-                            isPlaying={isCurrentArtist ? isPlaying : false}
-                            progress={isCurrentArtist ? progress : 0}
-                            currentTime={isCurrentArtist ? currentTime : '0:00'}
-                            duration={isCurrentArtist ? duration : '0:00'}
-                            togglePlayPause={() => {
-                                if (!isCurrentArtist) playSongs(artist, songs, 0);
-                                else if (controls?.togglePlayPause) controls.togglePlayPause();
-                            }}
-                            changeSong={(dir) => {
-                                if (!isCurrentArtist) playSongs(artist, songs, 0);
-                                else if (controls?.changeSong) controls.changeSong(dir);
-                            }}
-                            handleSongSelect={(idx) => {
-                                if (!isCurrentArtist) playSongs(artist, songs, idx);
-                                else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
-                            }}
-                            handleProgressClick={(e) => {
-                                if (isCurrentArtist && controls?.handleProgressClick) controls.handleProgressClick(e);
-                            }}
-                        />
-                    </Reveal>
-                    <Reveal>
-                        <ConcertSection events={events} artist={artist} />
-                    </Reveal>
-                    <Reveal>
-                        <StatsSection songs={songs} />
-                    </Reveal>
-                </div>
+                <>
+                    {/* Sidebars for Artist Discovery */}
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="rnb" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="rnb" />
+
+                    <div key={artist?.id || 'content'} className="relative z-10">
+                        <Reveal>
+                            <HeroSection artist={artist} events={events} />
+                        </Reveal>
+                        <Reveal>
+                            <BioSection artist={artist} />
+                        </Reveal>
+                        <Reveal>
+                            <MusicPlayerSection
+                                artist={artist}
+                                songs={songs}
+                                currentSongIndex={isCurrentArtist ? currentSongIndex : 0}
+                                isPlaying={isCurrentArtist ? isPlaying : false}
+                                progress={isCurrentArtist ? progress : 0}
+                                currentTime={isCurrentArtist ? currentTime : '0:00'}
+                                duration={isCurrentArtist ? duration : '0:00'}
+                                togglePlayPause={() => {
+                                    if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                    else if (controls?.togglePlayPause) controls.togglePlayPause();
+                                }}
+                                changeSong={(dir) => {
+                                    if (!isCurrentArtist) playSongs(artist, songs, 0);
+                                    else if (controls?.changeSong) controls.changeSong(dir);
+                                }}
+                                handleSongSelect={(idx) => {
+                                    if (!isCurrentArtist) playSongs(artist, songs, idx);
+                                    else if (controls?.handleSongSelect) controls.handleSongSelect(idx);
+                                }}
+                                handleProgressClick={(e) => {
+                                    if (isCurrentArtist && controls?.handleProgressClick) {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                                        controls.handleProgressClick(percent);
+                                    }
+                                }}
+                            />
+                        </Reveal>
+                        <Reveal>
+                            <ConcertSection events={events} artist={artist} />
+                        </Reveal>
+                        <Reveal>
+                            <StatsSection songs={songs} />
+                        </Reveal>
+                    </div>
+                </>
             )}
         </div>
     );

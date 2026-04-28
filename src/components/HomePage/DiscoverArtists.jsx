@@ -67,13 +67,8 @@ export default function DiscoverArtists() {
 
 
   return (
-    <div className="p-2 relative overflow-hidden">
+    <div className="relative overflow-hidden">
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#00E5FF] rounded-full blur-[80px] opacity-10" />
-
-      <h3 className="text-[#00E5FF] text-xs font-black tracking-[0.2em] mb-6 uppercase relative z-10 flex items-center gap-3 px-4">
-        <div className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
-        Discover Artists
-      </h3>
 
       <div className="space-y-2 relative z-10">
         {loading ? (

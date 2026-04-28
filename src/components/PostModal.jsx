@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { X, Send, ImageIcon, Loader2 } from "lucide-react";
 import usePostStore from "../stores/postStore";
@@ -9,6 +10,15 @@ import CommentItem from "./CommentItem";
 
 // ── PostModal ──
 function PostModal({ post, onClose }) {
+  // ── Scroll Lock ──
+  useEffect(() => {
+    const container = document.getElementById('main-scroll-container');
+    if (container) {
+      container.style.overflow = 'hidden';
+      return () => { container.style.overflow = 'auto'; };
+    }
+  }, []);
+
   const { showToast } = useCyberToast();
   // Fetch post live from store so comments update immediately
   const livePost = usePostStore(
@@ -87,7 +97,7 @@ function PostModal({ post, onClose }) {
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       {/* Background overlay to close on outside click */}
       <div className="absolute inset-0" onClick={!isSubmitting ? onClose : undefined} />
@@ -259,7 +269,8 @@ function PostModal({ post, onClose }) {
           </div>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

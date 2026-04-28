@@ -187,68 +187,48 @@ export default function ChatSidebar({
                   <motion.button
                     key={room.id}
                     variants={{
-                      hidden: { opacity: 0, x: -10, scale: 0.98 },
-                      show: { opacity: 1, x: 0, scale: 1 }
-                    }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 30,
+                      hidden: { opacity: 0, y: 10 },
+                      show: { opacity: 1, y: 0 }
                     }}
                     onClick={() => openChat(room.id)}
-                    className={`w-full flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-[22px] transition-all duration-300 group relative border
+                    className={`w-full flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 group relative border
                       ${isActive
-                        ? "bg-gradient-to-r from-[#7000FF] to-[#8220FF] text-white shadow-[0_20px_40px_rgba(112,0,255,0.25)] border-white/10"
-                        : "hover:bg-white/[0.04] text-gray-400 hover:text-gray-100 border-transparent hover:border-white/5"}`}
+                        ? "bg-gradient-to-r from-[#7000FF] to-[#8220FF] text-white shadow-[0_15px_30px_rgba(112,0,255,0.25)] border-white/10"
+                        : "hover:bg-white/[0.03] text-gray-400 hover:text-gray-100 border-transparent"}`}
                   >
-                    <div className="relative shrink-0">
-                      <div className={`w-13 h-13 rounded-[18px] flex items-center justify-center font-extrabold overflow-hidden shadow-2xl border border-white/10 transition-transform duration-500 group-hover:scale-105
-                        ${isActive ? "bg-[#353945]" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeGlow"
+                        className="absolute inset-0 bg-gradient-to-r from-[#7000FF]/20 to-[#00E5FF]/20 rounded-2xl blur-md opacity-50"
+                      />
+                    )}
+                    
+                    <div className="relative shrink-0 z-10">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden border border-white/10 shadow-lg group-hover:scale-105 transition-transform duration-500
+                        ${isActive ? "ring-2 ring-[#00E5FF]/50" : ""}`}>
                         <img
                           src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)}
                           className="w-full h-full object-cover"
                           alt=""
                         />
                       </div>
+                      {unread > 0 && !isActive && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#00E5FF] text-[#0B0C10] text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0B0C10] shadow-[0_0_10px_#00E5FF]">
+                          {unread}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className={`text-[15px] font-extrabold truncate tracking-tight ${isActive ? "text-white" : "text-gray-200"}`}>{displayName}</span>
-                        {unread > 0 && isActive && (
-                          <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]" />
-                        )}
+                    <div className="flex-1 text-left min-w-0 z-10">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <span className={`text-[14px] font-bold truncate tracking-tight ${isActive ? "text-white" : "text-gray-200"}`}>{displayName}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className={`text-[11px] truncate opacity-60 font-bold uppercase tracking-widest ${isActive ? "text-white/80" : "text-gray-500"}`}>
-                          {isRoomGroup ? `${room.users?.length || 0} Members` : "Direct Message"}
-                        </p>
-                        {isActive && (
-                           <motion.div 
-                             initial={{ width: 0 }}
-                             animate={{ width: "100%" }}
-                             className="flex-1 h-[1px] bg-white/20" 
-                           />
-                        )}
-                      </div>
+                      <p className={`text-[11px] truncate opacity-60 font-medium uppercase tracking-widest ${isActive ? "text-white/80" : "text-gray-500"}`}>
+                        {isRoomGroup ? `${room.users?.length || 0} Participants` : "Private Line"}
+                      </p>
                     </div>
 
-                    {unread > 0 && !isActive && (
-                      <motion.div
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="bg-[#00E5FF] text-[#0B0C10] text-[10px] font-black min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full shadow-[0_0_15px_rgba(0,229,255,0.5)] border-2 border-[#0B0C10] ml-auto shrink-0"
-                      >
-                        {unread}
-                      </motion.div>
-                    )}
-
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeIndicator"
-                        className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-white rounded-l-full shadow-[0_0_20px_white]"
-                      />
-                    )}
+                    {/* Removed sidebarActiveIndicator dot/bar */}
                   </motion.button>
                 );
               })}

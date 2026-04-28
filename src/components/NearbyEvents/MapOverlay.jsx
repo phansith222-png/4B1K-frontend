@@ -9,11 +9,11 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
       {/* Gradient backdrop ด้านบน: มือถือมืดสนิทตามสั่ง / หน้าเว็ปหลักจางลงเหมือนตอนแรก */}
       <div className="absolute top-0 left-0 w-full h-64 md:h-48 bg-gradient-to-b from-black via-black/95 md:via-black/40 to-transparent -z-10" />
 
-      <div className="w-full px-4 md:px-8 pt-6 md:pt-8 pb-4 box-border">
+      <div className="w-full pl-8 md:pl-16 pr-4 md:pr-8 pt-6 md:pt-8 pb-4 box-border">
         <div className="flex flex-col-reverse md:flex-row md:items-start justify-between gap-4 md:gap-6">
 
           {/* Left Side: Title & Search */}
-          <div className="flex flex-col gap-3 md:gap-4 mt-16 md:mt-20 pointer-events-auto">
+          <div className="flex flex-col gap-3 md:gap-4 mt-24 md:mt-32 pointer-events-auto">
             <div>
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
@@ -52,8 +52,8 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
           </div>
 
           {/* Right Side: Categories & Location Button (Top Right Stack) */}
-          <div className="flex flex-col items-end gap-3 mt-1 md:mt-2 w-full md:w-auto pointer-events-auto min-w-0">
-            
+          <div className="flex flex-col items-end gap-3 mt-20 md:mt-24 w-full md:w-auto pointer-events-auto min-w-0">
+
             {/* 7 Categories (2 Rows on Mobile, Single line on Desktop) */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -64,17 +64,16 @@ export default function MapOverlay({ activeCategory, setActiveCategory, onFlyToU
               {Object.keys(CATEGORY_COLORS).map(cat => {
                 const isActive = activeCategory === cat;
                 const catColor = HEX_COLORS[cat] || '#00E5FF';
-                
+
                 return (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`relative px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 border flex-shrink-0 ${
-                      isActive 
-                        ? 'text-white border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2)] scale-105' 
+                    className={`relative px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 border flex-shrink-0 ${isActive
+                        ? 'text-white border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.2)] scale-105'
                         : 'text-gray-300 border-transparent hover:border-white/20'
-                    }`}
-                    style={{ 
+                      }`}
+                    style={{
                       backgroundColor: isActive ? catColor : `${catColor}22`,
                       borderColor: isActive ? 'white' : `${catColor}44`,
                       boxShadow: isActive ? `0 0 20px ${catColor}88` : `0 0 10px ${catColor}33`

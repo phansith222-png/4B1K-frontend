@@ -10,7 +10,7 @@ export default function MusicPlayerSection({
     const currentSong = songs[currentSongIndex] || null;
 
     return (
-        <section className="relative w-full py-32 px-6 bg-transparent overflow-hidden z-10">
+        <section className="relative w-full py-16 md:py-32 px-4 md:px-6 bg-transparent overflow-hidden z-10">
             {/* Ambient Background Glows */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[800px] bg-gradient-to-r from-[#FF007F] via-transparent to-[#00F5D4] rounded-[100%] blur-[80px]" style={{ willChange: 'transform, opacity' }}></div>

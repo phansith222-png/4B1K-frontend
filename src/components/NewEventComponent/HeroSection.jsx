@@ -16,13 +16,7 @@ export default function HeroSection() {
                         </p>
                     </div>
                     
-                    <div className="hidden lg:flex flex-col items-end text-right">
-                        <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1">Status</span>
-                        <div className="flex items-center gap-2 text-[#00E5FF] text-[11px] font-black uppercase tracking-widest bg-[#00E5FF]/10 px-4 py-2 rounded-full border border-[#00E5FF]/20">
-                            <span className="w-2 h-2 rounded-full bg-[#00E5FF] animate-pulse"></span>
-                            Live Updates
-                        </div>
-                    </div>
+
                 </div>
             </section>
         </Reveal>

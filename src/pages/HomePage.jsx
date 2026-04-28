@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, SlidersHorizontal } from 'lucide-react';
+import { X, SlidersHorizontal, Flame, Sparkles } from 'lucide-react';
 import { getAllArtists } from '../api/artist';
 
 
@@ -15,11 +15,43 @@ import PostContainer from '../components/PostContainer';
 import PostCreator from '../components/PostCreator';
 import ArtistPickerModal from '../components/ArtistPickerModal';
 
+import { useRef } from 'react';
+import useUIStore from '../stores/uiStore';
+
 export default function CommunityHomePage() {
   const [activeTab, setActiveTab] = useState('All');
   const [selectedArtists, setSelectedArtists] = useState([]);
   const [isArtistPickerOpen, setIsArtistPickerOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { isNavbarVisible, setNavbarVisible } = useUIStore();
+  const lastScrollY = useRef(0);
+
+  const handleScroll = (e) => {
+    if (window.innerWidth >= 1280) {
+        if (!isNavbarVisible) setNavbarVisible(true);
+        return;
+    }
+
+    const currentScrollY = e.currentTarget.scrollTop;
+    const diff = currentScrollY - lastScrollY.current;
+    
+    // Only trigger if scroll difference is significant (e.g., > 10px)
+    // and not near the very top of the page
+    if (Math.abs(diff) > 10) {
+        if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+            if (isNavbarVisible) setNavbarVisible(false);
+        } else if (currentScrollY < lastScrollY.current) {
+            if (!isNavbarVisible) setNavbarVisible(true);
+        }
+        lastScrollY.current = currentScrollY;
+    }
+
+    // Always show when near top
+    if (currentScrollY < 50) {
+        if (!isNavbarVisible) setNavbarVisible(true);
+    }
+  };
 
   const handleArtistSelect = (selected) => {
     setSelectedArtists(selected);
@@ -37,79 +69,239 @@ export default function CommunityHomePage() {
   };
 
   return (
-    <div id="community-page" className="h-[calc(100vh-64px)] bg-[#0B0C10] text-white font-sans overflow-hidden">
+    <div id="community-page" className="h-screen bg-[#13141C] text-white font-sans overflow-hidden">
       
-      {/* 🔮 MAIN CONTENT LAYOUT - Scrollable container for the whole viewport area */}
-      <main className="w-full h-full flex flex-col xl:flex-row justify-between items-start relative pt-0 pb-0 overflow-y-auto hide-scrollbar overscroll-contain transform-gpu">
-        
-        {/* --- 👈 LEFT SIDEBAR (Locked in place) --- */}
-        <aside className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-hidden">
-          <NavigationSidebar />
+      {/* 🔮 DYNAMIC LASER BACKGROUND ANIMATIONS (CSS Optimized for Performance) */}
+      <style>{`
+        @keyframes float-magenta {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.08; }
+          33% { transform: translate(100px, -150px) scale(1.2); opacity: 0.15; }
+          66% { transform: translate(-100px, 150px) scale(0.8); opacity: 0.08; }
+        }
+        @keyframes float-cyan {
+          0%, 100% { transform: translate(0, 0) scale(0.8); opacity: 0.05; }
+          50% { transform: translate(-120px, 200px) scale(1.1); opacity: 0.12; }
+        }
+        @keyframes float-purple {
+          0%, 100% { transform: scale(1); opacity: 0.05; }
+          50% { transform: scale(1.5); opacity: 0.1; }
+        }
+        .bg-bloom { will-change: transform, opacity; pointer-events: none; }
+      `}</style>
+
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Magenta Bloom */}
+        <div 
+          style={{ animation: 'float-magenta 15s ease-in-out infinite' }}
+          className="bg-bloom absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#FF00FF]/20 blur-[120px] rounded-full"
+        />
+        {/* Purple Pulse */}
+        <div 
+          style={{ animation: 'float-purple 10s ease-in-out infinite' }}
+          className="bg-bloom absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#7000FF]/15 blur-[200px] rounded-full"
+        />
+      </div>
+
+      {/* 🔮 MAIN CONTENT LAYOUT - Restore Desktop Behavior */}
+      <main 
+        id="main-scroll-container" 
+        onScroll={handleScroll}
+        className="w-full h-full flex flex-col xl:flex-row justify-between items-start relative z-10 pt-[70px] md:pt-[80px] pb-32 xl:pb-0 overflow-y-auto hide-scrollbar overscroll-contain transform-gpu"
+      >
+        {/* --- 👈 LEFT SIDEBAR (Pure Black + Navbar Theme Underglow) --- */}
+        <aside className="hidden xl:block w-[380px] shrink-0 sticky top-0 h-screen relative group/left">
+          {/* Solid Black Background */}
+          <div className="absolute inset-0 bg-black z-10" />
           
-          <div className="pt-6">
-            <div className="flex items-center gap-3 px-6 mb-6 group">
-              <div className="w-8 h-8 rounded-lg bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,229,255,0.1)]">
-                <SlidersHorizontal size={16} />
+          {/* 🌟 Particle Underglow (Points of light like Landing Page) */}
+          <div className="absolute inset-y-0 right-[-100px] w-[300px] z-0 pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.3, 0.1],
+                  scale: [1, 1.5, 1],
+                  y: [0, -20, 20, 0],
+                  x: [0, 10, -10, 0]
+                }}
+                transition={{ 
+                  duration: 4 + i, 
+                  repeat: Infinity, 
+                  delay: i * 0.8,
+                  ease: "easeInOut"
+                }}
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  top: `${15 + i * 15}%`,
+                  right: `${10 + (i % 3) * 20}%`,
+                  width: `${100 + i * 20}px`,
+                  height: `${100 + i * 20}px`,
+                  background: i % 3 === 0 ? '#00E5FF' : i % 3 === 1 ? '#7000FF' : '#FF00FF'
+                }}
+              />
+            ))}
+          </div>
+          <div className="absolute inset-y-0 right-[-40px] w-[150px] bg-gradient-to-l from-transparent via-[#00E5FF]/10 to-transparent blur-[60px] z-0 pointer-events-none opacity-40" />
+          
+          <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10">
+            <NavigationSidebar />
+            
+            <div className="pt-10 border-t border-white/5 mt-10">
+              <div className="flex items-center gap-4 mb-8 group">
+                <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+                  <SlidersHorizontal size={20} />
+                </div>
+                <span className="text-sm font-black text-[#00E5FF] uppercase tracking-[0.25em]">Feed Discover</span>
               </div>
-              <span className="text-xs font-black text-[#00E5FF] uppercase tracking-[0.2em]">Feed Discover</span>
+              <FeedFilter 
+                activeTab={activeTab} 
+                setActiveTab={(tab) => {
+                  setActiveTab(tab);
+                  setSelectedArtists([]);
+                }} 
+                onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
+                selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
+                vertical={true}
+              />
             </div>
-            <FeedFilter 
-              activeTab={activeTab} 
-              setActiveTab={(tab) => {
-                setActiveTab(tab);
-                setSelectedArtists([]);
-              }} 
-              onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
-              selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
-              vertical={true}
-            />
           </div>
         </aside>
 
         {/* --- 📱 CENTER FEED (Primary scroll content) --- */}
-        <div className="flex-1 max-w-[720px] min-w-0 relative z-10 w-full group/feed px-6">
+        <div className="flex-1 max-w-[820px] min-w-0 relative z-10 w-full group/feed px-0 md:px-10 mx-auto">
           {/* Subtle Top Fade (Overlay) */}
           <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-[#0B0C10] to-transparent z-20 pointer-events-none" />
           
-          <div className="space-y-4 pt-2 pb-6 transform-gpu will-change-transform">
-            {/* Post Creator */}
-            <PostCreator />
+          <div className="space-y-0 md:space-y-4 pt-0 md:pt-2 pb-6 transform-gpu will-change-transform">
+            
+            {/* Post Creator (Top on Mobile) */}
+            <motion.div 
+              animate={{ 
+                y: isNavbarVisible ? 0 : -20,
+                opacity: isNavbarVisible ? 1 : 0,
+              }}
+              transition={{ duration: 0.2 }}
+              className={`pt-0 pb-0 md:p-0 overflow-hidden ${!isNavbarVisible && 'pointer-events-none'}`}
+            >
+              <PostCreator />
+            </motion.div>
+
+            {/* Mobile Filter Tabs (Compact, Full-Width) */}
+            <motion.div 
+              animate={{ 
+                y: isNavbarVisible ? 0 : -80,
+                top: isNavbarVisible ? '0px' : '-80px'
+              }}
+              transition={{ duration: 0.3 }}
+              className="xl:hidden sticky top-0 z-30 py-1 bg-[#0B0C10]/95 backdrop-blur-xl border-b border-white/5"
+            >
+              <FeedFilter 
+                activeTab={activeTab} 
+                setActiveTab={(tab) => {
+                  setActiveTab(tab);
+                  setSelectedArtists([]);
+                }} 
+                onOpenArtistPicker={() => setIsArtistPickerOpen(true)}
+                selectedArtistName={selectedArtists.length > 0 ? `${selectedArtists.length} Selected` : null}
+              />
+            </motion.div>
 
             {/* Selected Artists Tags */}
-            {selectedArtists.length > 0 && (
-              <div className="flex flex-wrap gap-3 pb-2">
-                {selectedArtists.map(artist => (
-                  <motion.div 
-                    key={artist.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-3 bg-gradient-to-r from-[#7C4DFF]/15 to-[#00E5FF]/5 border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg group hover:border-[#00E5FF]/30 transition-all"
-                  >
-                    <span className="text-white text-sm font-bold uppercase tracking-tight">{artist.artistName}</span>
-                    <button 
-                      onClick={() => setSelectedArtists(prev => prev.filter(a => a.id !== artist.id))}
-                      className="flex items-center justify-center ml-1 p-0.5 hover:bg-white/10 rounded-md transition-all"
+            <motion.div 
+              animate={{ 
+                y: isNavbarVisible ? 0 : -10,
+                opacity: isNavbarVisible ? 1 : 0,
+              }}
+              transition={{ duration: 0.2 }}
+              className={`overflow-hidden ${!isNavbarVisible && 'pointer-events-none'}`}
+            >
+              {selectedArtists.length > 0 && (
+                <div className="flex flex-wrap gap-3 pb-2 px-4 md:px-0 md:mt-0">
+                  {selectedArtists.map(artist => (
+                    <motion.div 
+                      key={artist.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-3 bg-gradient-to-r from-[#7000FF]/15 to-[#00E5FF]/5 border border-white/10 px-4 py-2.5 rounded-2xl shadow-lg group hover:border-[#00E5FF]/30 transition-all"
                     >
-                      <X size={15} className="text-white" strokeWidth={3} />
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+                      <span className="text-white text-sm font-bold uppercase tracking-tight">{artist.artistName}</span>
+                      <button 
+                        onClick={() => setSelectedArtists(prev => prev.filter(a => a.id !== artist.id))}
+                        className="flex items-center justify-center ml-1 p-0.5 hover:bg-white/10 rounded-md transition-all"
+                      >
+                        <X size={15} className="text-white" strokeWidth={3} />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
 
-            <AnimatePresence mode="wait">
-                <PostContainer activeTab={activeTab} selectedArtistIds={selectedArtists.map(a => a.id)} />
-            </AnimatePresence>
+            <PostContainer activeTab={activeTab} selectedArtistIds={selectedArtists.map(a => a.id)} />
           </div>
         </div>
 
-        {/* --- 👉 RIGHT SIDEBAR (Locked in place) --- */}
-        <aside className="hidden xl:block w-[350px] shrink-0 sticky top-0 h-[calc(100vh-64px)] overflow-hidden">
-          <TrendingArtists 
-            onToggleArtist={toggleArtist} 
-            selectedArtistIds={selectedArtists.map(a => a.id)} 
-          />
-          <DiscoverArtists />
+        {/* --- 👉 RIGHT SIDEBAR (Pure Black + Navbar Theme Underglow) --- */}
+        <aside className="hidden xl:block w-[380px] shrink-0 sticky top-0 h-screen relative group/right">
+          {/* Solid Black Background */}
+          <div className="absolute inset-0 bg-black z-10" />
+          
+          {/* 🌟 Particle Underglow (Points of light like Landing Page) */}
+          <div className="absolute inset-y-0 left-[-100px] w-[300px] z-0 pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.3, 0.1],
+                  scale: [1, 1.5, 1],
+                  y: [0, 20, -20, 0],
+                  x: [0, -10, 10, 0]
+                }}
+                transition={{ 
+                  duration: 5 + i, 
+                  repeat: Infinity, 
+                  delay: i * 0.7 + 1,
+                  ease: "easeInOut"
+                }}
+                className="absolute rounded-full blur-3xl"
+                style={{
+                  top: `${10 + i * 15}%`,
+                  left: `${10 + (i % 3) * 20}%`,
+                  width: `${120 + i * 15}px`,
+                  height: `${120 + i * 15}px`,
+                  background: i % 3 === 0 ? '#7000FF' : i % 3 === 1 ? '#00E5FF' : '#FF00FF'
+                }}
+              />
+            ))}
+          </div>
+          <div className="absolute inset-y-0 left-[-40px] w-[150px] bg-gradient-to-r from-transparent via-[#7000FF]/10 to-transparent blur-[60px] z-0 pointer-events-none opacity-40" />
+
+          <div className="relative z-20 h-full overflow-y-auto hide-scrollbar p-10 space-y-12">
+            <div>
+              <div className="flex items-center gap-4 mb-8 group">
+                <div className="w-10 h-10 rounded-xl bg-[#FF4D00]/10 flex items-center justify-center text-[#FF4D00] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(255,77,0,0.2)]">
+                  <Flame size={20} />
+                </div>
+                <span className="text-sm font-black text-[#FF4D00] uppercase tracking-[0.25em]">Trending Artists</span>
+              </div>
+              <TrendingArtists 
+                onToggleArtist={toggleArtist} 
+                selectedArtistIds={selectedArtists.map(a => a.id)} 
+              />
+            </div>
+
+            <div className="border-t border-white/5 pt-12">
+              <div className="flex items-center gap-4 mb-8 group">
+                <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center text-[#00E5FF] group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(0,229,255,0.2)]">
+                  <Sparkles size={20} />
+                </div>
+                <span className="text-sm font-black text-[#00E5FF] uppercase tracking-[0.25em]">Discover Artists</span>
+              </div>
+              <DiscoverArtists />
+            </div>
+          </div>
         </aside>
 
       </main>
@@ -202,7 +394,7 @@ function ArtistTagSelector({ selectedArtistId, onSelect }) {
 //       initial={{ opacity: 0, y: 30 }}
 //       animate={{ opacity: 1, y: 0 }}
 //       transition={{ delay: index * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-//       className="bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
+//        className="bg-white/[0.03] border-y md:border border-white/10 rounded-2xl md:rounded-[32px] overflow-hidden hover:border-white/20 transition-all group shadow-xl"
 //     >
 //       {/* Post Header */}
 //       <div className="p-6 pb-4">

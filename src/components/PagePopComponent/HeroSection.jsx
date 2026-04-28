@@ -11,16 +11,16 @@ export default function HeroSection({ artist, events }) {
     const trendingRank = useMemo(() => (artist.id % 15) + 1, [artist.id]);
 
     return (
-        <section className="relative w-full h-screen flex flex-col justify-center items-center px-6 overflow-hidden">
+        <section className="relative w-full min-h-screen lg:h-screen flex flex-col justify-center items-center px-4 md:px-6 overflow-hidden pt-44 md:pt-52 pb-12">
             {/* 🔙 Back Button */}
             <motion.button
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                whileHover={{ scale: 1.1, x: 5, boxShadow: '0 0 20px rgba(0, 245, 212, 0.3)' }}
+                whileHover={{ scale: 1.1, x: 5, boxShadow: '0 0 20px rgba(0, 229, 255, 0.4)' }}
                 onClick={() => navigate(-1)}
-                className="absolute top-6 left-6 md:left-12 z-50 flex items-center gap-3 text-[#00F5D4] hover:text-white transition-colors group bg-[#00F5D4]/5 backdrop-blur-md px-5 py-2.5 rounded-full border border-[#00F5D4]/20"
+                className="absolute top-24 md:top-28 left-6 md:left-12 z-50 flex items-center gap-3 text-[#00E5FF] hover:text-white transition-colors group bg-[#00E5FF]/5 backdrop-blur-md px-5 py-2.5 rounded-full border border-[#00E5FF]/20"
             >
-                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 <span className="text-xs font-black uppercase tracking-widest">Back</span>
             </motion.button>
 
@@ -47,9 +47,9 @@ export default function HeroSection({ artist, events }) {
                             <span className="text-white font-black text-base">#{trendingRank}</span>
                         </motion.div>
 
-                        <h1 className="text-6xl md:text-8xl xl:text-[110px] font-black italic tracking-tighter leading-[0.85] text-white uppercase drop-shadow-2xl mb-8 pb-4 pr-10 break-words whitespace-normal overflow-visible">
+                        <h1 className="text-5xl md:text-8xl xl:text-[110px] font-black italic tracking-tighter leading-[0.85] text-white uppercase drop-shadow-2xl mb-8 pb-4 pr-0 md:pr-10 break-words whitespace-normal overflow-visible">
                             {artist.artistName} <br />
-                            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#00F5D4] to-[#FF007F] px-10 py-2 text-glow-cyan">VIBES </span>
+                            <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#00F5D4] to-[#FF007F] px-4 md:px-10 py-2 text-glow-cyan">VIBES </span>
                         </h1>
 
                         <p className="max-w-xl text-white/60 text-base md:text-lg leading-relaxed tracking-widest mb-10 border-l-4 border-[#00F5D4] pl-8 font-medium">
@@ -121,8 +121,9 @@ export default function HeroSection({ artist, events }) {
                             <img
                                 src={(artist.profileImage && typeof artist.profileImage === 'string' && artist.profileImage.startsWith('http'))
                                     ? artist.profileImage
-                                    : "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=2000&auto=format&fit=crop"}
+                                    : "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop"}
                                 alt={artist.artistName}
+                                loading="lazy"
                                 onLoad={() => setImgLoaded(true)}
                                 className={`absolute inset-0 w-full h-full object-cover transition-all duration-[10s] group-hover:scale-110 group-hover:rotate-2 ${imgLoaded ? 'opacity-90' : 'opacity-0'}`}
                             />

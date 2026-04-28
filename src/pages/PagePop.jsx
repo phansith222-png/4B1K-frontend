@@ -20,6 +20,7 @@ import MusicPlayerSection from '../components/PagePopComponent/MusicPlayerSectio
 import ConcertSection from '../components/PagePopComponent/ConcertSection';
 import StatsSection from '../components/PagePopComponent/StatsSection';
 import Reveal from '../components/Reveal';
+import GenreArtistSidebar from '../components/GenreArtistSidebar';
 
 export default function PagePop() {
     const [searchParams] = useSearchParams();
@@ -90,7 +91,12 @@ export default function PagePop() {
                     <p className="text-gray-500 mt-2">Please run seed to inject data into database.</p>
                 </div>
             ) : (
-                <div key={artist?.id || 'content'}>
+                <>
+                    {/* Sidebars for Artist Discovery */}
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="pop" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="pop" />
+
+                    <div key={artist?.id || 'content'} className="relative z-10">
                     <style>{`
                         @keyframes panGrid { 0% { transform: translateY(0); } 100% { transform: translateY(50px); } }
                         .cd-rotate { animation: rotateCD 12s linear infinite; }
@@ -143,6 +149,7 @@ export default function PagePop() {
                         <StatsSection songs={songs} />
                     </Reveal>
                 </div>
+                </>
             )}
         </div>
     );
