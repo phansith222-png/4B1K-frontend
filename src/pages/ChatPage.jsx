@@ -12,6 +12,7 @@ import BackButton from "../components/BackButton";
 import { useCyberToast } from "../components/CyberToast";
 import CyberConfirmModal from "../components/chat/CyberConfirmModal";
 import UserProfileModal from "../components/chat/UserProfileModal";
+import ConcertBackground from "../components/chat/ConcertBackground";
 
 export default function ChatPage() {
   const socket = useSocket();
@@ -39,10 +40,10 @@ export default function ChatPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: "", message: "", onConfirm: () => { } });
   const [viewingUser, setViewingUser] = useState(null);
+  const [pendingImage, setPendingImage] = useState(null);
 
   const scrollRef = useRef(null);
   const chatContainerRef = useRef(null);
-  const prevLenRef = useRef(0);
   const typingTimer = useRef(null);
   const emojiRef = useRef(null);
   const inputRef = useRef(null);
@@ -197,15 +198,19 @@ export default function ChatPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showEmoji]);
 
-  const scrollToBottom = useCallback(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, []);
+  const openChat = (id) => {
+    setActiveChat(id);
+    if (isMobile) setShowSidebar(false);
+  };
 
   const handleReceive = useCallback((msg) => {
     const rid = String(msg.chatRoomId);
     const currentActiveChat = String(activeChatRef.current);
+
+    // 🚀 CRITICAL: Update lastMessageAt to move room to top on every message
+    setContacts((prev) => prev.map((c) =>
+      String(c.id) === rid ? { ...c, lastMessageAt: msg.createdAt } : c
+    ));
 
     if (rid === currentActiveChat) {
       setMessages((ms) => {
@@ -295,7 +300,6 @@ export default function ChatPage() {
     }
 
     let isCurrent = true;
-    prevLenRef.current = 0;
     setTypingText("");
     setUnreadCounts((u) => ({ ...u, [activeChat]: 0 }));
     setMessages([]); 
@@ -305,11 +309,6 @@ export default function ChatPage() {
       .then((r) => {
         if (!isCurrent) return;
         setMessages(r.data.map((m) => ({ ...m, isSent: true })));
-        
-        // Robust first-time scroll
-        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 50);
-        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 200);
-        setTimeout(() => { if (isCurrent) scrollToBottom(); }, 500);
 
         if (r.data.length > 0 && socket) {
           const lastMsg = r.data[r.data.length - 1];
@@ -330,83 +329,69 @@ export default function ChatPage() {
     }
     
     return () => { isCurrent = false; };
-  }, [socket, activeChat, myUserId, scrollToBottom]);
+  }, [socket, activeChat, myUserId]);
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      const timer = setTimeout(() => scrollToBottom(), 50);
-      return () => clearTimeout(timer);
-    }
-    prevLenRef.current = messages.length;
-  }, [messages, scrollToBottom]);
-
-  const send = (e) => {
-    e.preventDefault();
+  const send = async (e) => {
+    e?.preventDefault();
     const text = inputText.trim();
-    if (!text || !connected || !activeChat) return;
+    if ((!text && !pendingImage) || !connected || !activeChat) return;
+    
+    let imageUrl = null;
+    const currentPendingImage = pendingImage;
+    const currentText = text;
+
+    // Reset inputs immediately for better UX
+    setInputText("");
+    setPendingImage(null);
     clearTimeout(typingTimer.current);
     socket.emit("stop_typing", { chatRoomId: activeChat });
-    const payload = {
-      id: `tmp-${Date.now()}`, chatRoomId: activeChat, senderId: myUserId,
-      content: text, createdAt: new Date().toISOString(),
-      isOptimistic: true, isSent: false, isRead: false,
-      sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
-    };
-    setMessages((ms) => [...ms, payload]);
 
-    // Update the room's last activity date to move it to the top in the sidebar
-    setContacts((prev) => prev.map((c) =>
-      String(c.id) === String(activeChat) ? { ...c, lastMessageAt: payload.createdAt } : c
-    ));
+    try {
+      // If there's a pending image, upload it first
+      if (currentPendingImage) {
+        const res = await mainapi.post(`/chats/rooms/${activeChat}/messages/image`, { image: currentPendingImage });
+        imageUrl = res.data.imageUrl;
+      }
 
-    setInputText("");
-    scrollToBottom("smooth");
-    socket.emit("send_message", payload);
+      const finalContent = imageUrl ? `[IMAGE]:${imageUrl}${currentText ? "\n" + currentText : ""}` : currentText;
+
+      const payload = {
+        id: `tmp-${Date.now()}`, 
+        chatRoomId: activeChat, 
+        senderId: myUserId,
+        content: finalContent, 
+        createdAt: new Date().toISOString(),
+        isOptimistic: true, 
+        isSent: false, 
+        isRead: false,
+        sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
+      };
+
+      setMessages((ms) => [...ms, payload]);
+
+      // Update the room's last activity date
+      setContacts((prev) => prev.map((c) =>
+        String(c.id) === String(activeChat) ? { ...c, lastMessageAt: payload.createdAt } : c
+      ));
+
+      socket.emit("send_message", payload);
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      showToast("Failed to send message. Please try again.", "error");
+      // Optionally restore state on failure? Usually better to just show error.
+    }
   };
 
-  const handleMessageImageChange = async (e) => {
+  const handleMessageImageChange = (e) => {
     const file = e.target.files[0];
     if (!file || !activeChat || !connected) return;
     
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        const base64Data = reader.result;
-        // Temporary optimistic payload
-        const payload = {
-          id: `tmp-${Date.now()}`, chatRoomId: activeChat, senderId: myUserId,
-          content: "[IMAGE]:" + base64Data, createdAt: new Date().toISOString(),
-          isOptimistic: true, isSent: false, isRead: false,
-          sender: { username: user?.username, firstName: user?.firstName, lastName: user?.lastName, profileImage: user?.profileImage },
-        };
-        setMessages((ms) => [...ms, payload]);
-        scrollToBottom("smooth");
-
-        // Upload to backend
-        const res = await mainapi.post(`/chats/rooms/${activeChat}/messages/image`, { image: base64Data });
-        const imageUrl = res.data.imageUrl;
-
-        // Emit real message
-        const realPayload = {
-          ...payload,
-          content: "[IMAGE]:" + imageUrl,
-        };
-
-        // Update the optimistic message in state so that handleReceive can filter it out by matching content
-        setMessages((ms) => ms.map(m => m.id === payload.id ? { ...m, content: "[IMAGE]:" + imageUrl } : m));
-
-        socket.emit("send_message", realPayload);
-        
-        // Let handleReceive update the temporary payload when server acknowledges
-      } catch (err) {
-        console.error("Failed to upload image:", err);
-        alert("ไม่สามารถส่งรูปภาพได้");
-        // Remove temporary message on failure
-        setMessages((ms) => ms.filter(m => !(m.isOptimistic && m.content.startsWith("[IMAGE]:") && m.id > payload.id - 100)));
-      }
+    reader.onloadend = () => {
+      setPendingImage(reader.result);
+      if (inputRef.current) inputRef.current.focus();
     };
     reader.readAsDataURL(file);
-    // clear input
     if (messageImageInputRef.current) messageImageInputRef.current.value = "";
   };
 
@@ -449,12 +434,13 @@ export default function ChatPage() {
     });
   }, [contacts, search, tab, myUserId, unreadCounts]);
 
-  const openChat = (id) => { setActiveChat(id); setShowSidebar(false); };
   const goBack = () => { setActiveChat(null); setShowSidebar(true); };
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
-    <div className="flex h-[100dvh] w-full overflow-hidden bg-[#0B0C10] text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="flex h-full w-full bg-[#0B0C10] text-gray-200 overflow-hidden relative font-sans selection:bg-[#00E5FF]/30">
+      <ConcertBackground />
+
       <AnimatePresence mode="wait">
         {(showSidebar || !isMobile) && (
           <motion.div
@@ -490,11 +476,11 @@ export default function ChatPage() {
       <AnimatePresence mode="wait">
         {(!showSidebar || activeChat || !isMobile) && (
           <motion.div
-            key="chat-area-container"
-            initial={isMobile ? { x: 300, opacity: 0 } : { x: 20, opacity: 0 }}
+            key="chat-area-wrapper"
+            initial={isMobile ? { x: 300, opacity: 0 } : { opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={isMobile ? { x: 300, opacity: 0 } : { x: 20, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            exit={isMobile ? { x: 300, opacity: 0 } : { opacity: 0 }}
+            transition={{ duration: 0.3 }}
             className="flex-1 h-full"
           >
             <ChatArea
@@ -527,10 +513,20 @@ export default function ChatPage() {
               isLoading={isLoadingMessages}
               onImageClick={setSelectedImage}
               chatContainerRef={chatContainerRef}
-              onAvatarClick={setViewingUser}
+              onAvatarClick={async (userData) => {
+                setViewingUser(userData);
+                try {
+                  const res = await mainapi.get(`/users/${userData.id}`);
+                  setViewingUser(res.data);
+                } catch (err) {
+                  console.error("Failed to fetch latest user details:", err);
+                }
+              }}
               onRenameGroup={handleRenameGroup}
               messageImageInputRef={messageImageInputRef}
               handleMessageImageChange={handleMessageImageChange}
+              pendingImage={pendingImage}
+              setPendingImage={setPendingImage}
             />
           </motion.div>
         )}

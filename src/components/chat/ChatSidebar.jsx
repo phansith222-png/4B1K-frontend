@@ -105,7 +105,7 @@ export default function ChatSidebar({
 
         {/* ── Search Bar ── */}
         <div className="relative group mb-6">
-          <div className="absolute inset-0 bg-[#00E5FF]/5 blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 rounded-2xl" />
+          <div className="absolute inset-0 bg-[#00E5FF]/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 rounded-2xl" />
           <div className="relative flex items-center bg-[#15171e] border border-white/5 rounded-2xl p-0.5 group-focus-within:border-[#00E5FF]/30 transition-all duration-300">
             <div className="pl-4">
               <svg className="w-4 h-4 text-gray-600 group-focus-within:text-[#00E5FF] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -161,80 +161,98 @@ export default function ChatSidebar({
 
       {/* ── Room List ── */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2" style={{ scrollbarWidth: "thin", scrollbarColor: "#ffffff05 transparent" }}>
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {filteredContacts.length > 0 ? (
-            filteredContacts.map((room, idx) => {
-              const isRoomGroup = room.isGroup;
-              const otherUser = !isRoomGroup ? room.users?.find((u) => u.userId !== myUserId)?.user : null;
-              const displayName = isRoomGroup ? (room.name || `Group ${room.id}`) : (otherUser?.username || otherUser?.firstName || "Loading...");
-              const unread = unreadCounts[room.id] || 0;
-              const isActive = activeChat === room.id;
+            <motion.div
+              key={tab}
+              initial="hidden"
+              animate="show"
+              exit="hidden"
+              variants={{
+                show: { transition: { staggerChildren: 0.05 } },
+                hidden: { transition: { staggerChildren: 0.03, staggerDirection: -1 } }
+              }}
+              className="flex flex-col gap-2"
+            >
+              {filteredContacts.map((room) => {
+                const isRoomGroup = room.isGroup;
+                const otherUser = !isRoomGroup ? room.users?.find((u) => u.userId !== myUserId)?.user : null;
+                const displayName = isRoomGroup 
+                  ? (room.name || `Group ${room.id}`) 
+                  : (otherUser?.firstName ? `${otherUser.firstName} ${otherUser.lastName || ''}`.trim() : otherUser?.username || "Loading...");
+                const unread = unreadCounts[room.id] || 0;
+                const isActive = activeChat === room.id;
 
-              return (
-                <motion.button
-                  key={room.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 30,
-                    opacity: { duration: 0.2 },
-                    layout: { duration: 0.4 }
-                  }}
-                  onClick={() => openChat(room.id)}
-                  className={`w-full flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-[22px] transition-all duration-500 group relative border
-                    ${isActive
-                      ? "bg-gradient-to-r from-[#7000FF] to-[#8220FF] text-white shadow-[0_20px_40px_rgba(112,0,255,0.25)] border-white/10"
-                      : "hover:bg-white/[0.04] text-gray-400 hover:text-gray-100 border-transparent hover:border-white/5"}`}
-                >
-                  <div className="relative shrink-0">
-                    <div className={`w-13 h-13 rounded-[18px] flex items-center justify-center font-extrabold overflow-hidden shadow-2xl border border-white/10 transition-transform duration-500 group-hover:scale-105
-                      ${isActive ? "bg-white/10 backdrop-blur-md" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
-                      <img
-                        src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)}
-                        className="w-full h-full object-cover"
-                        alt=""
+                return (
+                  <motion.button
+                    key={room.id}
+                    variants={{
+                      hidden: { opacity: 0, x: -10, scale: 0.98 },
+                      show: { opacity: 1, x: 0, scale: 1 }
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                    onClick={() => openChat(room.id)}
+                    className={`w-full flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-[22px] transition-all duration-300 group relative border
+                      ${isActive
+                        ? "bg-gradient-to-r from-[#7000FF] to-[#8220FF] text-white shadow-[0_20px_40px_rgba(112,0,255,0.25)] border-white/10"
+                        : "hover:bg-white/[0.04] text-gray-400 hover:text-gray-100 border-transparent hover:border-white/5"}`}
+                  >
+                    <div className="relative shrink-0">
+                      <div className={`w-13 h-13 rounded-[18px] flex items-center justify-center font-extrabold overflow-hidden shadow-2xl border border-white/10 transition-transform duration-500 group-hover:scale-105
+                        ${isActive ? "bg-[#353945]" : isRoomGroup ? "bg-gradient-to-tr from-indigo-500 to-purple-600" : "bg-[#2a2d35]"}`}>
+                        <img
+                          src={avatarUrl(displayName, isRoomGroup ? room.coverImage : otherUser?.profileImage)}
+                          className="w-full h-full object-cover"
+                          alt=""
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className={`text-[15px] font-extrabold truncate tracking-tight ${isActive ? "text-white" : "text-gray-200"}`}>{displayName}</span>
+                        {unread > 0 && isActive && (
+                          <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className={`text-[11px] truncate opacity-60 font-bold uppercase tracking-widest ${isActive ? "text-white/80" : "text-gray-500"}`}>
+                          {isRoomGroup ? `${room.users?.length || 0} Members` : "Direct Message"}
+                        </p>
+                        {isActive && (
+                           <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: "100%" }}
+                             className="flex-1 h-[1px] bg-white/20" 
+                           />
+                        )}
+                      </div>
+                    </div>
+
+                    {unread > 0 && !isActive && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-[#00E5FF] text-[#0B0C10] text-[10px] font-black min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full shadow-[0_0_15px_rgba(0,229,255,0.5)] border-2 border-[#0B0C10] ml-auto shrink-0"
+                      >
+                        {unread}
+                      </motion.div>
+                    )}
+
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-white rounded-l-full shadow-[0_0_20px_white]"
                       />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className={`text-[15px] font-extrabold truncate tracking-tight ${isActive ? "text-white" : "text-gray-200"}`}>{displayName}</span>
-                      {unread > 0 && isActive && (
-                        <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className={`text-[11px] truncate opacity-60 font-bold uppercase tracking-widest ${isActive ? "text-white/80" : "text-gray-500"}`}>
-                        {isRoomGroup ? `${room.users?.length || 0} Members` : "Direct Message"}
-                      </p>
-                      {isActive && <div className="flex-1 h-[1px] bg-white/20" />}
-                    </div>
-                  </div>
-
-                  {unread > 0 && !isActive && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="bg-[#00E5FF] text-[#0B0C10] text-[10px] font-black min-w-[20px] h-[20px] flex items-center justify-center px-1.5 rounded-full shadow-[0_0_15px_rgba(0,229,255,0.5)] border-2 border-[#0B0C10] ml-auto shrink-0"
-                    >
-                      {unread}
-                    </motion.div>
-                  )}
-
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-white rounded-l-full shadow-[0_0_20px_white]"
-                    />
-                  )}
-                </motion.button>
-              );
-            })
+                    )}
+                  </motion.button>
+                );
+              })}
+            </motion.div>
           ) : (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -242,7 +260,7 @@ export default function ChatSidebar({
               className="flex flex-col items-center justify-center py-20 px-6 text-center"
             >
               <div className="relative mb-6">
-                <div className="absolute inset-0 bg-[#7000FF]/20 blur-3xl rounded-full" />
+                <div className="absolute inset-0 bg-[#7000FF]/10 rounded-full" />
                 <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#1A1C23] to-[#0B0C10] border border-white/10 flex items-center justify-center text-4xl shadow-2xl">
                   📡
                 </div>

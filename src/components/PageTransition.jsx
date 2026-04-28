@@ -13,7 +13,7 @@ export default function PageTransition({ children }) {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="relative w-full min-h-screen"
+            className="relative w-full h-full"
             variants={{
                 initial: {
                     opacity: 1
