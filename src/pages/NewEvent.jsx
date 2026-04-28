@@ -255,7 +255,7 @@ export default function NewEventPage() {
                 />
             </div>
 
-            <main className="max-w-[120rem] mx-auto px-6 md:px-24 pt-12 pb-32 relative z-10 w-full flex flex-col gap-16">
+            <main className="max-w-[120rem] mx-auto px-6 md:px-24 pt-40 md:pt-48 pb-32 relative z-10 w-full flex flex-col gap-16">
                 <HeroSection />
 
                 {loading ? (

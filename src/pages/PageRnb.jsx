@@ -16,15 +16,15 @@ import { GENRE_ARTIST_IDS } from '../constants/genreArtistIds';
 
 // Components
 import CategoryBackground from '../components/PageAllArtistComponent/CategoryBackground';
-import HeroSection from '../components/PageClassicComponent/HeroSection';
-import BioSection from '../components/PageClassicComponent/BioSection';
-import MusicPlayerSection from '../components/PageClassicComponent/MusicPlayerSection';
-import ConcertSection from '../components/PageClassicComponent/ConcertSection';
-import StatsSection from '../components/PageClassicComponent/StatsSection';
+import HeroSection from '../components/PageRnbComponent/HeroSection';
+import BioSection from '../components/PageRnbComponent/BioSection';
+import MusicPlayerSection from '../components/PageRnbComponent/MusicPlayerSection';
+import ConcertSection from '../components/PageRnbComponent/ConcertSection';
+import StatsSection from '../components/PageRnbComponent/StatsSection';
 import Reveal from '../components/Reveal';
 import GenreArtistSidebar from '../components/GenreArtistSidebar';
 
-export default function PageClassic() {
+export default function PageRnb() {
     const [searchParams] = useSearchParams();
     const queryArtistId = searchParams.get('artistId');
 
@@ -33,7 +33,7 @@ export default function PageClassic() {
 
     const targetId = useMemo(() => {
         if (loadingAll) return null;
-        return getFilteredRandomArtistId(artists, 'classic', queryArtistId);
+        return getFilteredRandomArtistId(artists, 'rnb', queryArtistId);
     }, [artists, loadingAll, queryArtistId]);
 
     const { artist, songs, events, loading: loadingDetail } = useArtistDetail(targetId);
@@ -95,8 +95,8 @@ export default function PageClassic() {
             ) : (
                 <>
                     {/* Sidebars for Artist Discovery */}
-                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="classic" />
-                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="classic" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="left" genre="rnb" />
+                    <GenreArtistSidebar artists={artists} currentArtistId={artist?.id} side="right" genre="rnb" />
 
                     <div key={artist?.id || 'content'} className="relative z-10">
                         <Reveal>

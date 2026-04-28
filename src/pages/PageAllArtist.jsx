@@ -127,7 +127,7 @@ export default function PageAllArtist() {
     // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="bg-[#0B0C10] min-h-screen text-[#FFFFFF] font-sans overflow-x-hidden relative">
-            <BackButton color="#00F5D4" glowColor="rgba(0, 245, 212, 0.3)" />
+            <BackButton />
 
             {/* ================= STYLE ================= */}
             <style>{`

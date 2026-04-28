@@ -317,7 +317,7 @@ export default function PageNearbyEvents() {
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-72px)] bg-black text-white overflow-hidden font-sans">
+    <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       <BackButton color="#00E5FF" glowColor="rgba(0, 229, 255, 0.3)" />
 
       {/* 🔄 Loading Bar — thin top bar instead of full-screen overlay */}

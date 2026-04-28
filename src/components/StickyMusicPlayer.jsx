@@ -19,9 +19,9 @@ const PLAYER_POSITION = { bottom: '2rem', left: '2rem' };
 
 const C = {
     accent: '#00F5D4',
-    secondary: '#00E5FF',
-    bgGlass: 'rgba(11, 12, 16, 0.85)',
-    border: 'rgba(0, 229, 255, 0.2)',
+    secondary: '#FF007F',
+    bgGlass: 'rgba(11, 12, 16, 0.9)',
+    border: 'rgba(0, 245, 212, 0.2)',
     textPrimary: '#FFFFFF',
     textMuted: '#94A3B8'
 };
@@ -211,7 +211,7 @@ const StickyMusicPlayer = () => {
                                         {Array.from({ length: BEAT_BARS_FULL }).map((_, i) => (
                                             <motion.div 
                                                 key={i}
-                                                className="w-1.5 rounded-t-full shadow-[0_0_12px_rgba(0,245,212,0.3)]"
+                                                className="w-1.5 rounded-t-full shadow-[0_0_12px_rgba(0,245,212,0.4)]"
                                                 style={{ background: `linear-gradient(to top, ${C.accent}, ${C.secondary})` }}
                                                 animate={isPlaying ? { 
                                                     height: BEAT_KEYFRAMES_VARIANTS[i % BEAT_KEYFRAMES_VARIANTS.length],
@@ -238,7 +238,7 @@ const StickyMusicPlayer = () => {
                                         onClick={handleLocalProgressClick}
                                     >
                                         <motion.div 
-                                            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-400 to-fuchsia-500 rounded-full"
+                                            className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#00F5D4] to-[#FF007F] rounded-full"
                                             style={{ width: `${progress}%` }}
                                         />
                                         <div 
@@ -266,7 +266,7 @@ const StickyMusicPlayer = () => {
                                     <button onClick={() => setStoreVolume(volume === 0 ? 80 : 0)} className="text-white/40 group-hover:text-white transition-colors">
                                         {volume === 0 ? <IconMute /> : volume < VOLUME_LOW_THRESHOLD ? <IconVolLow /> : <IconVolHigh />}
                                     </button>
-                                    <input type="range" min="0" max="100" value={volume} onChange={e => setStoreVolume(Number(e.target.value))} className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-cyan-400" />
+                                    <input type="range" min="0" max="100" value={volume} onChange={e => setStoreVolume(Number(e.target.value))} className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-[#00F5D4]" />
                                     <span className="text-[10px] font-mono opacity-40 w-6 text-right">{volume}</span>
                                 </div>
                             </div>

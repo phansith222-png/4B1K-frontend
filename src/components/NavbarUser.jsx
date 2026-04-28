@@ -111,7 +111,7 @@ export default function NavbarUser({ isLanding = false }) {
                 @keyframes shine{to{background-position:200% center}}
             `}</style>
 
-            <motion.header 
+            <motion.header
                 initial={{ y: 0 }}
                 animate={{ y: isNavbarVisible ? 0 : -110 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -121,8 +121,8 @@ export default function NavbarUser({ isLanding = false }) {
                 {/* Left: Back (Mobile) + Logo + Search (Desktop) */}
                 <div className="flex-1 flex justify-start items-center gap-1 md:gap-6">
                     {/* Back Button - Mobile Only */}
-                    <button 
-                        onClick={() => navigate(-1)} 
+                    <button
+                        onClick={() => navigate(-1)}
                         className="xl:hidden p-1.5 text-gray-400 hover:text-[#00E5FF] transition-colors"
                     >
                         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,8 +130,8 @@ export default function NavbarUser({ isLanding = false }) {
                         </svg>
                     </button>
 
-                    <div 
-                        className="flex items-center gap-2 cursor-pointer z-50 shrink-0" 
+                    <div
+                        className="flex items-center gap-2 cursor-pointer z-50 shrink-0"
                         onClick={(e) => {
                             if (location.pathname === '/landing') {
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -148,7 +148,7 @@ export default function NavbarUser({ isLanding = false }) {
                         </div>
                         <div className="text-2xl md:text-3xl font-black italic tracking-tighter text-shine mt-1">4B1K</div>
                     </div>
- 
+
                     {/* Desktop Search Bar (Now on the left) */}
                     <div className="hidden xl:block">
                         <NavSearchBar navigate={navigate} />
@@ -181,8 +181,8 @@ export default function NavbarUser({ isLanding = false }) {
                 >
                     <ul className="flex items-center gap-10 text-[15px] font-bold">
                         <li className="relative group">
-                            <Link 
-                                to="/home" 
+                            <Link
+                                to="/home"
                                 onClick={(e) => handleLinkClick(e, '/home')}
                                 className={`transition-all duration-300 ${isCommunityActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
                             >
@@ -198,7 +198,7 @@ export default function NavbarUser({ isLanding = false }) {
                             >
                                 Artist Biology
                                 <motion.svg
-                                    animate={{ rotate: isArtistMenuOpen ? 180 : 0 }}
+                                    animate={{ rotate: isArtistMenuOpen ? 0 : 180 }}
                                     className={`w-4 h-4 ${isArtistActive ? 'text-[#00E5FF]' : 'text-gray-500'}`}
                                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 >
@@ -208,8 +208,8 @@ export default function NavbarUser({ isLanding = false }) {
                             {isArtistActive && !isArtistMenuOpen && <motion.div layoutId="nav-active-user" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative group">
-                            <Link 
-                                to="/new-event" 
+                            <Link
+                                to="/new-event"
                                 onClick={(e) => handleLinkClick(e, '/new-event')}
                                 className={`transition-all duration-300 ${isConcertActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}
                             >
@@ -231,7 +231,7 @@ export default function NavbarUser({ isLanding = false }) {
                     ) : (
                         <div className="flex items-center gap-3 md:gap-6 whitespace-nowrap">
                             {/* Mobile Search Toggle */}
-                            <button 
+                            <button
                                 onClick={() => useSearchStore.getState().toggleSearch()}
                                 className="xl:hidden p-2 text-gray-400 hover:text-[#00E5FF] transition-colors"
                             >
@@ -250,7 +250,7 @@ export default function NavbarUser({ isLanding = false }) {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                 </svg>
                                 <span className="text-[13px] font-black uppercase tracking-widest text-[#00E5FF] group-hover:text-white transition-colors">Chat</span>
-                                <div className="w-2 h-2 rounded-full bg-[#FF007F] animate-pulse shadow-[0_0_10px_#FF007F]" />
+
                             </button>
 
                             {/* Profile dropdown */}
@@ -259,7 +259,7 @@ export default function NavbarUser({ isLanding = false }) {
                                     <div className="w-[40px] h-[40px] rounded-full border-2 border-white/20 group-hover:border-[#00E5FF] overflow-hidden bg-[#1A1C23] transition-colors">
                                         <img src={user.profileImage || `https://ui-avatars.com/api/?name=${displayName}&background=1A1C23&color=00E5FF`} alt="Profile" className="w-full h-full object-cover" />
                                     </div>
-                                    <motion.svg animate={{ rotate: isProfileMenuOpen ? 180 : 0 }} className={`w-4 h-4 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <motion.svg animate={{ rotate: isProfileMenuOpen ? 0 : 180 }} className={`w-4 h-4 ${isProfileMenuOpen ? 'text-[#00E5FF]' : 'text-gray-400 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
                                     </motion.svg>
                                 </button>
@@ -297,21 +297,21 @@ export default function NavbarUser({ isLanding = false }) {
                         </div>
                     )}
                 </div>
-            </motion.header>
 
-            {/* Mega-menu */}
-            <NavArtistMenu
-                isOpen={isArtistMenuOpen}
-                menuRef={menuRef}
-                mainSlides={mainSlides}
-                currentSlide={currentSlide}
-                setCurrentSlide={setCurrentSlide}
-                isHoveringMain={isHoveringMain}
-                setIsHoveringMain={setIsHoveringMain}
-                topEvents={topEvents}
-                chartOrder={chartOrder}
-                onNavigate={handleNavigate}
-            />
+                {/* Mega-menu - Moved inside header to ensure it follows fixed position */}
+                <NavArtistMenu
+                    isOpen={isArtistMenuOpen}
+                    menuRef={menuRef}
+                    mainSlides={mainSlides}
+                    currentSlide={currentSlide}
+                    setCurrentSlide={setCurrentSlide}
+                    isHoveringMain={isHoveringMain}
+                    setIsHoveringMain={setIsHoveringMain}
+                    topEvents={topEvents}
+                    chartOrder={chartOrder}
+                    onNavigate={handleNavigate}
+                />
+            </motion.header>
         </div>
     );
 }

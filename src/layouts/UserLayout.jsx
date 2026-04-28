@@ -12,6 +12,7 @@ import SectionErrorFallback from "../components/SectionErrorFallback";
 export default function UserLayout() {
     const location = useLocation();
     const isChat = location.pathname === '/chat';
+    const topPadding = ['/chat', '/nearby-events'].some(p => location.pathname.startsWith(p)) ? 'pt-0' : 'pt-24 md:pt-28';
 
     return (
         <div className={`bg-[#0B0C10] flex flex-col relative overflow-hidden ${isChat ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'}`}>
@@ -26,7 +27,7 @@ export default function UserLayout() {
             <NavbarUser />
 
             {/* 📌 Wrap Outlet with PageTransition and ensure key={location.pathname} is set */}
-            <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col overflow-hidden' : ''}`}>
+            <main className={`flex-grow relative z-10 ${isChat ? 'flex flex-col overflow-hidden pt-[72px] md:pt-[88px]' : ''}`}>
                 <PageTransition key={location.pathname + location.search}>
                     <Outlet />
                 </PageTransition>
@@ -35,7 +36,7 @@ export default function UserLayout() {
             {!['/nearby-events', '/chat', '/home', '/'].includes(location.pathname) && <Footer />}
 
             {/* Responsive Extras */}
-            <MobileBottomNav />
+            {!isChat && <MobileBottomNav />}
             <ImageLightbox />
         </div>
     );

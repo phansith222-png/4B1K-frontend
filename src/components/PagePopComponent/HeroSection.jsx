@@ -11,16 +11,16 @@ export default function HeroSection({ artist, events }) {
     const trendingRank = useMemo(() => (artist.id % 15) + 1, [artist.id]);
 
     return (
-        <section className="relative w-full min-h-screen lg:h-screen flex flex-col justify-center items-center px-4 md:px-6 overflow-hidden pt-24 pb-12">
+        <section className="relative w-full min-h-screen lg:h-screen flex flex-col justify-center items-center px-4 md:px-6 overflow-hidden pt-44 md:pt-52 pb-12">
             {/* 🔙 Back Button */}
             <motion.button
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                whileHover={{ scale: 1.1, x: 5, boxShadow: '0 0 20px rgba(0, 245, 212, 0.3)' }}
+                whileHover={{ scale: 1.1, x: 5, boxShadow: '0 0 20px rgba(0, 229, 255, 0.4)' }}
                 onClick={() => navigate(-1)}
-                className="absolute top-6 left-6 md:left-12 z-50 flex items-center gap-3 text-[#00F5D4] hover:text-white transition-colors group bg-[#00F5D4]/5 backdrop-blur-md px-5 py-2.5 rounded-full border border-[#00F5D4]/20"
+                className="absolute top-24 md:top-28 left-6 md:left-12 z-50 flex items-center gap-3 text-[#00E5FF] hover:text-white transition-colors group bg-[#00E5FF]/5 backdrop-blur-md px-5 py-2.5 rounded-full border border-[#00E5FF]/20"
             >
-                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 <span className="text-xs font-black uppercase tracking-widest">Back</span>
             </motion.button>
 

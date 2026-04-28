@@ -7,7 +7,7 @@ const MiniMap = lazy(() => import('./hero/MiniMap'));
 
 export default function HeroSection({ artists, events }) {
     return (
-        <main className="relative z-20 flex flex-col items-center pt-6 md:pt-10 pb-20 w-full overflow-visible">
+        <main className="relative z-20 flex flex-col items-center pt-24 md:pt-28 pb-20 w-full overflow-visible">
             {/* โชว์รูปศิลปินแบบสายรุ้ง (Arc Showcase) ปล่อยให้กางเต็มจอ */}
             <div className="w-full relative z-10 -mb-20 md:-mb-32 lg:-mb-40">
                 <HeroVideoShowcase artists={artists} />

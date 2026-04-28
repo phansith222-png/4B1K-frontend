@@ -179,7 +179,7 @@ export default function Navbar() {
                             {isCommunityActive && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative">
-                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(v => !v)} className={`flex items-center gap-1.5 focus:outline-none transition-all duration-300 ${isArtistActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>Artist Biology <motion.svg animate={{ rotate: isArtistMenuOpen ? 180 : 0 }} className={`w-4 h-4 ${isArtistActive ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg></button>
+                            <button ref={buttonRef} onClick={() => setIsArtistMenuOpen(v => !v)} className={`flex items-center gap-1.5 focus:outline-none transition-all duration-300 ${isArtistActive ? 'text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]' : 'text-gray-300 hover:text-[#00E5FF]'}`}>Artist Biology <motion.svg animate={{ rotate: isArtistMenuOpen ? 0 : 180 }} className={`w-4 h-4 ${isArtistActive ? 'text-[#00E5FF]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></motion.svg></button>
                             {isArtistActive && !isArtistMenuOpen && <motion.div layoutId="nav-active" className="absolute -bottom-2 left-0 right-0 h-[2px] bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]" />}
                         </li>
                         <li className="relative group">
@@ -210,25 +210,25 @@ export default function Navbar() {
                     ) : (
                         <div className="flex items-center gap-4">
                             <button onClick={() => navigate('/login')} className="font-bold text-gray-300 hover:text-white transition-colors">Log In</button>
-                            <button onClick={() => navigate('/register')} className="font-bold bg-white text-black hover:bg-[#00E5FF] px-8 py-2.5 rounded-full transition-all duration-300">Join Now</button>
+                            <button onClick={() => navigate('/register')} className="font-bold bg-white text-black hover:bg-[#00E5FF] px-8 py-2.5 rounded-full transition-all duration-300">Create Account</button>
                         </div>
                     )}
                 </div>
-            </motion.header>
 
-            {/* Mega-menu */}
-            <NavArtistMenu
-                isOpen={isArtistMenuOpen}
-                menuRef={menuRef}
-                mainSlides={mainSlides}
-                currentSlide={currentSlide}
-                setCurrentSlide={setCurrentSlide}
-                isHoveringMain={isHoveringMain}
-                setIsHoveringMain={setIsHoveringMain}
-                topEvents={topEvents}
-                chartOrder={chartOrder}
-                onNavigate={handleNavigate}
-            />
+                {/* Mega-menu - Moved inside header to ensure it follows fixed position */}
+                <NavArtistMenu
+                    isOpen={isArtistMenuOpen}
+                    menuRef={menuRef}
+                    mainSlides={mainSlides}
+                    currentSlide={currentSlide}
+                    setCurrentSlide={setCurrentSlide}
+                    isHoveringMain={isHoveringMain}
+                    setIsHoveringMain={setIsHoveringMain}
+                    topEvents={topEvents}
+                    chartOrder={chartOrder}
+                    onNavigate={handleNavigate}
+                />
+            </motion.header>
         </div>
     );
 }
