@@ -145,7 +145,7 @@ export default function CommunityHomePage() {
       </div>
 
       {/* --- 👈 LEFT SIDEBAR --- */}
-      <aside className="hidden xl:block w-[380px] shrink-0 h-screen relative group/left z-30 overscroll-none">
+      <aside className="hidden xl:block w-[380px] shrink-0 h-screen relative group/left z-30 overscroll-none mt-20">
           {/* Solid Black Background */}
           <div className="absolute inset-0 bg-black z-10" />
           
@@ -285,7 +285,7 @@ export default function CommunityHomePage() {
       </main>
 
       {/* --- 👉 RIGHT SIDEBAR --- */}
-      <aside className="hidden xl:block w-[380px] shrink-0 h-screen relative group/right z-30 overscroll-none">
+      <aside className="hidden xl:block w-[380px] shrink-0 h-screen relative group/right z-30 overscroll-none mt-20">
           {/* Solid Black Background */}
           <div className="absolute inset-0 bg-black z-10" />
           
