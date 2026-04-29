@@ -33,3 +33,6 @@ node_modules/
 dist/
 build/
 .DS_Store
+
+# Video showcase output (large files)
+videos/
