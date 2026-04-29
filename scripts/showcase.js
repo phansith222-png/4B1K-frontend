@@ -181,58 +181,63 @@ async function main() {
   // ── MUSIC PLAYER INTERACTION ────────────────────────────────────────────────
   console.log('  [MUSIC] Opening player…');
 
-  // Wait for mini player button
-  const miniPlayerBtn = page.locator('button:has(svg.lucide-music)').first();
+  // StickyMusicPlayer renders into #music-player-root via portal.
+  // Minimized state: fixed rounded-full button at bottom-left.
+  const miniPlayerBtn = page.locator(
+    '#music-player-root button, button[class*="fixed"][class*="rounded-full"]'
+  ).first();
   const miniVisible = await miniPlayerBtn.isVisible({ timeout: 8000 }).catch(() => false);
 
   if (miniVisible) {
     await miniPlayerBtn.click();
-    await page.waitForTimeout(1500); // expand animation
+    await page.waitForTimeout(1800); // expand animation
 
-    // Wait for expanded player header text
-    await page.locator('span', { hasText: /Cyber Player/i }).waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
-    await page.waitForTimeout(2000); // let songs load and layout settle
+    // Wait for expanded player ("Cyber Player" header)
+    await page.locator('text=Cyber Player').waitFor({ state: 'visible', timeout: 5000 }).catch(() => null);
+    await page.waitForTimeout(1500);
 
-    // Controls: Previous | Play/Pause | Next
+    // Play/Pause: w-12 h-12 gradient circle button
     const playPauseBtn = page.locator('button.w-12.h-12').first();
-    // Assuming icons are within buttons
+    // Next/Prev: p-2 buttons flanking the play button
     const prevBtn = page.locator('button:has(svg.lucide-skip-back)').first();
     const nextBtn = page.locator('button:has(svg.lucide-skip-forward)').first();
 
     if (await playPauseBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      // Play
+      // Play — let the song actually run for a visible duration
       await playPauseBtn.click();
       console.log('    ▶ Play');
-      await page.waitForTimeout(4000);
+      await page.waitForTimeout(5000); // listen for 5 s
 
-      // Forward (next)
-      if (await nextBtn.isVisible()) {
+      // Next track
+      if (await nextBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
         await nextBtn.click();
         console.log('    ⏭ Next');
-        await page.waitForTimeout(3500);
+        await page.waitForTimeout(4000); // listen to next song
       }
 
       // Pause
       await playPauseBtn.click();
       console.log('    ⏸ Pause');
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(1200);
 
       // Previous
-      if (await prevBtn.isVisible()) {
+      if (await prevBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
         await prevBtn.click();
         console.log('    ⏮ Previous');
-        await page.waitForTimeout(2500);
+        await page.waitForTimeout(2000);
       }
 
-      // Minimize — the header row has the chevron button
+      // Minimize
       const minimizeBtn = page.locator('button:has(svg.lucide-chevron-down)').first();
       if (await minimizeBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
         await minimizeBtn.click();
-        await page.waitForTimeout(1500);
+        await page.waitForTimeout(1200);
       }
+    } else {
+      console.log('    ⚠️ Play button not visible in expanded player.');
     }
   } else {
-    console.log('    ⚠️ Mini player not found on landing page.');
+    console.log('    ⚠️ Mini player not found — no song loaded on landing page.');
   }
 
   mark('01_end');
