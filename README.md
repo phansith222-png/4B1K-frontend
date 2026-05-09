@@ -7,14 +7,6 @@
 
 ---
 
-## Project Demo
-
-<video src="../4B1K Presentation.mp4" controls width="100%">
-  Your browser does not support the video tag.
-</video>
-
----
-
 ## Tech Stack
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white&style=flat-square)
