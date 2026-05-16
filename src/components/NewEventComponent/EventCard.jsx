@@ -10,7 +10,7 @@ export default function EventCard({ event, index }) {
     const FALLBACK_IMAGES = [
         "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=800&auto=format&fit=crop",
-        "https://as1.ftcdn.net/v2/jpg/06/46/40/40/1000_F_646404057_dZp9m50EsdwskSbfLRz0g2TbyiDo6IUy.jpg",
+        "https://images.unsplash.com/photo-1540039120624-973056ce7ca6?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800&auto=format&fit=crop",
