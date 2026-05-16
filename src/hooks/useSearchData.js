@@ -84,7 +84,6 @@ export const useSearchData = (navigate) => {
                     }));
                 });
 
-                console.log("[useSearchData] Songs indexed:", flatSongs.length);
                 setAllSongs(flatSongs);
 
             } catch (error) {

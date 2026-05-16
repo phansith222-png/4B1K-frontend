@@ -65,10 +65,10 @@ export const usePlayerStore = create(
                     console.error("Failed to fetch variety songs:", err);
                 }
                 
-                // Final fallback if backend fails
+                // Final fallback if backend fails — royalty-free NCS tracks
                 const backupSongs = [
-                    { id: 'b1', title: 'Seven (feat. Latto)', streamUrl: 'https://www.youtube.com/watch?v=QU9c0053UAU', coverImage: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745' },
-                    { id: 'b2', title: 'Perfect Night', streamUrl: 'https://www.youtube.com/watch?v=hLvAuY2R2S4', coverImage: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9' }
+                    { id: 'b1', title: 'Sky High', streamUrl: 'https://www.youtube.com/watch?v=TW9d8vYrVFQ', coverImage: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745' },
+                    { id: 'b2', title: 'On & On (feat. Daniel Levi)', streamUrl: 'https://www.youtube.com/watch?v=K4DyBUG242c', coverImage: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9' }
                 ];
                 set({ artist: { artistName: 'Global Trending' }, songs: backupSongs, queue: backupSongs, currentSongIndex: 0 });
             },

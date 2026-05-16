@@ -112,9 +112,8 @@ export default function NewEventPage() {
                 setEvents(sortedEvents);
                 setAllArtists(artistData);
 
-                console.log(`✅ Loaded ${sortedEvents.length} events and ${artistData.length} artists`);
             } catch (error) {
-                console.error("❌ Failed to fetch data", error);
+                console.error("Failed to fetch data", error);
             } finally {
                 if (isMounted) setLoading(false);
             }

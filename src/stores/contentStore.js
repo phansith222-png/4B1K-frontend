@@ -28,7 +28,6 @@ const useContentStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const res = await getArtistById(artistId);
-      console.log('res', res)
       // const artistData = res.data.artist || res.data.result || res.data;
       // set({ currentArtist: artistData, loading: false });
     } catch (err) {

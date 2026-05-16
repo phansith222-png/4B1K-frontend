@@ -35,7 +35,7 @@ mainapi.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       console.error("Session expired or unauthorized. Logging out...");
       // คุณสามารถเรียก function logout จาก store ตรงนี้ได้เลย
-      // useUserStore.getState().logout(); 
+      useUserStore.getState().logout();
     }
     return Promise.reject(error);
   }

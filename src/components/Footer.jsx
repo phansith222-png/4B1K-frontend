@@ -39,8 +39,7 @@ import { API_URL } from '../config/env'
 /* ─── Google social icon ─── */
 function GoogleIcon() {
   const getGoogleAuthUrl = () => {
-    let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1)
+    const apiUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL
     return `${apiUrl}/auth/google`
   }
 

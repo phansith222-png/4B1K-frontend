@@ -7,7 +7,8 @@
       "Bash(choco --version)",
       "Bash(scoop --version)",
       "Bash(winget install *)",
-      "Bash(ffmpeg -version)"
+      "Bash(ffmpeg -version)",
+      "Bash(npm run *)"
     ]
   }
 }
